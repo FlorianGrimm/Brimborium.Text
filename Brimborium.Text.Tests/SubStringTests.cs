@@ -263,9 +263,24 @@ public class SubStringTests {
     public async Task UsingInAsyncTest() {
         var sut = await doSomething(new SubString("abcdef"));
         Assert.Equal("bcde", sut.ToString());
-        async Task<SubString> doSomething(SubString subString) { 
+        async Task<SubString> doSomething(SubString subString) {
             await Task.Delay(1);
             return subString.GetSubString(1..^1);
+        }
+    }
+
+    [Fact()]
+    public void SplitIntoWhileTest() {
+        {
+            var sut = new SubString("0123456789ABCDEF");
+            var act = sut.SplitIntoWhile((c, _) => char.IsDigit(c) ? 0 : 1);
+            Assert.Equal("0123456789", act.Found.ToString());
+            Assert.Equal("ABCDEF", act.Tail.ToString());
+        }
+        {
+            var sut = new SubString("0123456789ABCDEF");
+            var act = sut.SplitIntoWhile((c, _) => char.IsDigit(c) ? 0 : -1);
+            Assert.Equal("0123456789", act.Found.ToString());
         }
     }
 }

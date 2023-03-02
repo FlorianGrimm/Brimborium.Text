@@ -202,7 +202,7 @@ public readonly struct SubString {
         }
         return SubString.Empty;
     }
-
+    
     public SplitInto SplitInto(char[] arraySeparator, char[]? arrayStop = default) {
         var (offset, length) = this._Range.GetOffsetAndLength(this._Text.Length);
         if (length == 0) {
@@ -228,6 +228,36 @@ public readonly struct SubString {
                 (new SubString(this._Text, endSep..end)).TrimStart(arraySeparator)
                 );
         }
+    }
+
+    /// <summary>
+    /// Split the string into two parts, 
+    /// the first part is the string until the decide function returns not 0.
+    /// The second part is the rest of the string if <paramref name="decide"/> returns greater than 0.
+    /// The second part is empty if <paramref name="decide"/> returns less than 0.
+    /// </summary>
+    /// <param name="decide">a callback to decide to 
+    ///     0 continue,
+    ///     greater 0 to return 2 parts the part Found (until before) and the Tail,
+    ///     less 0 to return 2 parts the part Found (until before) and an empty Tail.</param>
+    /// <returns>2 SubStrings the Found and the Tail.</returns>
+    public SplitInto SplitIntoWhile(Func<char, int, int> decide) {
+        var (offset, length) = this._Range.GetOffsetAndLength(this._Text.Length);
+        if (length == 0) {
+            return new SplitInto(SubString.Empty, SubString.Empty);
+        }
+        var end = offset + length;
+        for (int idx = offset; idx < end; idx++) {
+            var result = decide(this._Text[idx], idx);
+            if (result == 0) {
+                continue;
+            } else if (result > 0) {
+                return new SplitInto(new SubString(this._Text, new Range(offset, idx)), new SubString(this._Text, idx..end));
+            } else if (result < 0) {
+                return new SplitInto(new SubString(this._Text, new Range(offset, idx)), SubString.Empty);
+            }
+        }
+        return new SplitInto(this, SubString.Empty);
     }
 }
 
