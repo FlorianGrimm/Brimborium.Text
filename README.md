@@ -1,11 +1,41 @@
 # Brimborium.Text
 
-Helpers like SubString
+Utility/Helpers like SubString
 
 ## Brimborium.Text.SubString
 
 A memory lightweight variation to create substrings, without copy the string value itself.
 It's public readonly struct, other than ReadOnlySpan<char>, you can pass it around also in async methods.
+
+
+```C#
+
+    [Benchmark]
+    public void BenchSystemString() {
+        var subString = text;
+        var limit=subString.Length/2;
+        for (var i = 0; i < limit; i++) {
+            var subString2 = subString.Substring(i, i);
+            if (subString2.Length != i) { throw new Exception(); }
+        }
+    }
+
+    [Benchmark]
+    public void BenchSubString() {
+        var subString = new SubString(text);
+        var limit = subString.Length / 2;
+        for (var i = 0; i < limit; i++) {
+            var subString2 = subString.GetSubString(i, i);
+            if (subString2.Length != i) { throw new Exception(); }
+        }
+    }
+```
+|            Method |     Mean |     Error |    StdDev |   Gen0 | Allocated |
+|------------------ |---------:|----------:|----------:|-------:|----------:|
+| BenchSystemString | 4.963 μs | 0.0981 μs | 0.1049 μs | 5.0430 |   63336 B |
+|    BenchSubString | 2.513 μs | 0.0408 μs | 0.0382 μs |      - |         - |
+
+
 
 ## Brimborium.Text.StringBuilderPool
 
@@ -15,7 +45,7 @@ Microsoft.Extensions.ObjectPool does not provide a default instance.
 
 StringSplice allows to replace parts of a string.
 
-```CSharp
+```C#
     var sut = new StringSplice("abc");
     var part = sut.CreatePart(1..2)!;
     

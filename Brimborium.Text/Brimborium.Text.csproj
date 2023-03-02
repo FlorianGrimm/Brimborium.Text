@@ -10,7 +10,7 @@
     <Copyright>MIT</Copyright>
     <PackageProjectUrl>https://github.com/FlorianGrimm/Brimborium.Text</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/FlorianGrimm/Brimborium.Text</RepositoryUrl>
+    <RepositoryUrl>https://github.com/FlorianGrimm/Brimborium.Text.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>

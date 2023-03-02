@@ -94,7 +94,7 @@ public class StringSplice {
             throw new InvalidOperationException("Use only one of ReplacmentBuilder and Parts.");
         }
 
-        return this._ReplacementBuilder ??= new StringBuilder();
+        return this._ReplacementBuilder ??= StringBuilderPool.GetStringBuilder();
     }
 
     public StringSplice[]? GetArrayPart() => this._LstPart?.ToArray();
@@ -254,7 +254,7 @@ public class StringSplice {
 
     public string BuildReplacement() {
         if (this._LstPart is not null && this._LstPart.Count > 0) {
-            var result = new StringBuilder();
+            var result = StringBuilderPool.GetStringBuilder();
             this.BuildReplacementStringBuilder(result);
             var resultValue = result.ToString();
             return resultValue;
@@ -309,6 +309,8 @@ public class StringSplice {
     }
 
     private string GetDebuggerDisplay() {
-        return $"{this._Text}; Range:{this.Range}; #Part:{this._LstPart?.Count};";
+        var span = this.AsSubString().AsSpan();
+        if (span.Length > 32) { span = span[..32]; }
+        return $"{span}; #Part:{this._LstPart?.Count};";
     }
 }

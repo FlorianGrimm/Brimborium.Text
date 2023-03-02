@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Brimborium.Text;
+﻿namespace Brimborium.Text;
 
 [System.Diagnostics.DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public readonly struct SubString {
@@ -36,6 +34,15 @@ public readonly struct SubString {
 
         this._Text = text;
         this._Range = range;
+    }
+
+    public char this[int index] {
+        get {
+            var (offset, length) = this._Range.GetOffsetAndLength(this._Text.Length);
+            if (index < 0) { throw new ArgumentOutOfRangeException(nameof(index)); }
+            if (length <= index) { throw new ArgumentOutOfRangeException(nameof(index)); }
+            return this._Text[offset + index];
+        }
     }
 
     public SubString GetSubString(int start, int length) {
@@ -88,6 +95,12 @@ public readonly struct SubString {
     public ReadOnlySpan<char> AsSpan()
         => this._Text.AsSpan()[this._Range];
 
+    public StringBuilder AsStringBuilder() {
+        var result = StringBuilderPool.GetStringBuilder();
+        result.Append(this.AsSpan());
+        return result;
+    }
+
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     private string GetDebuggerDisplay() {
         if (this._Text is null) { return "null"; }
@@ -118,7 +131,7 @@ public readonly struct SubString {
         var end = offset + length;
         for (int idx = offset; idx < end; idx++) {
             if (this._Text[idx] == search) {
-                return idx-offset;
+                return idx - offset;
             }
         }
         return -1;
@@ -140,9 +153,9 @@ public readonly struct SubString {
         var (offset, length) = this._Range.GetOffsetAndLength(this._Text.Length);
         var end = offset + length;
         for (int idx = offset; idx < end; idx++) {
-            foreach (var s in search) { 
+            foreach (var s in search) {
                 if (this._Text[idx] == s) {
-                    return idx-offset;
+                    return idx - offset;
                 }
             }
         }
@@ -154,10 +167,10 @@ public readonly struct SubString {
         var (offset, length) = range.GetOffsetAndLength(thisLength);
         offset += thisOffset;
         var end = offset + length;
-        for (int idx =  offset; idx < end; idx++) {
+        for (int idx = offset; idx < end; idx++) {
             foreach (var s in search) {
                 if (this._Text[idx] == s) {
-                    return idx-thisOffset;
+                    return idx - thisOffset;
                 }
             }
         }
@@ -190,7 +203,7 @@ public readonly struct SubString {
         return SubString.Empty;
     }
 
-    public SplitInto SplitInto(char[] arraySeparator, char[]? arrayStop=default) {
+    public SplitInto SplitInto(char[] arraySeparator, char[]? arrayStop = default) {
         var (offset, length) = this._Range.GetOffsetAndLength(this._Text.Length);
         if (length == 0) {
             return new SplitInto(SubString.Empty, SubString.Empty);
@@ -199,19 +212,19 @@ public readonly struct SubString {
         var end = offset + length;
         int posStop;
         if (arrayStop is not null && arrayStop.Length > 0) {
-            posStop=this.IndexOfAny(arrayStop);
+            posStop = this.IndexOfAny(arrayStop);
             if (posStop >= 0) {
                 end = offset + posStop;
             }
         }
 
-        int posSep = this.IndexOfAny(arraySeparator, 0..(end-offset));
+        int posSep = this.IndexOfAny(arraySeparator, 0..(end - offset));
         if (posSep < 0) {
             return new SplitInto(new SubString(this._Text, new Range(offset, end)), SubString.Empty);
         } else {
             var endSep = offset + posSep;
             return new SplitInto(
-                new SubString(this._Text, new Range(offset, endSep)), 
+                new SubString(this._Text, new Range(offset, endSep)),
                 (new SubString(this._Text, endSep..end)).TrimStart(arraySeparator)
                 );
         }
