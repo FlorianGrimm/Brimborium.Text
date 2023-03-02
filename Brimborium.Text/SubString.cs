@@ -1,4 +1,6 @@
-﻿namespace Brimborium.Text;
+﻿using System.Text;
+
+namespace Brimborium.Text;
 
 [System.Diagnostics.DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public readonly struct SubString {
@@ -6,9 +8,14 @@ public readonly struct SubString {
 
     // the text is not null
     private readonly string _Text = String.Empty;
-    
+
     // range start and stop are from start
     private readonly Range _Range;
+
+    public SubString() {
+        this._Text = string.Empty;
+        this._Range = new Range(0, 0);
+    }
 
     public SubString(
        string text
@@ -34,7 +41,7 @@ public readonly struct SubString {
     public SubString GetSubString(int start, int length) {
         if (start < 0) { throw new ArgumentOutOfRangeException(nameof(start)); }
         if (length < 0) { throw new ArgumentOutOfRangeException(nameof(length)); }
-        var (thisOffset, thisLength) = this.Range.GetOffsetAndLength(this._Text.Length);
+        var (thisOffset, thisLength) = this._Range.GetOffsetAndLength(this._Text.Length);
         if (thisLength < length) { throw new ArgumentOutOfRangeException(nameof(length)); }
         var nextRange = new Range(thisOffset + start, thisOffset + start + length);
         return new SubString(
@@ -44,13 +51,14 @@ public readonly struct SubString {
     }
 
     public SubString GetSubString(Range range) {
-        var (thisOffset, thisLength) = this.Range.GetOffsetAndLength(this._Text.Length);
+        var (thisOffset, thisLength) = this._Range.GetOffsetAndLength(this._Text.Length);
         var (rangeOffset, rangeLength) = range.GetOffsetAndLength(thisLength);
+        var thisEnd = thisOffset + thisLength;
 
         var nextRange = new Range(thisOffset + rangeOffset, thisOffset + rangeOffset + rangeLength);
         if (nextRange.Start.Value > nextRange.End.Value) { throw new ArgumentOutOfRangeException(nameof(range)); }
-        if (thisLength < nextRange.Start.Value) { throw new ArgumentOutOfRangeException(nameof(range)); }
-        if (thisLength < nextRange.End.Value) { throw new ArgumentOutOfRangeException(nameof(range)); }
+        if (thisEnd < nextRange.Start.Value) { throw new ArgumentOutOfRangeException(nameof(range)); }
+        if (thisEnd < nextRange.End.Value) { throw new ArgumentOutOfRangeException(nameof(range)); }
 
         return new SubString(
             this._Text,
@@ -59,18 +67,13 @@ public readonly struct SubString {
     }
 
     public string Text => this.ToString();
-    public Range Range => _Range;
-
-    public int Start => this.Range.Start.Value;
 
     public int Length {
         get {
-            var (_, length) = this.Range.GetOffsetAndLength(this._Text.Length);
+            var (_, length) = this._Range.GetOffsetAndLength(this._Text.Length);
             return length;
         }
     }
-
-    public int End => this.Range.End.Value;
 
     public override string ToString() {
         var (offset, length) = this._Range.GetOffsetAndLength(this._Text.Length);
@@ -83,14 +86,16 @@ public readonly struct SubString {
     }
 
     public ReadOnlySpan<char> AsSpan()
-        => this._Text.AsSpan()[this.Range];
+        => this._Text.AsSpan()[this._Range];
 
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     private string GetDebuggerDisplay() {
         if (this._Text is null) { return "null"; }
         if (this.Length < 32) {
-            return $"{this._Text.Substring(this.Start)}[{this.Range}]";
+            return this._Text[this._Range];
+        } else {
+            return this._Text[new Range(this._Range.Start, this._Range.Start.Value + 32)];
         }
-        return $"{this._Text.Substring(this.Start, 32)}...[{this.Range}]";
     }
 
     public bool IsNullOrEmpty() {
@@ -108,33 +113,109 @@ public readonly struct SubString {
         return true;
     }
 
-    public List<SubString> Split(char[] arraySeparator, int maxCount = -1) {
-        List<SubString> result = new();
+    public int IndexOf(char search) {
         var (offset, length) = this._Range.GetOffsetAndLength(this._Text.Length);
         var end = offset + length;
-        int startPart = offset;
+        for (int idx = offset; idx < end; idx++) {
+            if (this._Text[idx] == search) {
+                return idx-offset;
+            }
+        }
+        return -1;
+    }
+    public int IndexOf(char search, Range range) {
+        var (thisOffset, thisLength) = this._Range.GetOffsetAndLength(this._Text.Length);
+        var (offset, length) = range.GetOffsetAndLength(thisLength);
+        offset += thisOffset;
+        var end = offset + length;
+        for (int idx = offset; idx < end; idx++) {
+            if (this._Text[idx] == search) {
+                return idx - thisOffset;
+            }
+        }
+        return -1;
+    }
+
+    public int IndexOfAny(char[] search) {
+        var (offset, length) = this._Range.GetOffsetAndLength(this._Text.Length);
+        var end = offset + length;
+        for (int idx = offset; idx < end; idx++) {
+            foreach (var s in search) { 
+                if (this._Text[idx] == s) {
+                    return idx-offset;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public int IndexOfAny(char[] search, Range range) {
+        var (thisOffset, thisLength) = this._Range.GetOffsetAndLength(this._Text.Length);
+        var (offset, length) = range.GetOffsetAndLength(thisLength);
+        offset += thisOffset;
+        var end = offset + length;
+        for (int idx =  offset; idx < end; idx++) {
+            foreach (var s in search) {
+                if (this._Text[idx] == s) {
+                    return idx-thisOffset;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public SubString TrimStart(char[] chars) {
+        var (offset, length) = this._Range.GetOffsetAndLength(this._Text.Length);
+        var end = offset + length;
         for (int idx = offset; idx < end; idx++) {
             bool found = false;
-            char current = this._Text[idx];
-            if (arraySeparator.Length == 1) {
-                found = arraySeparator[0] == current;
+            if (chars.Length == 1) {
+                found = (this._Text[idx] == chars[0]);
             } else {
-                foreach (char charSeparator in arraySeparator) {
-                    found = (charSeparator == current);
+                foreach (var c in chars) {
+                    found = (this._Text[idx] == c);
                     if (found) { break; }
                 }
             }
             if (found) {
-                result.Add(new SubString(this._Text, startPart..idx));
-                startPart = idx + 1;
-                if (maxCount > 0 && maxCount == (result.Count + 1)) {
-                    break;
+                continue;
+            } else {
+                if (idx == offset) {
+                    return this;
+                } else {
+                    return new SubString(this._Text, idx..end);
                 }
             }
         }
-        if (startPart < this._Range.End.Value) {
-            result.Add(new SubString(this._Text, startPart..this._Range.End));
+        return SubString.Empty;
+    }
+
+    public SplitInto SplitInto(char[] arraySeparator, char[]? arrayStop=default) {
+        var (offset, length) = this._Range.GetOffsetAndLength(this._Text.Length);
+        if (length == 0) {
+            return new SplitInto(SubString.Empty, SubString.Empty);
         }
-        return result;
+
+        var end = offset + length;
+        int posStop;
+        if (arrayStop is not null && arrayStop.Length > 0) {
+            posStop=this.IndexOfAny(arrayStop);
+            if (posStop >= 0) {
+                end = offset + posStop;
+            }
+        }
+
+        int posSep = this.IndexOfAny(arraySeparator, 0..(end-offset));
+        if (posSep < 0) {
+            return new SplitInto(new SubString(this._Text, new Range(offset, end)), SubString.Empty);
+        } else {
+            var endSep = offset + posSep;
+            return new SplitInto(
+                new SubString(this._Text, new Range(offset, endSep)), 
+                (new SubString(this._Text, endSep..end)).TrimStart(arraySeparator)
+                );
+        }
     }
 }
+
+public readonly record struct SplitInto(SubString Found, SubString Tail);

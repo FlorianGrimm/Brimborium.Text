@@ -3,5 +3,24 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Title>Brimborium.Text</Title>
+    <Description>Utility/Helpers like SubString</Description>
+    <Copyright>MIT</Copyright>
+    <PackageProjectUrl>https://github.com/FlorianGrimm/Brimborium.Text</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/FlorianGrimm/Brimborium.Text</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.3" />
+  </ItemGroup>
 </Project>
