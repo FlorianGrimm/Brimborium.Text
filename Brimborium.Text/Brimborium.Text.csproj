@@ -1,12 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Title>Brimborium.Text</Title>
-    <Description>Utility/Helpers like SubString</Description>
+    <Description>Utility/Helpers like StringSlice</Description>
     <Copyright>MIT</Copyright>
     <PackageProjectUrl>https://github.com/FlorianGrimm/Brimborium.Text</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>

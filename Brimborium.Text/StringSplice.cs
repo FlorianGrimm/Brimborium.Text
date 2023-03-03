@@ -5,24 +5,24 @@
 /// </summary>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public class StringSplice {
-    private readonly SubString _Text;
+    private readonly StringSlice _Text;
     private readonly Range _Range;
     private List<StringSplice>? _LstPart;
     private StringBuilder? _ReplacementBuilder;
     private string? _ReplacementText;
 
     public StringSplice(string text) {
-        this._Text = new SubString(text);
+        this._Text = new StringSlice(text);
         this._Range = new Range(0, text.Length);
     }
 
-    public StringSplice(SubString text) {
+    public StringSplice(StringSlice text) {
         this._Text = text;
         this._Range = new Range(0, text.Length);
     }
 
     public StringSplice(
-        SubString text,
+        StringSlice text,
         int start,
         int length) {
         this._Text = text;
@@ -33,7 +33,7 @@ public class StringSplice {
     }
 
     public StringSplice(
-        SubString text,
+        StringSlice text,
         Range range) {
         this._Text = text;
         if (range.Start.IsFromEnd || range.End.IsFromEnd) {
@@ -50,7 +50,7 @@ public class StringSplice {
         this._Range = range;
     }
 
-    public SubString AsSubString() => this._Text.GetSubString(this._Range);
+    public StringSlice AsSubString() => this._Text.Substring(this._Range);
 
     public string GetText() => this.AsSubString().ToString();
 
@@ -270,7 +270,7 @@ public class StringSplice {
             for (int idx = 0; idx < this._LstPart.Count; idx++) {
                 var item = this._LstPart[idx];
                 if (posEnd < item.Range.Start.Value) {
-                    var span = this._Text.GetSubString(this.Range)
+                    var span = this._Text.Substring(this.Range)
                         .AsSpan()[new Range(posEnd, item.Range.Start.Value)];
                     result.Append(span);
                 }
@@ -288,7 +288,7 @@ public class StringSplice {
 
             // add the tail
             if (posEnd < this.Length) {
-                var span = this._Text.GetSubString(this.Range).AsSpan();
+                var span = this._Text.Substring(this.Range).AsSpan();
                 if (posEnd == 0) {
                     result.Append(span);
                 } else {

@@ -9,15 +9,15 @@ public class StringSpliceTests {
             Assert.Equal("abc", sut.ToString());
         }
         {
-            var sut = new StringSplice(new SubString("abc"));
+            var sut = new StringSplice(new StringSlice("abc"));
             Assert.Equal("abc", sut.ToString());
         }
         {
-            var sut = new StringSplice(new SubString("abc"), 1, 1);
+            var sut = new StringSplice(new StringSlice("abc"), 1, 1);
             Assert.Equal("b", sut.ToString());
         }
         {
-            var sut = new StringSplice(new SubString("abc"), 1..3);
+            var sut = new StringSplice(new StringSlice("abc"), 1..3);
             Assert.Equal("bc", sut.ToString());
         }
     }
@@ -25,7 +25,7 @@ public class StringSpliceTests {
     [Fact()]
     public void AsSubStringTest() {
         {
-            var sut = new StringSplice(new SubString("abcdef", 1..3));
+            var sut = new StringSplice(new StringSlice("abcdef", 1..3));
             var act = sut.AsSubString();
             Assert.Equal("bc", act.ToString());
         }
@@ -34,7 +34,7 @@ public class StringSpliceTests {
     [Fact()]
     public void GetTextTest() {
         {
-            var sut = new StringSplice(new SubString("abcdef", 1..3));
+            var sut = new StringSplice(new StringSlice("abcdef", 1..3));
             Assert.Equal("bc", sut.GetText());
         }
     }

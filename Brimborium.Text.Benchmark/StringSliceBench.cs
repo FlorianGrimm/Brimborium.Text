@@ -2,7 +2,7 @@
 
 namespace Brimborium.Text;
 
-public class SubStringBench {
+public class StringSliceBench {
     
     private string text=string.Empty;
 
@@ -22,13 +22,14 @@ public class SubStringBench {
     }
 
     [Benchmark]
-    public void BenchSubString() {
-        var subString = new SubString(text);
+    public void BenchStringSlice() {
+        var subString = new StringSlice(text);
         var limit = subString.Length / 2;
         for (var i = 0; i < limit; i++) {
-            var subString2 = subString.GetSubString(i, i);
+            var subString2 = subString.Substring(i, i);
             if (subString2.Length != i) { throw new Exception(); }
         }
     }
 
 }
+
