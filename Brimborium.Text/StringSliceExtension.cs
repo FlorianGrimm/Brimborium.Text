@@ -18,8 +18,8 @@ public static class StringSliceExtension {
         => stringBuilder.Append(value.AsSpan());
 
     
-    public static bool ReadWordIfMatches(this string word, ref StringSlice slice, StringComparison stringComparison = StringComparison.Ordinal) {
-        if (slice.StartsWith(word, stringComparison)) {
+    public static bool ReadWordIfMatches(this string word, ref StringSlice slice, StringComparison comparisonType = StringComparison.Ordinal) {
+        if (slice.StartsWith(word, comparisonType)) {
             slice = slice.Substring(word.Length);
             return true;
         } else {
@@ -27,8 +27,8 @@ public static class StringSliceExtension {
         }
     }
 
-    public static bool ReadWordIfMatches(this string word, ref StringSlice slice, ref int count, StringComparison stringComparison=StringComparison.Ordinal) {
-        if (slice.StartsWith(word, stringComparison)) {
+    public static bool ReadWordIfMatches(this string word, ref StringSlice slice, ref int count, StringComparison comparisonType=StringComparison.Ordinal) {
+        if (slice.StartsWith(word, comparisonType)) {
             slice = slice.Substring(word.Length);
             count += word.Length;
             return true;

@@ -1,0 +1,115 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"name":"csharp","languageName":"C#","aliases":["c#","C#"]},{"name":"vscode","aliases":["frontend"],"languageName":null},{"name":"javascript","languageName":"JavaScript","aliases":["js"]},{"name":"webview","aliases":[]},{"name":"pwsh","languageName":"PowerShell","aliases":["powershell"]},{"name":"value","languageName":null,"aliases":[]}]}}
+
+#!markdown
+
+# StringSlice
+
+The StringSlice is a readonly struct.
+The StringSlice constructor needs a string (and a Range) 
+If you call SubString a new StringSlice is created the original string is used with an adjusted Range.
+The real difference to an ReadOnlySpan<char> is that you can store a StringSlice in an class, struct or pass it around in a async method.
+
+#!markdown
+
+## TrimStart 
+
+The TrimStart method do not copy the content of a string. It just adjust the Range.
+
+#!csharp
+
+#r "Brimborium.Text\bin\Debug\net7.0\Brimborium.Text.dll"
+
+using Brimborium.Text;
+
+var helloWorld = new StringSlice("Hello World!");
+display(string.Format("{0} Length: {1}", helloWorld, 
+    helloWorld.TrimStart().Length)); // 12
+
+var helloWorldWithSpace = new StringSlice("            Hello World!");
+display(string.Format("{0} Length: {1}", helloWorldWithSpace, 
+    helloWorldWithSpace.Length)); // 24
+
+var helloWorldWithSpaceTrimmed = helloWorldWithSpace.TrimStart();
+display(string.Format("{0} Length: {1}", helloWorldWithSpaceTrimmed, 
+    helloWorldWithSpaceTrimmed.TrimStart().Length)); // 12
+display(helloWorldWithSpaceTrimmed.Range); // 12..24
+
+#!markdown
+
+The benefit is you don't you any heap memory for the TrimStart.
+
+#!markdown
+
+## SubString
+
+A simple Hello World example.
+
+#!csharp
+
+#r "Brimborium.Text\bin\Debug\net7.0\Brimborium.Text.dll"
+
+using Brimborium.Text;
+
+var helloWorld = new StringSlice("Hello World!");
+var hello = helloWorld.Substring(0, 5);
+display(hello.ToString()); // "Hello"
+var world = helloWorld.Substring(6, 5);
+display(world.ToString()); // "World"
+
+display(world.Text); // "Hello World!"
+
+#!markdown
+
+The string (Text property) is in all 3 variables the same.
+The Range is adjusted.
+With ToString a new String is created.
+
+#!csharp
+
+#r "Brimborium.Text\bin\Debug\net7.0\Brimborium.Text.dll"
+
+using Brimborium.Text;
+
+var helloWorld = new StringSlice("Hello World!");
+var hello = helloWorld.Substring(0, 5);
+display(hello.Range); // 0..5
+
+#!markdown
+
+## Equals(string|StringSlice|ReadOnlySpan<char> other, StringComparison stringComparison)
+
+You can test for equal with Equals - but do you have to add the StringComparison parameter to not boxing it. 
+
+#!csharp
+
+#r "Brimborium.Text\bin\Debug\net7.0\Brimborium.Text.dll"
+
+using Brimborium.Text;
+
+var helloWorld = new StringSlice("Hello World!");
+
+display(string.Format("Equals with String {0}", helloWorld.Substring(6,5).Equals("World", StringComparison.Ordinal)));
+
+var world = new StringSlice("World");
+display(string.Format("Equals with StringSlice {0}", helloWorld.Substring(6,5).Equals(world, StringComparison.Ordinal)));
+
+display(string.Format("Equals with ReadOnlySpan<char> {0}", helloWorld.Substring(6,5).Equals("World".AsSpan(), StringComparison.Ordinal)));
+
+#!markdown
+
+The trap is to forget the second parameter (StringComparison).
+If cast a struct to an object the struct is copied to the heap. This is called boxing.
+If you use the heap it's part of the GarbageCollection. So you loose the benefit of the struct.
+
+#!csharp
+
+#r "Brimborium.Text\bin\Debug\net7.0\Brimborium.Text.dll"
+
+using Brimborium.Text;
+
+var helloWorld = new StringSlice("Hello World!");
+
+var bad = new StringSlice("World");
+display(string.Format("it works, but bad {0}", helloWorld.Substring(6,5).Equals(bad /* no StringComparison.Ordinal*/)));

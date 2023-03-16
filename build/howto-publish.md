@@ -23,6 +23,7 @@ dotnet nuget add source --username $USERNAME --password $GITHUB_TOKEN --store-pa
 
 ```PowerShell
 
+
 $json = Get-Content "${Env:\USERPROFILE}\Documents\secure\github.json" | ConvertFrom-Json
 
 $NAMESPACE=$json.NAMESPACE
@@ -33,9 +34,12 @@ dir Brimborium.Text\nupkg\
 dir Brimborium.Text\nupkg\*.nupkg | Remove-Item
 dir Brimborium.Text\nupkg\*.snupkg | Remove-Item
 
-dotnet build --configuration Release
+dotnet test 
 
-dotnet build --configuration Release /p:PublicRelease=true
+nbgv set-version 1.0.3
+dotnet clean
+dotnet pack --configuration Release /p:PublicRelease=true
+
 dir Brimborium.Text\nupkg\
 
 $nupkg = dir Brimborium.Text\nupkg\*.nupkg | %{$_.FullName}
@@ -48,6 +52,6 @@ dotnet nuget push $nupkg --source "github" --api-key $GITHUB_TOKEN
 
 nbgv set-version prepare-release 1.0.2
 
-nbgv set-version 1.0.2
+nbgv set-version 1.0.3
 
 dotnet build --configuration Release /p:PublicRelease=true

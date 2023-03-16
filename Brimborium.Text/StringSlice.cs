@@ -1,14 +1,12 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Text;
-
-namespace Brimborium.Text;
+﻿namespace Brimborium.Text;
 
 [System.Diagnostics.DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public readonly struct StringSlice : IEquatable<StringSlice> {
     public static StringSlice Empty => new StringSlice(string.Empty);
 
     // the text is not null
+    [System.Text.Json.Serialization.JsonInclude()]
+    [System.Text.Json.Serialization.JsonPropertyOrder(0)]
     public readonly string Text = String.Empty;
 
     // range start and stop are from start
@@ -43,15 +41,20 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
 
     public char this[int index] {
         get {
-            var (offset, length) = this.Range.GetOffsetAndLength(this.Text.Length);
+            var offset = this.Range.Start.Value;
+            var end = this.Range.End.Value;
+            var length = end - offset;
             if (index < 0) { throw new ArgumentOutOfRangeException(nameof(index)); }
             if (length <= index) { throw new ArgumentOutOfRangeException(nameof(index)); }
             return this.Text[offset + index];
         }
     }
+    
     public StringSlice Substring(int start) {
         if (start < 0) { throw new ArgumentOutOfRangeException(nameof(start)); }
-        var (thisOffset, thisLength) = this.Range.GetOffsetAndLength(this.Text.Length);
+        var thisOffset = this.Range.Start.Value;
+        var thisEnd = this.Range.End.Value;
+        var thisLength = thisEnd - thisOffset;
         if (thisLength < start) { throw new ArgumentOutOfRangeException(nameof(start)); }
         var nextRange = new Range(thisOffset + start, thisOffset + thisLength);
         return new StringSlice(
@@ -63,7 +66,11 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     public StringSlice Substring(int start, int length) {
         if (start < 0) { throw new ArgumentOutOfRangeException(nameof(start)); }
         if (length < 0) { throw new ArgumentOutOfRangeException(nameof(length)); }
-        var (thisOffset, thisLength) = this.Range.GetOffsetAndLength(this.Text.Length);
+
+        var thisOffset = this.Range.Start.Value;
+        var thisEnd = this.Range.End.Value;
+        var thisLength = thisEnd - thisOffset;
+
         if (thisLength < length) { throw new ArgumentOutOfRangeException(nameof(length)); }
         var nextRange = new Range(thisOffset + start, thisOffset + start + length);
         return new StringSlice(
@@ -73,9 +80,13 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     }
 
     public StringSlice Substring(Range range) {
-        var (thisOffset, thisLength) = this.Range.GetOffsetAndLength(this.Text.Length);
+        // shortcut because range is from start
+        var thisOffset = this.Range.Start.Value;
+        var thisEnd = this.Range.End.Value;
+        var thisLength = thisEnd - thisOffset;
+
+        // range can be from end so I use GetOffsetAndLength
         var (rangeOffset, rangeLength) = range.GetOffsetAndLength(thisLength);
-        var thisEnd = thisOffset + thisLength;
 
         var nextRange = new Range(thisOffset + rangeOffset, thisOffset + rangeOffset + rangeLength);
         if (nextRange.Start.Value > nextRange.End.Value) { throw new ArgumentOutOfRangeException(nameof(range)); }
@@ -96,15 +107,23 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
         range = this.Range;
     }
 
+    [System.Text.Json.Serialization.JsonIgnore()]
     public int Length {
         get {
-            var (_, length) = this.Range.GetOffsetAndLength(this.Text.Length);
+            // shortcut because this.Range is from start
+            var offset = this.Range.Start.Value;
+            var end = this.Range.End.Value;
+            var length = end - offset;
+
             return length;
         }
     }
 
     public override string ToString() {
-        var (offset, length) = this.Range.GetOffsetAndLength(this.Text.Length);
+        var offset = this.Range.Start.Value;
+        var end = this.Range.End.Value;
+        var length = end - offset;
+
         if (length == 0) { return string.Empty; }
         if (offset == 0 && length == this.Text.Length) {
             return this.Text;
@@ -114,7 +133,10 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     }
 
     public ReadOnlySpan<char> AsSpan() {
-        var (offset, length) = this.Range.GetOffsetAndLength(this.Text.Length);
+        var offset = this.Range.Start.Value;
+        var end = this.Range.End.Value;
+        var length = end - offset;
+
         return this.Text.AsSpan(offset, length);
     }
 
@@ -137,122 +159,99 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
 
     public bool IsNullOrWhiteSpace() {
         if (this.Text == null) return true;
-        var (offset, length) = this.Range.GetOffsetAndLength(this.Text.Length);
+        var offset = this.Range.Start.Value;
+        var end = this.Range.End.Value;
+        var length = end - offset;
 
-        for (int idx = 0; idx < length; idx++) {
-            if (!char.IsWhiteSpace(this.Text[offset + idx])) { return false; }
-        }
-
-        return true;
+        return this.Text.AsSpan(offset, length).IsWhiteSpace();
     }
 
     public int IndexOf(char search) {
-        var (offset, length) = this.Range.GetOffsetAndLength(this.Text.Length);
-        var end = offset + length;
-        for (int idx = offset; idx < end; idx++) {
-            if (this.Text[idx] == search) {
-                return idx - offset;
-            }
-        }
-        return -1;
+        var offset = this.Range.Start.Value;
+        var end = this.Range.End.Value;
+        var length = end - offset;
+        return this.Text.AsSpan(offset, length).IndexOf(search);
     }
 
     public int IndexOf(char search, Range range) {
-        var (thisOffset, thisLength) = this.Range.GetOffsetAndLength(this.Text.Length);
+        var thisOffset = this.Range.Start.Value;
+        var thisEnd = this.Range.End.Value;
+        var thisLength = thisEnd - thisOffset;
+
         var (offset, length) = range.GetOffsetAndLength(thisLength);
-        offset += thisOffset;
-        var end = offset + length;
-        for (int idx = offset; idx < end; idx++) {
-            if (this.Text[idx] == search) {
-                return idx - thisOffset;
-            }
+        var result = this.Text.AsSpan(offset + thisOffset, length).IndexOf(search);
+        if (result < 0) {
+            return -1;
+        } else {
+            return result + offset;
         }
-        return -1;
     }
 
     public int IndexOfAny(char[] search) {
-        var (offset, length) = this.Range.GetOffsetAndLength(this.Text.Length);
-        var end = offset + length;
-        for (int idx = offset; idx < end; idx++) {
-            foreach (var s in search) {
-                if (this.Text[idx] == s) {
-                    return idx - offset;
-                }
-            }
-        }
-        return -1;
+        var offset = this.Range.Start.Value;
+        var end = this.Range.End.Value;
+        var length = end - offset;
+        return this.Text.AsSpan(offset, length).IndexOfAny(search);
     }
 
     public int IndexOfAny(char[] search, Range range) {
-        var (thisOffset, thisLength) = this.Range.GetOffsetAndLength(this.Text.Length);
+        var thisOffset = this.Range.Start.Value;
+        var thisEnd = this.Range.End.Value;
+        var thisLength = thisEnd - thisOffset;
+
         var (offset, length) = range.GetOffsetAndLength(thisLength);
-        offset += thisOffset;
-        var end = offset + length;
-        for (int idx = offset; idx < end; idx++) {
-            foreach (var s in search) {
-                if (this.Text[idx] == s) {
-                    return idx - thisOffset;
-                }
-            }
+        var result = this.Text.AsSpan(offset + thisOffset, length).IndexOfAny(search);
+        if (result < 0) {
+            return -1;
+        } else {
+            return result + offset;
         }
-        return -1;
     }
 
-    public bool StartsWith(string search, StringComparison stringComparison) => this.AsSpan().StartsWith(search, stringComparison);
-    
-    public bool StartsWith(StringSlice search, StringComparison stringComparison) => this.AsSpan().StartsWith(search.AsSpan(), stringComparison);
+    public bool Contains(char value) {
+        var offset = this.Range.Start.Value;
+        var end = this.Range.End.Value;
+        var length = end - offset;
+        return this.Text.AsSpan(offset, length).Contains(value);
+    }
 
-    public bool StartsWith(ReadOnlySpan<char> search, StringComparison stringComparison) => this.AsSpan().StartsWith(search, stringComparison);
+    public bool Contains(ReadOnlySpan<char> value, StringComparison comparisonType = StringComparison.Ordinal) {
+        var offset = this.Range.Start.Value;
+        var end = this.Range.End.Value;
+        var length = end - offset;
+        return this.Text.AsSpan(offset, length).Contains(value, comparisonType);
+    }
+
+    public bool StartsWith(string search, StringComparison comparisonType = StringComparison.Ordinal) => this.AsSpan().StartsWith(search, comparisonType);
+
+    public bool StartsWith(StringSlice search, StringComparison comparisonType = StringComparison.Ordinal) => this.AsSpan().StartsWith(search.AsSpan(), comparisonType);
+
+    public bool StartsWith(ReadOnlySpan<char> search, StringComparison comparisonType = StringComparison.Ordinal) => this.AsSpan().StartsWith(search, comparisonType);
 
     public StringSlice TrimStart() {
-        var (offset, length) = this.Range.GetOffsetAndLength(this.Text.Length);
-        if (length == 0) { return this; }
-        var end = offset + length;
-        for (int idx = offset; idx < end; idx++) {
-            if (char.IsWhiteSpace(this.Text[idx])) {
-                continue;
-            } else {
-                if (idx == offset) {
-                    return this;
-                } else {
-                    return new StringSlice(this.Text, idx..end);
-                }
-            }
-        }
-        return new StringSlice(this.Text, end..end);
+        var offset = this.Range.Start.Value;
+        var end = this.Range.End.Value;
+        var length = end - offset;
+        var span = this.Text.AsSpan(offset, length).TrimStart();
+        var nextOffset = end - span.Length;
+        return new StringSlice(this.Text, nextOffset..end);
     }
 
     public StringSlice TrimStart(char[] chars) {
-        var (offset, length) = this.Range.GetOffsetAndLength(this.Text.Length);
-        if (length == 0) { return this; }
-        var end = offset + length;
-        for (int idx = offset; idx < end; idx++) {
-            bool found = false;
-            if (chars.Length == 1) {
-                found = (this.Text[idx] == chars[0]);
-            } else {
-                foreach (var c in chars) {
-                    found = (this.Text[idx] == c);
-                    if (found) { break; }
-                }
-            }
-            if (found) {
-                continue;
-            } else {
-                if (idx == offset) {
-                    return this;
-                } else {
-                    return new StringSlice(this.Text, idx..end);
-                }
-            }
-        }
-        return new StringSlice(this.Text, end..end);
+        var offset = this.Range.Start.Value;
+        var end = this.Range.End.Value;
+        var length = end - offset;
+        var span = this.Text.AsSpan(offset, length).TrimStart(chars);
+        var nextOffset = end - span.Length;
+        return new StringSlice(this.Text, nextOffset..end);
     }
 
     public StringSlice TrimWhile(Func<char, int, int> decide) {
-        var (offset, length) = this.Range.GetOffsetAndLength(this.Text.Length);
+        var offset = this.Range.Start.Value;
+        var end = this.Range.End.Value;
+        var length = end - offset;
+        
         if (length == 0) { return this; }
-        var end = offset + length;
         for (int idx = offset; idx < end; idx++) {
             var decision = decide(this.Text[idx], idx - offset);
             if (decision == 0) {
@@ -269,13 +268,56 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
         }
         return new StringSlice(this.Text, end..end);
     }
-    public SplitInto SplitInto(char[] arraySeparator, char[]? arrayStop = default) {
-        var (offset, length) = this.Range.GetOffsetAndLength(this.Text.Length);
-        if (length == 0) {
-            return new SplitInto(StringSlice.Empty, StringSlice.Empty);
-        }
 
-        var end = offset + length;
+    public StringSlice TrimEnd() {
+        var offset = this.Range.Start.Value;
+        var end = this.Range.End.Value;
+        var length = end - offset;
+        var span = this.Text.AsSpan(offset, length).TrimEnd();
+        var nextEnd = offset + span.Length;
+        return new StringSlice(this.Text, offset..nextEnd);
+    }
+
+    public StringSlice TrimEnd(char[] chars) {
+        var offset = this.Range.Start.Value;
+        var end = this.Range.End.Value;
+        var length = end - offset;
+        var span = this.Text.AsSpan(offset, length).TrimEnd(chars);
+        var nextEnd = offset + span.Length;
+        return new StringSlice(this.Text, offset..nextEnd);
+    }
+
+    public StringSlice Trim() {
+        var offset = this.Range.Start.Value;
+        var end = this.Range.End.Value;
+        var length = end - offset;
+        var span = this.Text.AsSpan(offset, length).TrimEnd();
+        var nextEnd = offset + span.Length;
+        span = span.TrimStart();
+        var nextOffset = nextEnd - span.Length;
+        return new StringSlice(this.Text, nextOffset..nextEnd);
+    }
+
+
+    public StringSlice Trim(char[] chars) {
+        var offset = this.Range.Start.Value;
+        var end = this.Range.End.Value;
+        var length = end - offset;
+        var span = this.Text.AsSpan(offset, length).TrimEnd(chars);
+        var nextEnd = offset + span.Length;
+        span = span.TrimStart(chars);
+        var nextOffset = nextEnd - span.Length;
+        return new StringSlice(this.Text, nextOffset..nextEnd);
+    }
+
+    public SplitInto SplitInto(char[] arraySeparator, char[]? arrayStop = default) {
+        var offset = this.Range.Start.Value;
+        var end = this.Range.End.Value;
+        var length = end - offset;
+        if (length == 0) {
+            return new SplitInto(this, this);
+        }
+        
         int posStop;
         if (arrayStop is not null && arrayStop.Length > 0) {
             posStop = this.IndexOfAny(arrayStop);
@@ -310,10 +352,11 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     ///     less 0 to return 2 parts the part Found (until before) and an empty Tail.</param>
     /// <returns>2 SubStrings the Found and the Tail.</returns>
     public SplitInto SplitIntoWhile(Func<char, int, int> decide) {
-        var (offset, length) = this.Range.GetOffsetAndLength(this.Text.Length);
+        var offset = this.Range.Start.Value;
+        var end = this.Range.End.Value;
+        var length = end - offset;
         if (length == 0) { return new SplitInto(this, this); }
 
-        var end = offset + length;
         for (int idx = offset; idx < end; idx++) {
             var result = decide(this.Text[idx], idx);
             if (result == 0) {
@@ -344,29 +387,44 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
         return t.StartsWith(o, StringComparison.Ordinal);
     }
 
-    public bool Equals(string other, StringComparison stringComparison) {
+    public bool Equals(string other, StringComparison comparisonType = StringComparison.Ordinal) {
         var t = this.AsSpan();
         var o = other.AsSpan();
         if (t.Length != o.Length) { return false; }
-        return t.StartsWith(o, stringComparison);
+        return t.StartsWith(o, comparisonType);
     }
 
-    public bool Equals(StringSlice other, StringComparison stringComparison) {
+    public bool Equals(StringSlice other, StringComparison comparisonType = StringComparison.Ordinal) {
         var t = this.AsSpan();
         var o = other.AsSpan();
         if (t.Length != o.Length) { return false; }
-        return t.StartsWith(o, stringComparison);
+        return t.StartsWith(o, comparisonType);
     }
 
-    public bool Equals(ReadOnlySpan<char> other, StringComparison stringComparison) {
+    public bool Equals(ReadOnlySpan<char> other, StringComparison comparisonType = StringComparison.Ordinal) {
         var t = this.AsSpan();
         if (t.Length != other.Length) { return false; }
-        return t.StartsWith(other, stringComparison);
+        return t.StartsWith(other, comparisonType);
     }
 
     public override int GetHashCode() => string.GetHashCode(this.AsSpan());
 
     public Enumerator GetEnumerator() => new Enumerator(this.AsSpan());
+
+    public StringSlice Replace(char from, char to) {
+        if (0 ==this.Length) { return this; }
+        if (from == to) { return this; }
+        if (this.Contains(from)) { return this; }
+        var offset = this.Range.Start.Value;
+        var end = this.Range.End.Value;
+        var length = end - offset;
+        var result = new char[length];
+        for (int idx = offset; idx < end; idx++) {
+            var c = this.Text[idx];
+            result[idx-offset] = c == from ? to : c;
+        }
+        return new StringSlice(new string(result));
+    }
 
     public ref struct Enumerator {
         private readonly ReadOnlySpan<char> _Span;

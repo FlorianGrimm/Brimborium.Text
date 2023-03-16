@@ -227,7 +227,6 @@ public class StringSplice {
         }
     }
 
-
     public IEnumerable<StringSplice> GetLstPartInRange(int start, int length) {
         if (!this.IsRangeValid(start, length)) {
             yield break;

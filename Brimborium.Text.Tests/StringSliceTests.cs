@@ -27,6 +27,31 @@ public class StringSliceTests {
     }
 
     [Fact()]
+    public void GetSubStringPosTest() {
+        {
+            var abcdefg = new StringSlice("abcdefg");
+            var sut = abcdefg.Substring(1);
+            Assert.Equal("bcdefg", sut.ToString());
+        }
+        {
+            var abcdefg = new StringSlice("abcdefg");
+            var bcdef = abcdefg.Substring(1);
+            var sut = bcdef.Substring(1);
+            Assert.Equal("cdefg", sut.ToString());
+        }
+        {
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => {
+                var sut = new StringSlice("abcdefg").Substring(-1);
+            });
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => {
+                var sut = new StringSlice("abcdefg").Substring(42);
+            });
+        }
+    }
+
+    [Fact()]
     public void GetSubStringPosLengthTest() {
         {
             var abcdefg = new StringSlice("abcdefg");
@@ -171,7 +196,9 @@ public class StringSliceTests {
             sut = sut.Substring(2..8);
             Assert.Equal(-1, sut.IndexOf('a', 1..^0));
             Assert.Equal(2, sut.IndexOf('c', 1..^0));
+            Assert.Equal('c', sut[2]);
             Assert.Equal(5, sut.IndexOf('f', 1..^0));
+            Assert.Equal('f', sut[5]);
             Assert.Equal(-1, sut.IndexOf('x', 1..^0));
         }
     }
@@ -203,6 +230,7 @@ public class StringSliceTests {
 
             Assert.Equal(-1, sut.IndexOfAny("azk".ToCharArray(), 1..^1));
             Assert.Equal(2, sut.IndexOfAny("czk".ToCharArray(), 1..^1));
+            Assert.Equal('c', sut[2]);
             Assert.Equal(-1, sut.IndexOfAny("fzk".ToCharArray(), 1..^1));
             Assert.Equal(-1, sut.IndexOfAny("xzk".ToCharArray(), 1..^1));
         }
@@ -239,7 +267,6 @@ public class StringSliceTests {
         }
     }
 
-
     [Fact()]
     public void SplitIntoEmptyInputTest() {
         {
@@ -249,6 +276,7 @@ public class StringSliceTests {
             Assert.Equal("", act.Tail.ToString());
         }
     }
+
     [Fact()]
     public async Task UsingInAsyncTest() {
         var sut = await doSomething(new StringSlice("abcdef"));
@@ -258,7 +286,7 @@ public class StringSliceTests {
             return subString.Substring(1..^1);
         }
     }
-    
+
     [Fact()]
     public void EqualTest() {
         {
@@ -293,7 +321,7 @@ public class StringSliceTests {
             Assert.True(sut.Equals("0123456789".AsSpan(), StringComparison.Ordinal));
         }
     }
-    
+
     [Fact()]
     public void SplitIntoWhileTest() {
         {
@@ -306,6 +334,19 @@ public class StringSliceTests {
             var sut = new StringSlice("0123456789ABCDEF");
             var act = sut.SplitIntoWhile((c, _) => char.IsDigit(c) ? 0 : -1);
             Assert.Equal("0123456789", act.Found.ToString());
+            Assert.Equal("", act.Tail.ToString());
+        }
+        {
+            var sut = new StringSlice("");
+            var act = sut.SplitIntoWhile((c, _) => char.IsDigit(c) ? 0 : -1);
+            Assert.Equal("", act.Found.ToString());
+            Assert.Equal("", act.Tail.ToString());
+        }
+        {
+            var sut = new StringSlice("aaaaaaa");
+            var act = sut.SplitIntoWhile((c, _) => c=='a' ? 0 : -1);
+            Assert.Equal("aaaaaaa", act.Found.ToString());
+            Assert.Equal("", act.Tail.ToString());
         }
     }
 
@@ -331,8 +372,6 @@ public class StringSliceTests {
         }
     }
 
-
-
     [Fact()]
     public void StartsWithTest() {
         {
@@ -344,6 +383,142 @@ public class StringSliceTests {
             var sut = new StringSlice("0123456789ABCDEF");
             Assert.True(sut.StartsWith("0123".AsSpan(), StringComparison.Ordinal));
             Assert.False(sut.StartsWith("X".AsSpan(), StringComparison.Ordinal));
+        }
+    }
+
+    [Fact()]
+    public void TrimStartTest() {
+        {
+            var sut = new StringSlice("  0123");
+            var act = sut.TrimStart();
+            Assert.Equal("0123", act.ToString());
+            Assert.Equal(2..6, act.Range);
+        }
+        {
+            var sut = new StringSlice("0123");
+            var act = sut.TrimStart();
+            Assert.Equal("0123", act.ToString());
+            Assert.Equal(0..4, act.Range);
+        }
+        {
+            var sut = new StringSlice("    ");
+            var act = sut.TrimStart();
+            Assert.Equal("", act.ToString());
+            Assert.Equal(4..4, act.Range);
+        }
+    }
+
+    [Fact()]
+    public void TrimEndTest() {
+        {
+            var sut = new StringSlice("  0123  ");
+            var act = sut.TrimEnd();
+            Assert.Equal("  0123", act.ToString());
+            Assert.Equal(0..6, act.Range);
+        }
+        {
+            var sut = new StringSlice("0123");
+            var act = sut.TrimEnd();
+            Assert.Equal("0123", act.ToString());
+            Assert.Equal(0..4, act.Range);
+        }
+        {
+            var sut = new StringSlice("    ");
+            var act = sut.TrimEnd();
+            Assert.Equal("", act.ToString());
+            Assert.Equal(0..0, act.Range);
+        }
+
+        {
+            var sut = new StringSlice("  0123  ");
+            var act = sut.TrimEnd(new char[] { ' ' });
+            Assert.Equal("  0123", act.ToString());
+            Assert.Equal(0..6, act.Range);
+        }
+        {
+            var sut = new StringSlice("0123");
+            var act = sut.TrimEnd(new char[] { ' ' });
+            Assert.Equal("0123", act.ToString());
+            Assert.Equal(0..4, act.Range);
+        }
+        {
+            var sut = new StringSlice("    ");
+            var act = sut.TrimEnd(new char[] { ' ' });
+            Assert.Equal("", act.ToString());
+            Assert.Equal(0..0, act.Range);
+        }
+    }
+
+    [Fact()]
+    public void TrimTest() {
+        {
+            var sut = new StringSlice("  0123    ");
+            var act = sut.Trim();
+            Assert.Equal("0123", act.ToString());
+            Assert.Equal(2..6, act.Range);
+        }
+        {
+            var sut = new StringSlice("0123");
+            var act = sut.Trim();
+            Assert.Equal("0123", act.ToString());
+            Assert.Equal(0..4, act.Range);
+        }
+        {
+            var sut = new StringSlice("    ");
+            var act = sut.Trim();
+            Assert.Equal("", act.ToString());
+            Assert.Equal(0..0, act.Range);
+        }
+
+        {
+            var sut = new StringSlice("  0123  ");
+            var act = sut.Trim(new char[] { ' ' });
+            Assert.Equal("0123", act.ToString());
+            Assert.Equal(2..6, act.Range);
+        }
+        {
+            var sut = new StringSlice("0123");
+            var act = sut.Trim(new char[] { ' ' });
+            Assert.Equal("0123", act.ToString());
+            Assert.Equal(0..4, act.Range);
+        }
+        {
+            var sut = new StringSlice("    ");
+            var act = sut.Trim(new char[] { ' ' });
+            Assert.Equal("", act.ToString());
+            Assert.Equal(0..0, act.Range);
+        }
+    }
+
+    [Fact()]
+    public void TrimWhileTest() {
+        {
+            var sut = new StringSlice("  0123");
+            var act = sut.TrimWhile(decide);
+            Assert.Equal("0123", act.ToString());
+            Assert.Equal(2..6, act.Range);
+        }
+        {
+            var sut = new StringSlice("0123");
+            var act = sut.TrimWhile(decide);
+            Assert.Equal("0123", act.ToString());
+            Assert.Equal(0..4, act.Range);
+        }
+        {
+            var sut = new StringSlice("    ");
+            var act = sut.TrimWhile(decide);
+            Assert.Equal("", act.ToString());
+            Assert.Equal(4..4, act.Range);
+        }
+        {
+            var sut = new StringSlice("");
+            var act = sut.TrimWhile(decide);
+            Assert.Equal("", act.ToString());
+            Assert.Equal(0..0, act.Range);
+        }
+        int decide(char value, int _) {
+            if (value == ' ') return 0;
+            return 1;
         }
     }
 }
