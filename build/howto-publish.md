@@ -55,3 +55,7 @@ nbgv set-version prepare-release 1.0.2
 nbgv set-version 1.0.3
 
 dotnet build --configuration Release /p:PublicRelease=true
+
+nuget
+https://www.nuget.org/packages/manage/upload
+dotnet nuget push Contoso.08.28.22.001.Test.1.0.0.nupkg --api-key qz2jga8pl3dvn2akksyquwcs9ygggg4exypy3bhxy6w6x6 --source https://api.nuget.org/v3/index.json
