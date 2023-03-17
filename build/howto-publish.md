@@ -36,7 +36,7 @@ dir Brimborium.Text\nupkg\*.snupkg | Remove-Item
 
 dotnet test 
 
-nbgv set-version 1.0.3
+nbgv set-version 1.0.4
 dotnet clean
 dotnet pack --configuration Release /p:PublicRelease=true
 

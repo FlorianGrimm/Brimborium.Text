@@ -49,7 +49,7 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
             return this.Text[offset + index];
         }
     }
-    
+
     public StringSlice Substring(int start) {
         if (start < 0) { throw new ArgumentOutOfRangeException(nameof(start)); }
         var thisOffset = this.Range.Start.Value;
@@ -250,7 +250,7 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
         var offset = this.Range.Start.Value;
         var end = this.Range.End.Value;
         var length = end - offset;
-        
+
         if (length == 0) { return this; }
         for (int idx = offset; idx < end; idx++) {
             var decision = decide(this.Text[idx], idx - offset);
@@ -298,7 +298,6 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
         return new StringSlice(this.Text, nextOffset..nextEnd);
     }
 
-
     public StringSlice Trim(char[] chars) {
         var offset = this.Range.Start.Value;
         var end = this.Range.End.Value;
@@ -317,7 +316,7 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
         if (length == 0) {
             return new SplitInto(this, this);
         }
-        
+
         int posStop;
         if (arrayStop is not null && arrayStop.Length > 0) {
             posStop = this.IndexOfAny(arrayStop);
@@ -412,18 +411,36 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     public Enumerator GetEnumerator() => new Enumerator(this.AsSpan());
 
     public StringSlice Replace(char from, char to) {
-        if (0 ==this.Length) { return this; }
+        if (0 == this.Length) { return this; }
         if (from == to) { return this; }
-        if (this.Contains(from)) { return this; }
+        if (!this.Contains(from)) { return this; }
         var offset = this.Range.Start.Value;
         var end = this.Range.End.Value;
         var length = end - offset;
         var result = new char[length];
         for (int idx = offset; idx < end; idx++) {
             var c = this.Text[idx];
-            result[idx-offset] = c == from ? to : c;
+            result[idx - offset] = c == from ? to : c;
         }
         return new StringSlice(new string(result));
+    }
+
+    public StringSlice ReadWhile(Func<char, int, bool> predicate) {
+        var offset = this.Range.Start.Value;
+        var end = this.Range.End.Value;
+        var length = end - offset;
+        var found = false;
+        for (int idx = offset; idx < end; idx++) {
+            if (!predicate(this.Text[idx], idx)) {
+                return new StringSlice(this.Text, new Range(offset, idx));
+            }
+            found = true;
+        }
+        if (found) {
+            return this;
+        } else {
+            return new StringSlice(this.Text, new Range(offset, offset));
+        }
     }
 
     public ref struct Enumerator {
@@ -456,7 +473,5 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     public static implicit operator StringSlice(string? value)
         => new StringSlice(value ?? string.Empty);
 }
-
 public readonly record struct SplitInto(StringSlice Found, StringSlice Tail);
-
 public record struct StringSliceState(string Text, Range Range);

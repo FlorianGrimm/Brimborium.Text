@@ -344,7 +344,7 @@ public class StringSliceTests {
         }
         {
             var sut = new StringSlice("aaaaaaa");
-            var act = sut.SplitIntoWhile((c, _) => c=='a' ? 0 : -1);
+            var act = sut.SplitIntoWhile((c, _) => c == 'a' ? 0 : -1);
             Assert.Equal("aaaaaaa", act.Found.ToString());
             Assert.Equal("", act.Tail.ToString());
         }
@@ -521,4 +521,48 @@ public class StringSliceTests {
             return 1;
         }
     }
+
+    [Fact]
+    public void ReplaceTest() {
+        {
+            var sut = new StringSlice("0123456789ABCDEF");
+            var act = sut.Replace('0', 'X');
+            Assert.Equal("X123456789ABCDEF", act.ToString());
+        }
+        {
+            var sut = new StringSlice("0023456789ABCD00");
+            var act = sut.Replace('0', 'X');
+            Assert.Equal("XX23456789ABCDXX", act.ToString());
+        }
+        {
+            var sut = new StringSlice("0123456789ABCDEF");
+            var act = sut.Replace('X', 'Y');
+            Assert.Equal("0123456789ABCDEF", act.ToString());
+        }
+    }
+
+    [Fact]
+    public void ReadWhileTest() {
+        {
+            var sut = new StringSlice("");
+            var act = sut.ReadWhile((value, idx) => { return char.IsDigit(value) || (idx == 0 && (value == '-' || value == '+')); });
+            Assert.Equal("", act.ToString());
+        }
+        {
+            var sut = new StringSlice("0123456789ABCDEF");
+            var act = sut.ReadWhile((value, idx) => { return char.IsDigit(value) || (idx == 0 && (value == '-' || value == '+')); });
+            Assert.Equal("0123456789", act.ToString());
+        }
+        {
+            var sut = new StringSlice("-1234 abc");
+            var act = sut.ReadWhile((value, idx) => { return char.IsDigit(value) || (idx == 0 && (value == '-' || value == '+')); });
+            Assert.Equal("-1234", act.ToString());
+        }
+        {
+            var sut = new StringSlice("ABCDEF");
+            var act = sut.ReadWhile((value, idx) => { return char.IsDigit(value) || (idx == 0 && (value == '-' || value == '+')); });
+            Assert.Equal("", act.ToString());
+        }
+    }
 }
+
