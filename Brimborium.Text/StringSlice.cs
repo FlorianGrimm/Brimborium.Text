@@ -119,6 +119,15 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
         }
     }
 
+    public bool IsEmpty {
+        get {
+            // shortcut because this.Range is from start
+            var offset = this.Range.Start.Value;
+            var end = this.Range.End.Value;
+            return offset == end;
+        }
+    }
+
     public override string ToString() {
         var offset = this.Range.Start.Value;
         var end = this.Range.End.Value;
