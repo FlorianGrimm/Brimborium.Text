@@ -1,3 +1,5 @@
+using System.Net.WebSockets;
+
 namespace Brimborium.Text;
 
 public class StringSliceTests {
@@ -320,6 +322,12 @@ public class StringSliceTests {
             var sut = new StringSlice("0123456789");
             Assert.True(sut.Equals("0123456789".AsSpan(), StringComparison.Ordinal));
         }
+        {
+            var s = "1234";
+            var a = s.AsStringSlice(1);
+            var b = s.AsStringSlice(1);
+            Assert.True(a.Equals(b));
+        }
     }
 
     [Fact()]
@@ -370,6 +378,19 @@ public class StringSliceTests {
                 var act = sut[-1];
             });
         }
+        {
+            var txt = "012345";
+            var sut = new StringSlice(txt);
+            var act = sut[3];
+            Assert.Equal('3', act);
+        }
+        {
+            var txt = "012345";
+            var sut = new StringSlice(txt).Substring(1).Substring(1);
+            var act = sut[1];
+            Assert.Equal('3', act);
+        }
+
     }
 
     [Fact()]

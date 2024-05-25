@@ -53,13 +53,11 @@ public static class StringSliceExtension {
         int max,
         out StringSlice result
         ) {
-        var oldStart = slice.Range.Start.Value;
-        var end = slice.Range.End.Value;
-        var current = oldStart;
-        bool found = false;
-        
-        for (; 0 < max && current < end; current++, max--) {
-            found = false;
+        var startSlice = slice;
+        var current = 0;
+        var length = slice.Length;
+        for (; 0 < max && current < length; current++, max--) {
+            bool found = false;
             foreach (var m in matches) {
                 if (slice[current] == m) {
                     found = true;
@@ -67,14 +65,16 @@ public static class StringSliceExtension {
                 }
             }
             if (!found) {
-                result = slice.Substring(oldStart, current - oldStart);
+                result = slice.Substring(0, current);
                 slice = slice.Substring(current);
-                return oldStart != slice.Range.Start.Value;
+                return startSlice != slice;
             }
         }
-        result = slice.Substring(oldStart, current - oldStart);
-        slice = slice.Substring(current);
-        return oldStart != slice.Range.Start.Value;
+        {
+            result = slice.Substring(0, current);
+            slice = slice.Substring(current);
+            return startSlice != slice;
+        }
     }
     public static bool ReadWhileNotMatches(
         this char[] matches,
@@ -82,10 +82,12 @@ public static class StringSliceExtension {
         int max,
         out StringSlice result
         ) {
+        var startSlice = slice;
         var oldStart = slice.Range.Start.Value;
         var end = slice.Range.End.Value;
-        var current = oldStart;
-        for (; 0 < max && current < end; current++, max--) {
+        var current = 0;
+        var length = slice.Length;
+        for (; 0 < max && current < length; current++, max--) {
             bool found = false;
             foreach (var m in matches) {
                 if (slice[current] == m) {
@@ -94,13 +96,15 @@ public static class StringSliceExtension {
                 }
             }
             if (found) {
-                result = slice.Substring(oldStart, current - oldStart);
+                result = slice.Substring(0, current);
                 slice = slice.Substring(current);
                 return oldStart != slice.Range.Start.Value;
             }
         }
-        result = slice.Substring(oldStart, current - oldStart);
-        slice = slice.Substring(current);
-        return oldStart != slice.Range.Start.Value;
+        {
+            result = slice.Substring(0, current);
+            slice = slice.Substring(current);
+            return oldStart != slice.Range.Start.Value;
+        }
     }
 }

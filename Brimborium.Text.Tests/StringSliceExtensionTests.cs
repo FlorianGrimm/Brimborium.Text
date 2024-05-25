@@ -92,9 +92,36 @@ public class StringSliceExtensionTests {
             Assert.Equal("aab", match.ToString());
             Assert.Equal("ccc", slice.ToString());
         }
-
         {
             var slice = "aabccc".AsStringSlice();
+            var matches = new char[] { 'c' };
+            Assert.True(matches.ReadWhileNotMatches(ref slice, 4, out var match));
+            Assert.Equal("aab", match.ToString());
+            Assert.Equal("ccc", slice.ToString());
+        }
+        {
+            var slice = "123456aabccc".AsStringSlice().Substring(6);
+            var matches = new char[] { 'c' };
+            Assert.True(matches.ReadWhileNotMatches(ref slice, 1, out var match));
+            Assert.Equal("a", match.ToString());
+            Assert.Equal("abccc", slice.ToString());
+        }
+        {
+            var slice = "123456aabccc".AsStringSlice().Substring(6);
+            var matches = new char[] { 'c' };
+            Assert.True(matches.ReadWhileNotMatches(ref slice, 2, out var match));
+            Assert.Equal("aa", match.ToString());
+            Assert.Equal("bccc", slice.ToString());
+        }
+        {
+            var slice = "123456aabccc".AsStringSlice().Substring(6);
+            var matches = new char[] { 'c' };
+            Assert.True(matches.ReadWhileNotMatches(ref slice, 3, out var match));
+            Assert.Equal("aab", match.ToString());
+            Assert.Equal("ccc", slice.ToString());
+        }
+        {
+            var slice = "123456aabccc".AsStringSlice().Substring(6);
             var matches = new char[] { 'c' };
             Assert.True(matches.ReadWhileNotMatches(ref slice, 4, out var match));
             Assert.Equal("aab", match.ToString());
