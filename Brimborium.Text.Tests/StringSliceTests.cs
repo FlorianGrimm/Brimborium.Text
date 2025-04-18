@@ -680,6 +680,77 @@ public class StringSliceTests {
         // Original should remain unchanged
         Assert.Equal("Hello", original.ToString());
     }
+
+    [Fact()]
+    public void EndsWithTest() {
+        {
+            var sut = new StringSlice("0123456789ABCDEF");
+            Assert.True(sut.EndsWith("CDEF", StringComparison.Ordinal));
+            Assert.False(sut.EndsWith("X", StringComparison.Ordinal));
+        }
+        {
+            var sut = new StringSlice("0123456789ABCDEF", 0..12); // "0123456789AB"
+            Assert.True(sut.EndsWith("AB", StringComparison.Ordinal));
+            Assert.False(sut.EndsWith("ABC", StringComparison.Ordinal));
+        }
+        {
+            var sut = new StringSlice("Hello WORLD");
+            Assert.True(sut.EndsWith("world", StringComparison.OrdinalIgnoreCase));
+            Assert.False(sut.EndsWith("world", StringComparison.Ordinal));
+        }
+    }
+
+    [Fact()]
+    public void EndsWithStringSliceTest() {
+        {
+            var sut = new StringSlice("0123456789ABCDEF");
+            var search = new StringSlice("CDEF");
+            Assert.True(sut.EndsWith(search, StringComparison.Ordinal));
+        }
+        {
+            var sut = new StringSlice("0123456789ABCDEF", 0..12); // "0123456789AB"
+            var search = new StringSlice("ABC");
+            Assert.False(sut.EndsWith(search, StringComparison.Ordinal));
+        }
+        {
+            var sut = new StringSlice("Hello WORLD");
+            var search = new StringSlice("WORLD");
+            Assert.True(sut.EndsWith(search, StringComparison.Ordinal));
+            Assert.True(sut.EndsWith(new StringSlice("world"), StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    [Fact()]
+    public void EndsWithSpanTest() {
+        {
+            var sut = new StringSlice("0123456789ABCDEF");
+            Assert.True(sut.EndsWith("CDEF".AsSpan(), StringComparison.Ordinal));
+            Assert.False(sut.EndsWith("X".AsSpan(), StringComparison.Ordinal));
+        }
+        {
+            var sut = new StringSlice("0123456789ABCDEF", 0..12); // "0123456789AB"
+            Assert.True(sut.EndsWith("AB".AsSpan(), StringComparison.Ordinal));
+            Assert.False(sut.EndsWith("ABC".AsSpan(), StringComparison.Ordinal));
+        }
+        {
+            var sut = new StringSlice("Hello WORLD");
+            Assert.True(sut.EndsWith("world".AsSpan(), StringComparison.OrdinalIgnoreCase));
+            Assert.False(sut.EndsWith("world".AsSpan(), StringComparison.Ordinal));
+        }
+    }
+
+    [Theory]
+    [InlineData("Hello World", "World", StringComparison.Ordinal, true)]
+    [InlineData("Hello World", "world", StringComparison.Ordinal, false)]
+    [InlineData("Hello World", "world", StringComparison.OrdinalIgnoreCase, true)]
+    [InlineData("Hello World", "Hello", StringComparison.Ordinal, false)]
+    [InlineData("", "", StringComparison.Ordinal, true)]
+    [InlineData("A", "", StringComparison.Ordinal, true)]
+    [InlineData("", "A", StringComparison.Ordinal, false)]
+    public void EndsWithTheory(string input, string search, StringComparison comparison, bool expected) {
+        var sut = new StringSlice(input);
+        Assert.Equal(expected, sut.EndsWith(search, comparison));
+    }
 }
 
 public class StringSliceAsSpanTests {

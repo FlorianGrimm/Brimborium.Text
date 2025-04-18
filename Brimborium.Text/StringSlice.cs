@@ -459,6 +459,33 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
         => this.AsSpan().StartsWith(search, comparisonType);
 
     /// <summary>
+    /// Determines whether this slice ends with the specified string.
+    /// </summary>
+    /// <param name="search">The string to compare.</param>
+    /// <param name="comparisonType">One of the enumeration values that specifies the rules for the comparison.</param>
+    /// <returns>true if this slice ends with <paramref name="search"/>; otherwise, false.</returns>
+    public bool EndsWith(string search, StringComparison comparisonType = StringComparison.Ordinal)
+        => this.AsSpan().EndsWith(search, comparisonType);
+
+    /// <summary>
+    /// Determines whether this slice ends with the specified StringSlice.
+    /// </summary>
+    /// <param name="search">The StringSlice to compare.</param>
+    /// <param name="comparisonType">One of the enumeration values that specifies the rules for the comparison.</param>
+    /// <returns>true if this slice ends with the characters in <paramref name="search"/>; otherwise, false.</returns>
+    public bool EndsWith(StringSlice search, StringComparison comparisonType = StringComparison.Ordinal)
+        => this.AsSpan().EndsWith(search.AsSpan(), comparisonType);
+
+    /// <summary>
+    /// Determines whether this slice ends with the specified span of characters.
+    /// </summary>
+    /// <param name="search">The span of characters to compare.</param>
+    /// <param name="comparisonType">One of the enumeration values that specifies the rules for the comparison.</param>
+    /// <returns>true if this slice ends with the characters in <paramref name="search"/>; otherwise, false.</returns>
+    public bool EndsWith(ReadOnlySpan<char> search, StringComparison comparisonType = StringComparison.Ordinal)
+        => this.AsSpan().EndsWith(search, comparisonType);
+
+    /// <summary>
     /// Returns a new Value with all leading white-space characters removed.
     /// </summary>
     /// <returns>A new Value that starts with the first non-white-space character in this slice.</returns>

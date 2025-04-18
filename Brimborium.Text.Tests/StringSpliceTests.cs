@@ -215,7 +215,7 @@ public class StringSpliceTests {
     }
 
     [Fact]
-    public void T001CreatePartUp() {
+    public void CreatePart_OrderedUp_Success() {
         var sut = new StringSplice("Hello World");
 
         var part22 = sut.CreatePart(2, 2);
@@ -229,7 +229,7 @@ public class StringSpliceTests {
             ?? throw new Exception("sut.GetArrayPart() is null")));
     }
     [Fact]
-    public void T002CreatePartDown() {
+    public void CreatePart_OrderedDown_Success() {
         var sut = new StringSplice("Hello World");
 
         var part81 = sut.CreatePart(8, 1);
@@ -244,7 +244,7 @@ public class StringSpliceTests {
     }
 
     [Fact]
-    public void T003CreatePartUp() {
+    public void CreatePart_MultiplePartsOrderedUp_Success() {
         var sut = new StringSplice("Hello World");
         var act = new List<StringSplice>();
         foreach (int start in new int[] { 0, 8, 6, 4 }) {
@@ -262,7 +262,7 @@ public class StringSpliceTests {
     }
 
     [Fact]
-    public void T004CreatePartOverlapUp() {
+    public void CreatePart_OverlappingRanges_ReturnsNull1() {
         var sut = new StringSplice("Hello World");
 
         Assert.NotNull(sut.CreatePart(4, 4));
@@ -271,13 +271,13 @@ public class StringSpliceTests {
     }
 
     [Fact]
-    public void T005CreatePartLength() {
+    public void CreatePart_InvalidLength_ReturnsNull() {
         var sut = new StringSplice("Hello World");
         Assert.Null(sut.CreatePart(4, 10));
     }
 
     [Fact]
-    public void T006GetOrCreatePart() {
+    public void GetOrCreatePart_ExistingRange_ReturnsSameInstance() {
         var sut = new StringSplice("Hello World");
         var a = sut.GetOrCreatePart(4, 4);
         Assert.NotNull(a);
@@ -292,13 +292,10 @@ public class StringSpliceTests {
 
         var c = sut.GetOrCreatePart(4, 40);
         Assert.Null(c);
-
     }
 
-
-
     [Fact]
-    public void T011BuildReplacement() {
+    public void BuildReplacement_SinglePart_Success() {
         var sut = new StringSplice("Hello World");
         var part = sut.CreatePart(1, 1);
         if (part is null) { throw new Exception("part is null"); }
@@ -311,7 +308,7 @@ public class StringSpliceTests {
     }
 
     [Fact]
-    public void T012BuildReplacement() {
+    public void BuildReplacement_NestedParts_Success() {
         var sut = new StringSplice("123BC");
         //var sutRange = new Range(1, new Index(1, true),
         var part1 = sut.CreatePart(1..^1);
@@ -327,7 +324,7 @@ public class StringSpliceTests {
     }
 
     [Fact]
-    public void T013BuildReplacement() {
+    public void BuildReplacement_SubString_PreservesOriginal() {
         var sut = new StringSplice("123BC");
 
         var part = new StringSplice(sut.AsSubString(), 1..^1);
@@ -344,7 +341,7 @@ public class StringSpliceTests {
     }
 
     [Fact]
-    public void T014BuildReplacement() {
+    public void BuildReplacement_MultipleZeroLengthParts_Success() {
         var sut = new StringSplice("15");
 
         sut.CreatePart(1, 0)?.SetReplacementText("2");
@@ -353,8 +350,6 @@ public class StringSpliceTests {
 
         Assert.Equal("12345", sut.BuildReplacement());
     }
-
-    
 
      [Fact]
     public void Constructor_WithString_CreatesValidInstance()
@@ -480,7 +475,7 @@ public class StringSpliceTests {
     }
 
     [Fact]
-    public void CreatePart_OverlappingRanges_ReturnsNull()
+    public void CreatePart_OverlappingRanges_ReturnsNull2()
     {
         // Arrange
         var splice = new StringSplice("Hello World");
