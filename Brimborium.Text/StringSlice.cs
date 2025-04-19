@@ -123,6 +123,28 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     }
 
     /// <summary>
+    /// Get the slice of the string defined by the specified range.
+    /// </summary>
+    /// <param name="range">The range</param>
+    /// <returns>The slice</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when the index is negative or greater than or equal to the length of the slice.
+    /// </exception>
+    public StringSlice this[Range range] {
+        get {
+            var (offset, length) = this.Range.GetOffsetAndLength(this.Text.Length);
+            var end = offset + length;
+            var (rangeOffset, rangeLength) = range.GetOffsetAndLength(length);
+            if (rangeOffset < 0) { throw new ArgumentOutOfRangeException(nameof(range)); }
+            if (length < rangeLength) { throw new ArgumentOutOfRangeException(nameof(range)); }
+            return new StringSlice(
+                this.Text,
+                new Range(offset + rangeOffset, offset + rangeOffset + rangeLength)
+                );
+        }
+    }
+
+    /// <summary>
     /// Creates a new Value that is a substring of this slice, starting at the specified index.
     /// </summary>
     /// <param name="start">The zero-based starting character position of the substring in this slice.</param>
@@ -929,6 +951,9 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     /// <returns>A new <see cref="ImmutableStringSlice"/> with the same text and range as this string slice.</returns>
     public ImmutableStringSlice AsImmutableStringSlice() => new ImmutableStringSlice(this.Text, this.Range);
 
+    public static bool Equals(StringSlice a, StringSlice b, StringComparison ordinal) {
+        return a.Equals(b, ordinal);
+    }
 }
 
 public readonly record struct SplitInto(StringSlice Found, StringSlice Tail);

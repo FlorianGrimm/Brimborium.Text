@@ -29,6 +29,47 @@ public class StringSliceTests {
     }
 
     [Fact()]
+    public void RangeTest() {
+        {
+            var sut = new StringSlice("abcdefg");
+            var act = sut[1..3];
+            Assert.Equal("bc", act.ToString());
+        }
+
+        {
+            var sut = new StringSlice("abcdefg", 1..^0);
+            var act = sut[1..3];
+            Assert.Equal("cd", act.ToString());
+        }
+
+        {
+            var sut = new StringSlice("abcdefg", 4..^0);
+            Assert.Equal("efg", sut.ToString());
+
+            var act = sut[1..^0];
+            Assert.Equal("fg", act.ToString());
+        }
+
+        {
+            var sut = new StringSlice("abcdefg", 4..^0);
+            Assert.Equal("efg", sut.ToString());
+
+            var act1 = sut[1..3];
+            Assert.Equal("fg", act1.ToString());
+        }
+
+
+        {
+            var sut = new StringSlice("abcdefg", 5..^0);
+            Assert.Equal("fg", sut.ToString());
+
+            Assert.Throws<ArgumentOutOfRangeException> (() => {
+                var act1 = sut[1..3];
+            });
+        }
+    }
+
+    [Fact()]
     public void GetSubStringPosTest() {
         {
             var abcdefg = new StringSlice("abcdefg");
