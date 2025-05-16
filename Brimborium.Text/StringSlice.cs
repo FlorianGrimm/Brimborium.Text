@@ -29,6 +29,10 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     /// </summary>
     public static StringSlice Empty => new StringSlice(string.Empty);
 
+    private readonly string _Text = String.Empty;
+
+    private readonly Range _Range = Range.All;
+
     /// <summary>
     /// Gets the underlying string that this slice references.
     /// </summary>
@@ -38,7 +42,7 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     /// </remarks>
     [System.Text.Json.Serialization.JsonInclude()]
     [System.Text.Json.Serialization.JsonPropertyOrder(0)]
-    public readonly string Text = String.Empty;
+    public string Text => this._Text;
 
     /// <summary>
     /// Gets the range that defines the boundaries of this slice within the original string.
@@ -46,14 +50,14 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     /// <remarks>
     /// The range values are always from the start of the string (not from end).
     /// </remarks>
-    public readonly Range Range;
+    public readonly Range Range => this._Range;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StringSlice"/> struct with an empty string.
     /// </summary>
     public StringSlice() {
-        this.Text = string.Empty;
-        this.Range = new Range(0, 0);
+        this._Text = string.Empty;
+        this._Range = new Range(0, 0);
     }
 
     /// <summary>
@@ -66,8 +70,8 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     public StringSlice(
        string text
      ) {
-        this.Text = text;
-        this.Range = new Range(0, text.Length);
+        this._Text = text ?? string.Empty;
+        this._Range = new Range(0, this.Text.Length);
     }
 
     /// <summary>
@@ -97,8 +101,8 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
         if (text.Length < range.End.Value) { throw new ArgumentOutOfRangeException(nameof(range)); }
         if (range.End.Value < range.Start.Value) { throw new ArgumentOutOfRangeException(nameof(range)); }
 
-        this.Text = text;
-        this.Range = range;
+        this._Text = text;
+        this._Range = range;
     }
 
     /// <summary>
@@ -143,6 +147,15 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
                 );
         }
     }
+
+    /// <summary>
+    /// Calculates the start offset and length of the range object using a collection length.
+    /// </summary>
+    /// <returns>The start offset and length of the range.</returns>
+    public (int Offset, int Length) GetOffsetAndLength()
+        => (this.Text is null)
+            ? (Offset: 0, Length: 0)
+            : this.Range.GetOffsetAndLength(this.Text.Length);
 
     /// <summary>
     /// Creates a new Value that is a substring of this slice, starting at the specified index.
@@ -301,6 +314,7 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     /// </summary>
     /// <returns>A readonly span representing the same range of characters as this slice.</returns>
     public ReadOnlySpan<char> AsSpan() {
+        if (this.Text is null) { return ReadOnlySpan<char>.Empty; }
         var (offset, length) = this.Range.GetOffsetAndLength(this.Text.Length);
         return this.Text.AsSpan(offset, length);
     }

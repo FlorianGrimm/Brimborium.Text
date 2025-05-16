@@ -1,8 +1,12 @@
-using System.Net.WebSockets;
-
 namespace Brimborium.Text;
 
 public class StringSliceTests {
+    [Fact]
+    public void Struct_Ctor_Empty() {
+        StringSlice act=new();
+        Assert.NotNull(act.Text);
+    }
+
     [Fact]
     public void SubString_Ctor() {
         {
@@ -791,6 +795,25 @@ public class StringSliceTests {
     public void EndsWithTheory(string input, string search, StringComparison comparison, bool expected) {
         var sut = new StringSlice(input);
         Assert.Equal(expected, sut.EndsWith(search, comparison));
+    }
+
+    [Fact]
+    public void GetOffsetAndLength_ReturnsCorrectValues()
+    {
+        // Arrange
+        var slice1 = new StringSlice("Hello World", 2..7);  // "llo W"
+        var slice2 = new StringSlice("Test", 0..4);         // "Test"
+        var slice3 = new StringSlice("ABC", 1..1);          // ""
+
+        // Act
+        var result1 = slice1.GetOffsetAndLength();
+        var result2 = slice2.GetOffsetAndLength();
+        var result3 = slice3.GetOffsetAndLength();
+
+        // Assert
+        Assert.Equal((2, 5), result1);
+        Assert.Equal((0, 4), result2);
+        Assert.Equal((1, 0), result3);
     }
 }
 

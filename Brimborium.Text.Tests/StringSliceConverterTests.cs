@@ -20,7 +20,7 @@ public class StringSliceConverterTests {
         JsonSerializerOptions options = new(System.Text.Json.JsonSerializerOptions.Default) { WriteIndented = false };
 
         var act = System.Text.Json.JsonSerializer.Serialize(sut, options);
-        Assert.Equal("""{"Text":"abc"}""", act);
+        Assert.Equal("""{"Text":"abc","Range":{"Start":{"Value":0,"IsFromEnd":false},"End":{"Value":3,"IsFromEnd":false}}}""", act);
     }
 
     [Fact]
