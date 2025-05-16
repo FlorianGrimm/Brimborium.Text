@@ -8,11 +8,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.5" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Brimborium.Text\Brimborium.Text.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <PackageReference Update="Nerdbank.GitVersioning" Version="3.7.115" />
   </ItemGroup>
 
 </Project>

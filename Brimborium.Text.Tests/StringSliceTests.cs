@@ -1,3 +1,5 @@
+using System.Net.WebSockets;
+
 namespace Brimborium.Text;
 
 public class StringSliceTests {
@@ -24,6 +26,47 @@ public class StringSliceTests {
     [Fact()]
     public void EmptyTest() {
         Assert.Equal("", StringSlice.Empty.ToString());
+    }
+
+    [Fact()]
+    public void RangeTest() {
+        {
+            var sut = new StringSlice("abcdefg");
+            var act = sut[1..3];
+            Assert.Equal("bc", act.ToString());
+        }
+
+        {
+            var sut = new StringSlice("abcdefg", 1..^0);
+            var act = sut[1..3];
+            Assert.Equal("cd", act.ToString());
+        }
+
+        {
+            var sut = new StringSlice("abcdefg", 4..^0);
+            Assert.Equal("efg", sut.ToString());
+
+            var act = sut[1..^0];
+            Assert.Equal("fg", act.ToString());
+        }
+
+        {
+            var sut = new StringSlice("abcdefg", 4..^0);
+            Assert.Equal("efg", sut.ToString());
+
+            var act1 = sut[1..3];
+            Assert.Equal("fg", act1.ToString());
+        }
+
+
+        {
+            var sut = new StringSlice("abcdefg", 5..^0);
+            Assert.Equal("fg", sut.ToString());
+
+            Assert.Throws<ArgumentOutOfRangeException> (() => {
+                var act1 = sut[1..3];
+            });
+        }
     }
 
     [Fact()]
@@ -320,6 +363,12 @@ public class StringSliceTests {
             var sut = new StringSlice("0123456789");
             Assert.True(sut.Equals("0123456789".AsSpan(), StringComparison.Ordinal));
         }
+        {
+            var s = "1234";
+            var a = s.AsStringSlice(1);
+            var b = s.AsStringSlice(1);
+            Assert.True(a.Equals(b));
+        }
     }
 
     [Fact()]
@@ -370,6 +419,19 @@ public class StringSliceTests {
                 var act = sut[-1];
             });
         }
+        {
+            var txt = "012345";
+            var sut = new StringSlice(txt);
+            var act = sut[3];
+            Assert.Equal('3', act);
+        }
+        {
+            var txt = "012345";
+            var sut = new StringSlice(txt).Substring(1).Substring(1);
+            var act = sut[1];
+            Assert.Equal('3', act);
+        }
+
     }
 
     [Fact()]
@@ -517,7 +579,10 @@ public class StringSliceTests {
             Assert.Equal(0..0, act.Range);
         }
         int decide(char value, int _) {
-            if (value == ' ') return 0;
+            if (value == ' ') {
+                return 0;
+            }
+
             return 1;
         }
     }
@@ -564,5 +629,273 @@ public class StringSliceTests {
             Assert.Equal("", act.ToString());
         }
     }
+
+    [Fact]
+    public void AsImmutableStringSlice_ReturnsEquivalentImmutableStringSlice() {
+        // Arrange
+        var stringSlice = new StringSlice("Hello World", 0..5);
+
+        // Act
+        var immutableSlice = stringSlice.AsImmutableStringSlice();
+
+        // Assert
+        Assert.Equal("Hello", immutableSlice.ToString());
+        Assert.Equal(stringSlice.Text, immutableSlice.Text);
+        Assert.Equal(stringSlice.Range, immutableSlice.Range);
+    }
+
+    [Fact]
+    public void AsImmutableStringSlice_WithEmptySlice_ReturnsEmptyImmutableStringSlice() {
+        // Arrange
+        var stringSlice = new StringSlice("Hello", 2..2);
+
+        // Act
+        var immutableSlice = stringSlice.AsImmutableStringSlice();
+
+        // Assert
+        Assert.Equal("", immutableSlice.ToString());
+        Assert.Equal(0, immutableSlice.Length);
+        Assert.Equal(2, immutableSlice.Range.Start.Value);
+        Assert.Equal(2, immutableSlice.Range.End.Value);
+    }
+
+    [Fact]
+    public void AsImmutableStringSlice_WithMiddleRange_ReturnsCorrectImmutableStringSlice() {
+        // Arrange
+        var stringSlice = new StringSlice("Hello World", 6..11);
+
+        // Act
+        var immutableSlice = stringSlice.AsImmutableStringSlice();
+
+        // Assert
+        Assert.Equal("World", immutableSlice.ToString());
+        Assert.Equal(5, immutableSlice.Length);
+        Assert.Equal(6, immutableSlice.Range.Start.Value);
+        Assert.Equal(11, immutableSlice.Range.End.Value);
+    }
+
+    [Fact]
+    public void AsImmutableStringSlice_PreservesOriginalText() {
+        // Arrange
+        var originalText = "Hello World";
+        var stringSlice = new StringSlice(originalText, 0..5);
+
+        // Act
+        var immutableSlice = stringSlice.AsImmutableStringSlice();
+
+        // Assert
+        Assert.Same(originalText, immutableSlice.Text);  // Verifies same string instance is referenced
+    }
+
+    [Fact]
+    public void AsImmutableStringSlice_AndExplicitConversion_ReturnEquivalentResults() {
+        // Arrange
+        var stringSlice = new StringSlice("Hello World", 0..5);
+
+        // Act
+        var immutableSlice1 = stringSlice.AsImmutableStringSlice();
+        var immutableSlice2 = (ImmutableStringSlice)stringSlice;
+
+        // Assert
+        Assert.Equal(immutableSlice1.ToString(), immutableSlice2.ToString());
+        Assert.Equal(immutableSlice1.Text, immutableSlice2.Text);
+        Assert.Equal(immutableSlice1.Range, immutableSlice2.Range);
+    }
+
+    [Fact]
+    public void AsMutableStringSliceTest() {
+        // Arrange
+        var original = new StringSlice("Hello World", 0..5);
+
+        // Act
+        var mutable = original.AsMutableStringSlice();
+
+        // Assert
+        Assert.Equal("Hello", mutable.ToString());
+        Assert.Equal(original.Text, mutable.Text);
+        Assert.Equal(original.Range, mutable.Range);
+
+        // Verify mutable behavior
+        mutable.Range = 6..11;
+        Assert.Equal("World", mutable.ToString());
+        // Original should remain unchanged
+        Assert.Equal("Hello", original.ToString());
+    }
+
+    [Fact()]
+    public void EndsWithTest() {
+        {
+            var sut = new StringSlice("0123456789ABCDEF");
+            Assert.True(sut.EndsWith("CDEF", StringComparison.Ordinal));
+            Assert.False(sut.EndsWith("X", StringComparison.Ordinal));
+        }
+        {
+            var sut = new StringSlice("0123456789ABCDEF", 0..12); // "0123456789AB"
+            Assert.True(sut.EndsWith("AB", StringComparison.Ordinal));
+            Assert.False(sut.EndsWith("ABC", StringComparison.Ordinal));
+        }
+        {
+            var sut = new StringSlice("Hello WORLD");
+            Assert.True(sut.EndsWith("world", StringComparison.OrdinalIgnoreCase));
+            Assert.False(sut.EndsWith("world", StringComparison.Ordinal));
+        }
+    }
+
+    [Fact()]
+    public void EndsWithStringSliceTest() {
+        {
+            var sut = new StringSlice("0123456789ABCDEF");
+            var search = new StringSlice("CDEF");
+            Assert.True(sut.EndsWith(search, StringComparison.Ordinal));
+        }
+        {
+            var sut = new StringSlice("0123456789ABCDEF", 0..12); // "0123456789AB"
+            var search = new StringSlice("ABC");
+            Assert.False(sut.EndsWith(search, StringComparison.Ordinal));
+        }
+        {
+            var sut = new StringSlice("Hello WORLD");
+            var search = new StringSlice("WORLD");
+            Assert.True(sut.EndsWith(search, StringComparison.Ordinal));
+            Assert.True(sut.EndsWith(new StringSlice("world"), StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    [Fact()]
+    public void EndsWithSpanTest() {
+        {
+            var sut = new StringSlice("0123456789ABCDEF");
+            Assert.True(sut.EndsWith("CDEF".AsSpan(), StringComparison.Ordinal));
+            Assert.False(sut.EndsWith("X".AsSpan(), StringComparison.Ordinal));
+        }
+        {
+            var sut = new StringSlice("0123456789ABCDEF", 0..12); // "0123456789AB"
+            Assert.True(sut.EndsWith("AB".AsSpan(), StringComparison.Ordinal));
+            Assert.False(sut.EndsWith("ABC".AsSpan(), StringComparison.Ordinal));
+        }
+        {
+            var sut = new StringSlice("Hello WORLD");
+            Assert.True(sut.EndsWith("world".AsSpan(), StringComparison.OrdinalIgnoreCase));
+            Assert.False(sut.EndsWith("world".AsSpan(), StringComparison.Ordinal));
+        }
+    }
+
+    [Theory]
+    [InlineData("Hello World", "World", StringComparison.Ordinal, true)]
+    [InlineData("Hello World", "world", StringComparison.Ordinal, false)]
+    [InlineData("Hello World", "world", StringComparison.OrdinalIgnoreCase, true)]
+    [InlineData("Hello World", "Hello", StringComparison.Ordinal, false)]
+    [InlineData("", "", StringComparison.Ordinal, true)]
+    [InlineData("A", "", StringComparison.Ordinal, true)]
+    [InlineData("", "A", StringComparison.Ordinal, false)]
+    public void EndsWithTheory(string input, string search, StringComparison comparison, bool expected) {
+        var sut = new StringSlice(input);
+        Assert.Equal(expected, sut.EndsWith(search, comparison));
+    }
 }
 
+public class StringSliceAsSpanTests {
+    [Fact]
+    public void AsSpan_WithRange_ReturnsCorrectSubset() {
+        // Arrange
+        var slice = new StringSlice("Hello World");
+
+        // Act
+        var span = slice.AsSpan(1..4);
+
+        // Assert
+        Assert.Equal("ell", span.ToString());
+    }
+
+    [Fact]
+    public void AsSpan_WithFullRange_ReturnsEntireSlice() {
+        // Arrange
+        var slice = new StringSlice("Hello World");
+
+        // Act
+        var span = slice.AsSpan(..);
+
+        // Assert
+        Assert.Equal("Hello World", span.ToString());
+    }
+
+    [Fact]
+    public void AsSpan_WithPartialSlice_ReturnsCorrectSubset() {
+        // Arrange
+        var slice = new StringSlice("Hello World", 6..11); // "World"
+
+        // Act
+        var span = slice.AsSpan(1..3); // "or"
+
+        // Assert
+        Assert.Equal("or", span.ToString());
+    }
+
+    [Fact]
+    public void AsSpan_WithEmptyRange_ReturnsEmptySpan() {
+        // Arrange
+        var slice = new StringSlice("Hello World");
+
+        // Act
+        var span = slice.AsSpan(1..1);
+
+        // Assert
+        Assert.Equal(0, span.Length);
+        Assert.Equal("", span.ToString());
+    }
+
+    [Fact]
+    public void AsSpan_WithFromEnd_ReturnsCorrectSubset() {
+        // Arrange
+        var slice = new StringSlice("Hello World");
+
+        // Act
+        var span = slice.AsSpan(^5..^0);
+
+        // Assert
+        Assert.Equal("World", span.ToString());
+    }
+
+    [Theory]
+    [InlineData(0, false, 5, false, "Hello")]
+    [InlineData(0, false, 0, false, "")]
+    [InlineData(5, true, 0, true, "World")]
+    public void AsSpan_WithVariousRanges_ReturnsExpectedResults(int start, bool startFromEnd, int end, bool endFromEnd, string expected) {
+        Range range = new Range(new Index(start, startFromEnd), new Index(end, endFromEnd));
+        // Arrange
+        var slice = new StringSlice("Hello World");
+
+        // Act
+        var span = slice.AsSpan(range);
+
+        // Assert
+        Assert.Equal(expected, span.ToString());
+    }
+
+    [Theory]
+    [InlineData(1, true, 5, false)]
+    [InlineData(0, false, 12, false)]
+    [InlineData(6, false, 5, false)]
+    public void AsSpan_WithInvalidRange_ThrowsArgumentOutOfRangeException(int start, bool startFromEnd, int end, bool endFromEnd) {
+        Range range = new Range(new Index(start, startFromEnd), new Index(end, endFromEnd));
+
+        // Arrange
+        var slice = new StringSlice("Hello World");
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => slice.AsSpan(range));
+    }
+
+    [Fact]
+    public void AsSpan_WithNestedSlices_MaintainsCorrectOffsets() {
+        // Arrange
+        var originalSlice = new StringSlice("Hello World", 6..11); // "World"
+        var middleSlice = originalSlice.Substring(1..4); // "orl"
+
+        // Act
+        var finalSpan = middleSlice.AsSpan(1..2); // "r"
+
+        // Assert
+        Assert.Equal("r", finalSpan.ToString());
+    }
+}
