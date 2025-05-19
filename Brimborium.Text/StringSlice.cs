@@ -17,8 +17,8 @@
 /// Basic usage:
 /// <code>
 /// var slice = new Value("Hello World");
-/// var hello = slice.Substring(0, 5);    // Creates slice for "Hello"
-/// var world = slice.Substring(6, 5);    // Creates slice for "World"
+/// var hello = slice.Left(0, 5);    // Creates slice for "Hello"
+/// var world = slice.Left(6, 5);    // Creates slice for "World"
 /// Console.WriteLine(hello.ToString());   // Outputs: "Hello"
 /// </code>
 /// </example>
@@ -149,13 +149,21 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     }
 
     /// <summary>
-    /// Calculates the start offset and length of the range object using a collection length.
+    /// Calculates the start thisOffset and length of the range object using a collection length.
     /// </summary>
-    /// <returns>The start offset and length of the range.</returns>
+    /// <returns>The start thisOffset and length of the range.</returns>
     public (int Offset, int Length) GetOffsetAndLength()
         => (this.Text is null)
             ? (Offset: 0, Length: 0)
             : this.Range.GetOffsetAndLength(this.Text.Length);
+
+    /// <summary>
+    /// The offset(start) of the range.
+    /// </summary>
+    public int GetOffset() {
+        var (offset, _) = this.GetOffsetAndLength();
+        return offset;
+    }
 
     /// <summary>
     /// Creates a new Value that is a substring of this slice, starting at the specified index.
@@ -244,6 +252,29 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
             this.Text,
             nextRange
             );
+    }
+
+    /// <summary>
+    /// Creates a new Value that is a substring of this slice, based on this range's offset and the specified range's offset.
+    /// </summary>
+    /// <param name="length">A range's offset that describes the portion of this slice to include in the new slice.</param>
+    /// <returns>A new Value that corresponds to the specified range of this slice.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// the two StringSlice are not from the same string.
+    /// </exception>>
+    public StringSlice Left(StringSlice length) {
+        if (!ReferenceEquals(this.Text, length.Text)) {
+            throw new ArgumentOutOfRangeException(nameof(length));
+        }
+        var (thisOffset, thisLength) = this.GetOffsetAndLength();
+        var (lengthOffset, _) = length.GetOffsetAndLength();
+        if (lengthOffset < thisOffset) {
+            throw new ArgumentOutOfRangeException("length.Offset");
+        }
+        if ((thisOffset+thisLength)< lengthOffset) {
+            throw new ArgumentOutOfRangeException("length.Offset");
+        }
+        return new StringSlice(this.Text, thisOffset..lengthOffset);
     }
 
     /// <summary>
@@ -696,14 +727,14 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
 
     /// <summary>
     /// Split the string into two parts, 
-    /// the first part is the string until the decide function returns not 0.
+    /// the first part is the string length the decide function returns not 0.
     /// The second part is the rest of the string if <paramref name="decide"/> returns greater than 0.
     /// The second part is empty if <paramref name="decide"/> returns less than 0.
     /// </summary>
     /// <param name="decide">a callback to decide to 
     ///     0 continue,
-    ///     greater 0 to return 2 parts the part Found (until before) and the Tail,
-    ///     less 0 to return 2 parts the part Found (until before) and an empty Tail.</param>
+    ///     greater 0 to return 2 parts the part Found (length before) and the Tail,
+    ///     less 0 to return 2 parts the part Found (length before) and an empty Tail.</param>
     /// <returns>2 SubStrings the Found and the Tail.</returns>
     public SplitInto SplitIntoWhile(Func<char, int, int> decide) {
         var (offset, length) = this.Range.GetOffsetAndLength(this.Text.Length);

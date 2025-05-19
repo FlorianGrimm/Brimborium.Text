@@ -158,6 +158,31 @@ public class StringSliceTests {
         }
     }
 
+    [Fact]
+    public void LeftTest() {
+        {
+            var abcdefg = new StringSlice("abcdefg");
+            var bcdefg = abcdefg.Substring(1);
+            var sut = abcdefg.Left(bcdefg);
+            Assert.Equal("a", sut.ToString());
+        }
+        {
+            var abcdefg = new StringSlice("abcdefg");
+            var bcdefg = abcdefg.Substring(1);
+            Assert.Throws<ArgumentOutOfRangeException>(() => {
+                bcdefg.Left(abcdefg);
+            });
+        }
+        {
+            var abcdefg = new StringSlice("abcdefg");
+            var abc = abcdefg.Substring(0, 3);
+            var efg = abcdefg.Substring(4, 3);
+            Assert.Throws<ArgumentOutOfRangeException>(() => {
+                abc.Left(efg);
+            });
+        }
+    }
+
     [Fact()]
     public void AsSpanTest() {
         {
@@ -920,5 +945,14 @@ public class StringSliceAsSpanTests {
 
         // Assert
         Assert.Equal("r", finalSpan.ToString());
+    }
+
+    [Fact]
+    public void SubstringOffset() { 
+        var orginal = new StringSlice("0123456789ABCDEF");
+        Assert.Equal(0, orginal.GetOffsetAndLength().Offset);
+        Assert.Equal(8, orginal.Substring(2).Substring(6).GetOffsetAndLength().Offset);
+        Assert.Equal(8, orginal.Substring(8).GetOffsetAndLength().Offset);
+
     }
 }
