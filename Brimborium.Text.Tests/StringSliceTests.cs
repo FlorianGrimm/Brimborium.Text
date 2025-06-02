@@ -3,7 +3,7 @@ namespace Brimborium.Text;
 public class StringSliceTests {
     [Fact]
     public void Struct_Ctor_Empty() {
-        StringSlice act=new();
+        StringSlice act = new();
         Assert.NotNull(act.Text);
     }
 
@@ -67,7 +67,7 @@ public class StringSliceTests {
             var sut = new StringSlice("abcdefg", 5..^0);
             Assert.Equal("fg", sut.ToString());
 
-            Assert.Throws<ArgumentOutOfRangeException> (() => {
+            Assert.Throws<ArgumentOutOfRangeException>(() => {
                 var act1 = sut[1..3];
             });
         }
@@ -823,8 +823,7 @@ public class StringSliceTests {
     }
 
     [Fact]
-    public void GetOffsetAndLength_ReturnsCorrectValues()
-    {
+    public void GetOffsetAndLength_ReturnsCorrectValues() {
         // Arrange
         var slice1 = new StringSlice("Hello World", 2..7);  // "llo W"
         var slice2 = new StringSlice("Test", 0..4);         // "Test"
@@ -839,6 +838,222 @@ public class StringSliceTests {
         Assert.Equal((2, 5), result1);
         Assert.Equal((0, 4), result2);
         Assert.Equal((1, 0), result3);
+    }
+
+    [Fact]
+    public void TryFind_StringSlice_Test() {
+        // Arrange
+        var slice = new StringSlice("Hello World!");
+
+        // Act & Assert - Basic search
+        {
+            var searchFor = new StringSlice("World");
+            bool found = slice.TryFind(searchFor, out var result);
+
+            Assert.True(found);
+            Assert.Equal("Hello ", result.Before.ToString());
+            Assert.Equal("Hello World", result.BeforeAndFound.ToString());
+            Assert.Equal("World", result.Found.ToString());
+            Assert.Equal("World!", result.FoundAndAfter.ToString());
+            Assert.Equal("!", result.After.ToString());
+        }
+
+        // Act & Assert - Search with case insensitivity
+        {
+            var searchFor = new StringSlice("world");
+            bool found = slice.TryFind(searchFor, out var result, StringComparison.OrdinalIgnoreCase);
+
+            Assert.True(found);
+            Assert.Equal("Hello ", result.Before.ToString());
+            Assert.Equal("Hello World", result.BeforeAndFound.ToString());
+            Assert.Equal("World", result.Found.ToString());
+            Assert.Equal("World!", result.FoundAndAfter.ToString());
+            Assert.Equal("!", result.After.ToString());
+        }
+
+        // Act & Assert - Search in middle of string
+        {
+            var searchFor = new StringSlice("lo Wo");
+            bool found = slice.TryFind(searchFor, out var result);
+
+            Assert.True(found);
+            Assert.Equal("Hel", result.Before.ToString());
+            Assert.Equal("Hello Wo", result.BeforeAndFound.ToString());
+            Assert.Equal("lo Wo", result.Found.ToString());
+            Assert.Equal("lo World!", result.FoundAndAfter.ToString());
+            Assert.Equal("rld!", result.After.ToString());
+        }
+
+        // Act & Assert - Search not found
+        {
+            var searchFor = new StringSlice("NotFound");
+            bool found = slice.TryFind(searchFor, out var result);
+
+            Assert.False(found);
+        }
+
+        // Act & Assert - Search in substring
+        {
+            var slice2 = slice.Substring(6); // "World!"
+            var searchFor = new StringSlice("or");
+
+            bool found = slice2.TryFind(searchFor, out var result);
+
+            Assert.True(found);
+            Assert.Equal("W", result.Before.ToString());
+            Assert.Equal("or", result.Found.ToString());
+            Assert.Equal("ld!", result.After.ToString());
+        }
+    }
+
+    [Fact]
+    public void TryGetFirst_Test() {
+        // Arrange & Act & Assert - Non-empty slice
+        {
+            var slice = new StringSlice("Hello");
+            bool success = slice.TryGetFirst(out var firstChar);
+
+            Assert.True(success);
+            Assert.Equal('H', firstChar);
+        }
+
+        // Arrange & Act & Assert - Empty slice
+        {
+            var slice = new StringSlice("");
+            bool success = slice.TryGetFirst(out var firstChar);
+
+            Assert.False(success);
+            Assert.Equal(default, firstChar);
+        }
+
+        // Arrange & Act & Assert - Slice with range that makes it empty
+        {
+            var slice = new StringSlice("Hello", 2..2);
+            bool success = slice.TryGetFirst(out var firstChar);
+
+            Assert.False(success);
+            Assert.Equal(default, firstChar);
+        }
+
+        // Arrange & Act & Assert - Slice with non-zero start
+        {
+            var slice = new StringSlice("Hello", 2..5);
+            bool success = slice.TryGetFirst(out var firstChar);
+
+            Assert.True(success);
+            Assert.Equal('l', firstChar);
+        }
+
+        // Arrange & Act & Assert - Nested slices
+        {
+            var original = new StringSlice("Hello World");
+            var nested = original.Substring(6..11);
+            bool success = nested.TryGetFirst(out var firstChar);
+
+            Assert.True(success);
+            Assert.Equal('W', firstChar);
+        }
+
+
+        // Arrange & Act & Assert - while
+        {
+            var current = new StringSlice("Hello World");
+            while (current.TryGetFirst(out var firstChar)) {
+                current = current.Substring(1);
+            }
+            var (offset, length) = current.GetOffsetAndLength();
+            Assert.Equal(11, offset);
+            Assert.Equal(0, length);
+        }
+    }
+
+    [Fact]
+    public void SubstringBetweenStartAndStart_Test() {
+        // Arrange
+        var original = new StringSlice("Hello World");
+        var other = original.Substring(6); // "World"
+        
+        // Act
+        var result = original.SubstringBetweenStartAndStart(other);
+        
+        // Assert
+        Assert.Equal("Hello ", result.ToString());
+        
+        // Test with invalid other slice (different text)
+        var differentText = new StringSlice("Different");
+        Assert.Throws<ArgumentOutOfRangeException>(() => original.SubstringBetweenStartAndStart(differentText));
+        
+        // Test with invalid other slice (offset before this slice)
+        Assert.Throws<ArgumentOutOfRangeException>(() => other.SubstringBetweenStartAndStart(original));
+        
+        // Test with invalid other slice (offset outside this slice)
+        var beyondSlice = new StringSlice("Hello World Extra", 12..17); // "Extra"
+        Assert.Throws<ArgumentOutOfRangeException>(() => original.SubstringBetweenStartAndStart(beyondSlice));
+    }
+    
+    [Fact]
+    public void SubstringBetweenStartAndEnd_Test() {
+        // Arrange
+        var original = new StringSlice("Hello World");
+        var other = original.Substring(6, 5); // "World"
+        
+        // Act
+        var result = original.SubstringBetweenStartAndEnd(other);
+        
+        // Assert
+        Assert.Equal("Hello World", result.ToString());
+        
+        // Test with invalid other slice (different text)
+        var differentText = new StringSlice("Different");
+        Assert.Throws<ArgumentOutOfRangeException>(() => original.SubstringBetweenStartAndEnd(differentText));
+        
+        // Test with invalid other slice (end beyond this slice)
+        var longText = "Hello World and more text";
+        var longSlice = new StringSlice(longText);
+        var partSlice = new StringSlice(longText, 0..11); // "Hello World"
+        Assert.Throws<ArgumentOutOfRangeException>(() => partSlice.SubstringBetweenStartAndEnd(longSlice));
+    }
+    
+    [Fact]
+    public void SubstringBetweenEndAndStart_Test() {
+        // Arrange
+        var text = "Hello World Gap Text";
+        var first = new StringSlice(text)[0..11]; // "Hello World"
+        var second = new StringSlice(text)[16..20]; // "Text"
+        
+        // Act
+        var result = first.SubstringBetweenEndAndStart(second);
+        
+        // Assert
+        Assert.Equal(" Gap ", result.ToString());
+        
+        // Test with invalid other slice (different text)
+        var differentText = new StringSlice("Different");
+        Assert.Throws<ArgumentOutOfRangeException>(() => first.SubstringBetweenEndAndStart(differentText));
+        
+        // Test with invalid other slice (start before this slice's end)
+        Assert.Throws<ArgumentOutOfRangeException>(() => second.SubstringBetweenEndAndStart(first));
+    }
+    
+    [Fact]
+    public void SubstringBetweenEndAndEnd_Test() {
+        // Arrange
+        var text = "Hello World Gap Text";
+        var first = new StringSlice(text, 0..5); // "Hello"
+        var second = new StringSlice(text, 0..20); // "Hello World Gap Text"
+        
+        // Act
+        var result = first.SubstringBetweenEndAndEnd(second);
+        
+        // Assert
+        Assert.Equal(" World Gap Text", result.ToString());
+        
+        // Test with invalid other slice (different text)
+        var differentText = new StringSlice("Different");
+        Assert.Throws<ArgumentOutOfRangeException>(() => first.SubstringBetweenEndAndEnd(differentText));
+        
+        // Test with invalid other slice (end before this slice's end)
+        Assert.Throws<ArgumentOutOfRangeException>(() => second.SubstringBetweenEndAndEnd(first));
     }
 }
 
@@ -948,7 +1163,7 @@ public class StringSliceAsSpanTests {
     }
 
     [Fact]
-    public void SubstringOffset() { 
+    public void SubstringOffset() {
         var orginal = new StringSlice("0123456789ABCDEF");
         Assert.Equal(0, orginal.GetOffsetAndLength().Offset);
         Assert.Equal(8, orginal.Substring(2).Substring(6).GetOffsetAndLength().Offset);

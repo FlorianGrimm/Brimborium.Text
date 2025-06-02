@@ -129,7 +129,7 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     /// <summary>
     /// Get the slice of the string defined by the specified range.
     /// </summary>
-    /// <param name="range">The range</param>
+    /// <param name="range">The range is commulative to the existing range.</param>
     /// <returns>The slice</returns>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when the index is negative or greater than or equal to the length of the slice.
@@ -163,6 +163,15 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     public int GetOffset() {
         var (offset, _) = this.GetOffsetAndLength();
         return offset;
+    }
+
+    /// <summary>
+    /// Calculates the ending position based on the offset and length.
+    /// </summary>
+    /// <returns>The sum of the offset and length, representing the ending position.</returns>
+    public int GetEnd() {
+        var (offset, length) = this.GetOffsetAndLength();
+        return offset + length;
     }
 
     /// <summary>
@@ -271,10 +280,102 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
         if (lengthOffset < thisOffset) {
             throw new ArgumentOutOfRangeException("length.Offset");
         }
-        if ((thisOffset+thisLength)< lengthOffset) {
+        if ((thisOffset + thisLength) < lengthOffset) {
             throw new ArgumentOutOfRangeException("length.Offset");
         }
         return new StringSlice(this.Text, thisOffset..lengthOffset);
+    }
+
+    /// <summary>
+    /// Extracts a substring from the current <see cref="StringSlice"/> that starts at the same position and ends at the
+    /// start of the specified <paramref name="other"/> slice.
+    /// </summary>
+    /// <param name="other">A <see cref="StringSlice"/> that defines the end boundary of the substring. The <paramref name="other"/> slice
+    /// must reference the same underlying text as the current slice and must fall within the bounds of the current
+    /// slice.</param>
+    /// <returns>A new <see cref="StringSlice"/> representing the substring that starts at the beginning of the current slice and
+    /// ends at the start of the <paramref name="other"/> slice.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="other"/> references a different text than the current slice, or if its offset is
+    /// outside the bounds of the current slice.</exception>
+    public StringSlice SubstringBetweenStartAndStart(StringSlice other) {
+        if (!ReferenceEquals(this.Text, other.Text)) {
+            throw new ArgumentOutOfRangeException(nameof(other));
+        }
+        var (thisOffset, thisLength) = this.GetOffsetAndLength();
+        var (otherOffset, _) = other.GetOffsetAndLength();
+        if (thisOffset > otherOffset) {
+            throw new ArgumentOutOfRangeException("other.Offset");
+        }
+        if ((thisOffset + thisLength) < otherOffset) {
+            throw new ArgumentOutOfRangeException("other.Offset");
+        }
+        return new StringSlice(this.Text, thisOffset..otherOffset);
+    }
+
+    /// <summary>
+    /// Extracts a substring from the current <see cref="StringSlice"/> that starts at its beginning and ends at the end
+    /// of the specified <paramref name="other"/> slice.
+    /// </summary>
+    /// <param name="other">A <see cref="StringSlice"/> that defines the end boundary for the substring.  The <see cref="Text"/> property of
+    /// <paramref name="other"/> must reference the same string as the current instance.</param>
+    /// <returns>A new <see cref="StringSlice"/> representing the substring that starts at the beginning of the current slice and
+    /// ends at the end of <paramref name="other"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="other"/> references a different string than the current instance,  or if the end of
+    /// <paramref name="other"/> extends beyond the bounds of the current slice.</exception>
+    public StringSlice SubstringBetweenStartAndEnd(StringSlice other) {
+        if (!ReferenceEquals(this.Text, other.Text)) {
+            throw new ArgumentOutOfRangeException(nameof(other));
+        }
+        var (thisOffset, thisLength) = this.GetOffsetAndLength();
+        var otherEnd = other.GetEnd();
+        if ((thisOffset + thisLength) < otherEnd) {
+            throw new ArgumentOutOfRangeException("other");
+        }
+        return new StringSlice(this.Text, thisOffset..otherEnd);
+    }
+
+    /// <summary>
+    /// Extracts a substring from the current <see cref="StringSlice"/> that starts at the end of this slice and ends at
+    /// the start of the specified <paramref name="other"/> slice.
+    /// </summary>
+    /// <param name="other">The <see cref="StringSlice"/> that defines the endpoint of the substring. Must reference the same underlying
+    /// text as this slice.</param>
+    /// <returns>A new <see cref="StringSlice"/> representing the substring between the end of this slice and the start of
+    /// <paramref name="other"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="other"/> references a different text than this slice, or if the end of this slice is
+    /// positioned after the start of <paramref name="other"/>.</exception>
+    public StringSlice SubstringBetweenEndAndStart(StringSlice other) {
+        if (!ReferenceEquals(this.Text, other.Text)) {
+            throw new ArgumentOutOfRangeException(nameof(other));
+        }
+        var thisEnd = this.GetEnd();
+        var otherOffset = other.GetOffset();
+        if (thisEnd > otherOffset) {
+            throw new ArgumentOutOfRangeException("other.Offset");
+        }
+        return new StringSlice(this.Text, thisEnd..otherOffset);
+    }
+
+    /// <summary>
+    /// Extracts a substring from the current <see cref="StringSlice"/> that starts at the end of this slice and ends at
+    /// the end of the specified <paramref name="other"/> slice.
+    /// </summary>
+    /// <param name="other">A <see cref="StringSlice"/> that shares the same underlying text as the current slice. The method uses the end
+    /// position of this slice and the end position of <paramref name="other"/> to determine the substring range.</param>
+    /// <returns>A new <see cref="StringSlice"/> representing the substring between the end of the current slice and the end of
+    /// the specified <paramref name="other"/> slice.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="other"/> does not share the same underlying text as the current slice, or if the end
+    /// position of the current slice is greater than the end position of <paramref name="other"/>.</exception>
+    public StringSlice SubstringBetweenEndAndEnd(StringSlice other) {
+        if (!ReferenceEquals(this.Text, other.Text)) {
+            throw new ArgumentOutOfRangeException(nameof(other));
+        }
+        var thisEnd = this.GetEnd();
+        var otherEnd = other.GetEnd();
+        if (thisEnd > otherEnd) {
+            throw new ArgumentOutOfRangeException("other.End");
+        }
+        return new StringSlice(this.Text, thisEnd..otherEnd);
     }
 
     /// <summary>
@@ -383,11 +484,19 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     private string GetDebuggerDisplay() {
         if (this.Text is null) { return "null"; }
+        StringSliceBuilder builder = new();
+        var (offset, length) = this.GetOffsetAndLength();
+        builder.Append(offset.ToString());
+        builder.Append("..");
+        builder.Append((offset+length).ToString());
+        builder.Append(":");
         if (this.Length < 32) {
-            return this.Text[this.Range];
+            builder.Append(this.Text[this.Range]);
         } else {
-            return this.Text[new Range(this.Range.Start, this.Range.Start.Value + 32)];
+            builder.Append(this.Text[new Range(this.Range.Start, this.Range.Start.Value + 29)]);
+            builder.Append("...");
         }
+        return builder.ToString();
     }
 
     /// <summary>
@@ -407,6 +516,40 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
             return true;
         }
         return this.AsSpan().IsWhiteSpace();
+    }
+
+    /// <summary>
+    /// Attempts to get the first character in the slice.
+    /// </summary>
+    /// <param name="ch">When this method returns, contains the first character in the slice if the slice is not empty; otherwise, the default value for <see cref="char"/>.</param>
+    /// <returns>true if the slice is not empty and the first character was successfully retrieved; otherwise, false.</returns>
+    /// <remarks>
+    /// This method is useful when you need to check if a slice has any characters and get the first one in a single operation.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var slice = new StringSlice("Hello");
+    /// if (slice.TryGetFirst(out var firstChar))
+    /// {
+    ///     Console.WriteLine(firstChar); // Outputs: 'H'
+    /// }
+    /// 
+    /// var emptySlice = new StringSlice("");
+    /// if (!emptySlice.TryGetFirst(out var _))
+    /// {
+    ///     Console.WriteLine("Slice is empty");
+    /// }
+    /// </code>
+    /// </example>
+    public bool TryGetFirst(out char ch) {
+        var (offset, length) = this.Range.GetOffsetAndLength(this._Text.Length);
+        if (0 == length) {
+            ch = default;
+            return false;
+        } else {
+            ch = this._Text[offset];
+            return true;
+        }
     }
 
     /// <summary>
@@ -476,6 +619,62 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
             return -1;
         } else {
             return result + offset;
+        }
+    }
+    /// <summary>
+    /// Attempts to find the first occurrence of a specified character sequence within this slice.
+    /// </summary>
+    /// <param name="searchFor">The character sequence to search for.</param>
+    /// <param name="result">When this method returns, contains a <see cref="StringSliceSearchResult"/> with information about the search result if found; otherwise, contains default values.</param>
+    /// <param name="comparison">One of the enumeration values that specifies the rules for the search.</param>
+    /// <returns>true if the character sequence is found; otherwise, false.</returns>
+    /// <remarks>
+    /// The search result provides access to the text before the match, the matched text, and the text after the match.
+    /// The indices in the result are relative to the original string, not the slice.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var slice = new StringSlice("Hello World");
+    /// if (slice.TryFind(" ".AsStringSlice(), out var result)) {
+    ///     Console.WriteLine(result.Before.ToString()); // Outputs: "Hello"
+    ///     Console.WriteLine(result.After.ToString()); // Outputs: "World"
+    /// }
+    /// </code>
+    /// </example>
+    public bool TryFind(StringSlice searchFor, out StringSliceSearchResult result, StringComparison comparison = StringComparison.Ordinal) {
+        return this.TryFind(searchFor.AsSpan(), out result, comparison);
+    }
+
+    /// <summary>
+    /// Attempts to find the first occurrence of a specified character sequence within this slice.
+    /// </summary>
+    /// <param name="searchFor">The character sequence to search for.</param>
+    /// <param name="result">When this method returns, contains a <see cref="StringSliceSearchResult"/> with information about the search result if found; otherwise, contains default values.</param>
+    /// <param name="comparison">One of the enumeration values that specifies the rules for the search.</param>
+    /// <returns>true if the character sequence is found; otherwise, false.</returns>
+    /// <remarks>
+    /// The search result provides access to the text before the match, the matched text, and the text after the match.
+    /// The indices in the result are relative to the original string, not the slice.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var slice = new StringSlice("Hello World");
+    /// if (slice.TryFind(" ".AsSpan(), out var result)) {
+    ///     Console.WriteLine(result.Before.ToString()); // Outputs: "Hello"
+    ///     Console.WriteLine(result.After.ToString()); // Outputs: "World"
+    /// }
+    /// </code>
+    /// </example>
+    public bool TryFind(ReadOnlySpan<char> searchFor, out StringSliceSearchResult result, StringComparison comparison = StringComparison.Ordinal) {
+        var position = this.AsSpan().IndexOf(searchFor, comparison);
+        if (0 <= position) {
+            var (thisOffset, thisLength) = this.GetOffsetAndLength();
+            var start = thisOffset + position;
+            result = new StringSliceSearchResult(this._Text, thisOffset, start, searchFor.Length, thisLength);
+            return true;
+        } else {
+            result = new StringSliceSearchResult(this._Text, -1, -1, -1, -1);
+            return false;
         }
     }
 
@@ -591,7 +790,19 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     /// 0 to continue trimming,
     /// less than 0 to return an empty slice,
     /// greater than 0 to stop trimming and return the remaining slice.</param>
-    /// <returns>A new Value with characters trimmed according to the decision function.</returns>
+    /// <returns>A new <see cref="StringSlice"/> with characters trimmed from the start according to the decision function.</returns>
+    /// <remarks>
+    /// The returned slice references the same underlying string but with an adjusted starting position.
+    /// The decision function is called for each character from the start of the slice until it returns a non-zero value.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var slice = new StringSlice("  123abc");
+    /// // Trim until a digit is found
+    /// var result = slice.TrimStart((c, i) => char.IsDigit(c) ? 1 : 0);
+    /// Console.WriteLine(result.ToString()); // Outputs: "123abc"
+    /// </code>
+    /// </example>
     public StringSlice TrimWhile(Func<char, int, int> decide) {
         var (offset, length) = this.Range.GetOffsetAndLength(this.Text.Length);
         var end = offset + length;
@@ -996,11 +1207,16 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     /// <returns>A new <see cref="ImmutableStringSlice"/> with the same text and range as this string slice.</returns>
     public ImmutableStringSlice AsImmutableStringSlice() => new ImmutableStringSlice(this.Text, this.Range);
 
+    /// <summary>
+    /// Determines whether two <see cref="StringSlice"/> instances are equal using the specified string comparison
+    /// option.
+    /// </summary>
+    /// <param name="a">The first <see cref="StringSlice"/> to compare.</param>
+    /// <param name="b">The second <see cref="StringSlice"/> to compare.</param>
+    /// <param name="ordinal">A <see cref="StringComparison"/> value that specifies the rules for the comparison.</param>
+    /// <returns><see langword="true"/> if the two <see cref="StringSlice"/> instances are equal according to the specified
+    /// comparison option; otherwise, <see langword="false"/>.</returns>
     public static bool Equals(StringSlice a, StringSlice b, StringComparison ordinal) {
         return a.Equals(b, ordinal);
     }
 }
-
-public readonly record struct SplitInto(StringSlice Found, StringSlice Tail);
-
-public record struct StringSliceState(string Text, Range Range);
