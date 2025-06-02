@@ -277,10 +277,7 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
         }
         var (thisOffset, thisLength) = this.GetOffsetAndLength();
         var (lengthOffset, _) = length.GetOffsetAndLength();
-        if (lengthOffset < thisOffset) {
-            throw new ArgumentOutOfRangeException("length.Offset");
-        }
-        if ((thisOffset + thisLength) < lengthOffset) {
+        if (thisOffset > lengthOffset) {
             throw new ArgumentOutOfRangeException("length.Offset");
         }
         return new StringSlice(this.Text, thisOffset..lengthOffset);
@@ -306,7 +303,7 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
         if (thisOffset > otherOffset) {
             throw new ArgumentOutOfRangeException("other.Offset");
         }
-        if ((thisOffset + thisLength) < otherOffset) {
+        if (otherOffset > this._Text.Length) {
             throw new ArgumentOutOfRangeException("other.Offset");
         }
         return new StringSlice(this.Text, thisOffset..otherOffset);
@@ -328,7 +325,7 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
         }
         var (thisOffset, thisLength) = this.GetOffsetAndLength();
         var otherEnd = other.GetEnd();
-        if ((thisOffset + thisLength) < otherEnd) {
+        if (thisOffset > otherEnd) {
             throw new ArgumentOutOfRangeException("other");
         }
         return new StringSlice(this.Text, thisOffset..otherEnd);
@@ -377,6 +374,148 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
         }
         return new StringSlice(this.Text, thisEnd..otherEnd);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+    /// <summary>
+    /// Attempts to extract a substring from the current <see cref="StringSlice"/> that starts at the same position as
+    /// this instance and ends at the start position of the specified <paramref name="other"/>.
+    /// </summary>
+    /// <remarks>This method ensures that the substring is valid by checking the relative positions of the
+    /// current instance and <paramref name="other"/>. If the start position of the current instance is greater than the
+    /// start position of <paramref name="other"/>, or if the end of the current instance exceeds the start position of
+    /// <paramref name="other"/>, the method returns <see langword="false"/> and sets <paramref name="result"/> to an
+    /// empty <see cref="StringSlice"/>.</remarks>
+    /// <param name="other">A <see cref="StringSlice"/> that defines the end boundary for the substring. The <see cref="Text"/> property of
+    /// <paramref name="other"/> must reference the same string as the current instance.</param>
+    /// <param name="result">When this method returns, contains the resulting substring as a <see cref="StringSlice"/> if the operation
+    /// succeeds; otherwise, contains an empty <see cref="StringSlice"/>.</param>
+    /// <returns><see langword="true"/> if a valid substring is extracted; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if the <see cref="Text"/> property of <paramref name="other"/> does not reference the same string as the
+    /// current instance.</exception>
+    public bool TrySubstringBetweenStartAndStart(StringSlice other, out StringSlice result) {
+        if (!ReferenceEquals(this.Text, other.Text)) {
+            throw new ArgumentOutOfRangeException(nameof(other));
+        }
+        var (thisOffset, thisLength) = this.GetOffsetAndLength();
+        var (otherOffset, _) = other.GetOffsetAndLength();
+        if (thisOffset > otherOffset) {
+            result = this.Substring(0, 0);
+            return false;
+        }
+        if (otherOffset > this._Text.Length) {
+            result = this.Substring(0, 0);
+            return false;
+        }
+        result = new StringSlice(this.Text, thisOffset..otherOffset);
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to extract a substring from the current <see cref="StringSlice"/> that starts at its beginning and ends
+    /// at the end of the specified <paramref name="other"/> <see cref="StringSlice"/>.
+    /// </summary>
+    /// <remarks>This method checks whether the current <see cref="StringSlice"/> overlaps with or is adjacent
+    /// to the specified <paramref name="other"/>. If the current slice starts after the end of <paramref
+    /// name="other"/>, the operation fails and <paramref name="result"/> is set to an empty <see
+    /// cref="StringSlice"/>.</remarks>
+    /// <param name="other">The <see cref="StringSlice"/> that defines the end boundary for the substring. Must reference the same
+    /// underlying text as the current <see cref="StringSlice"/>.</param>
+    /// <param name="result">When this method returns, contains the resulting substring as a <see cref="StringSlice"/> if the operation
+    /// succeeds, or an empty <see cref="StringSlice"/> if it fails.</param>
+    /// <returns><see langword="true"/> if a valid substring was extracted; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="other"/> does not reference the same underlying text as the current <see
+    /// cref="StringSlice"/>.</exception>
+    public bool TrySubstringBetweenStartAndEnd(StringSlice other, out StringSlice result) {
+        if (!ReferenceEquals(this.Text, other.Text)) {
+            throw new ArgumentOutOfRangeException(nameof(other));
+        }
+        var (thisOffset, thisLength) = this.GetOffsetAndLength();
+        var otherEnd = other.GetEnd();
+        if (thisOffset > otherEnd) {
+            result = this.Substring(0, 0);
+            return false;
+        }
+        result = new StringSlice(this.Text, thisOffset..otherEnd);
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to extract a substring from the current <see cref="StringSlice"/> that starts at the end of this
+    /// instance and ends at the start of the specified <paramref name="other"/> <see cref="StringSlice"/>.
+    /// </summary>
+    /// <param name="other">The <see cref="StringSlice"/> that defines the end boundary for the substring. Must reference the same
+    /// underlying text as this instance.</param>
+    /// <param name="result">When this method returns, contains the resulting substring as a <see cref="StringSlice"/> if the operation
+    /// succeeds; otherwise, contains an empty <see cref="StringSlice"/>.</param>
+    /// <returns><see langword="true"/> if a valid substring is extracted; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="other"/> does not reference the same underlying text as this instance.</exception>
+    public bool TrySubstringBetweenEndAndStart(StringSlice other, out StringSlice result) {
+        if (!ReferenceEquals(this.Text, other.Text)) {
+            throw new ArgumentOutOfRangeException(nameof(other));
+        }
+        var thisEnd = this.GetEnd();
+        var otherOffset = other.GetOffset();
+        if (thisEnd > otherOffset) {
+            result = this.Substring(0, 0);
+            return false;
+        }
+        result = new StringSlice(this.Text, thisEnd..otherOffset);
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to extract a substring from the current <see cref="StringSlice"/> that starts at the end of this slice
+    /// and ends at the end of the specified <paramref name="other"/> slice.
+    /// </summary>
+    /// <remarks>This method compares the end positions of the current slice and <paramref name="other"/>. If
+    /// the end of this slice is after the end of <paramref name="other"/>, the operation fails, and <paramref
+    /// name="result"/> is set to an empty slice.</remarks>
+    /// <param name="other">The <see cref="StringSlice"/> that defines the end boundary for the substring. Must reference the same
+    /// underlying text as this slice.</param>
+    /// <param name="result">When this method returns, contains the resulting substring as a <see cref="StringSlice"/> if the operation
+    /// succeeds; otherwise, contains an empty <see cref="StringSlice"/>.</param>
+    /// <returns><see langword="true"/> if the substring was successfully extracted; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="other"/> does not reference the same underlying text as this slice.</exception>
+    public bool TrySubstringBetweenEndAndEnd(StringSlice other, out StringSlice result) {
+        if (!ReferenceEquals(this.Text, other.Text)) {
+            throw new ArgumentOutOfRangeException(nameof(other));
+        }
+        var thisEnd = this.GetEnd();
+        var otherEnd = other.GetEnd();
+        if (thisEnd > otherEnd) {
+            result = this.Substring(0, 0);
+            return false;
+        }
+        result = new StringSlice(this.Text, thisEnd..otherEnd);
+        return true;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /// <summary>
     /// Gets the text and range that define this slice.
@@ -488,7 +627,7 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
         var (offset, length) = this.GetOffsetAndLength();
         builder.Append(offset.ToString());
         builder.Append("..");
-        builder.Append((offset+length).ToString());
+        builder.Append((offset + length).ToString());
         builder.Append(":");
         if (this.Length < 32) {
             builder.Append(this.Text[this.Range]);

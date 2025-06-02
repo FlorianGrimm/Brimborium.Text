@@ -177,9 +177,8 @@ public class StringSliceTests {
             var abcdefg = new StringSlice("abcdefg");
             var abc = abcdefg.Substring(0, 3);
             var efg = abcdefg.Substring(4, 3);
-            Assert.Throws<ArgumentOutOfRangeException>(() => {
-                abc.Left(efg);
-            });
+            var sut = abc.Left(efg);
+            Assert.Equal("abcd", sut.ToString());
         }
     }
 
@@ -972,88 +971,215 @@ public class StringSliceTests {
         // Arrange
         var original = new StringSlice("Hello World");
         var other = original.Substring(6); // "World"
-        
+
         // Act
         var result = original.SubstringBetweenStartAndStart(other);
-        
+
         // Assert
         Assert.Equal("Hello ", result.ToString());
-        
+
         // Test with invalid other slice (different text)
         var differentText = new StringSlice("Different");
         Assert.Throws<ArgumentOutOfRangeException>(() => original.SubstringBetweenStartAndStart(differentText));
-        
+
         // Test with invalid other slice (offset before this slice)
         Assert.Throws<ArgumentOutOfRangeException>(() => other.SubstringBetweenStartAndStart(original));
-        
+
         // Test with invalid other slice (offset outside this slice)
         var beyondSlice = new StringSlice("Hello World Extra", 12..17); // "Extra"
         Assert.Throws<ArgumentOutOfRangeException>(() => original.SubstringBetweenStartAndStart(beyondSlice));
     }
-    
+
     [Fact]
     public void SubstringBetweenStartAndEnd_Test() {
         // Arrange
         var original = new StringSlice("Hello World");
         var other = original.Substring(6, 5); // "World"
-        
+
         // Act
         var result = original.SubstringBetweenStartAndEnd(other);
-        
+
         // Assert
         Assert.Equal("Hello World", result.ToString());
-        
+
         // Test with invalid other slice (different text)
         var differentText = new StringSlice("Different");
         Assert.Throws<ArgumentOutOfRangeException>(() => original.SubstringBetweenStartAndEnd(differentText));
-        
+
         // Test with invalid other slice (end beyond this slice)
         var longText = "Hello World and more text";
         var longSlice = new StringSlice(longText);
         var partSlice = new StringSlice(longText, 0..11); // "Hello World"
-        Assert.Throws<ArgumentOutOfRangeException>(() => partSlice.SubstringBetweenStartAndEnd(longSlice));
+        var act = partSlice.SubstringBetweenStartAndEnd(longSlice);
+        Assert.Equal("Hello World and more text", act.ToString());
     }
-    
+
     [Fact]
     public void SubstringBetweenEndAndStart_Test() {
         // Arrange
         var text = "Hello World Gap Text";
         var first = new StringSlice(text)[0..11]; // "Hello World"
         var second = new StringSlice(text)[16..20]; // "Text"
-        
+
         // Act
         var result = first.SubstringBetweenEndAndStart(second);
-        
+
         // Assert
         Assert.Equal(" Gap ", result.ToString());
-        
+
         // Test with invalid other slice (different text)
         var differentText = new StringSlice("Different");
         Assert.Throws<ArgumentOutOfRangeException>(() => first.SubstringBetweenEndAndStart(differentText));
-        
+
         // Test with invalid other slice (start before this slice's end)
         Assert.Throws<ArgumentOutOfRangeException>(() => second.SubstringBetweenEndAndStart(first));
     }
-    
+
     [Fact]
     public void SubstringBetweenEndAndEnd_Test() {
         // Arrange
         var text = "Hello World Gap Text";
         var first = new StringSlice(text, 0..5); // "Hello"
         var second = new StringSlice(text, 0..20); // "Hello World Gap Text"
-        
+
         // Act
         var result = first.SubstringBetweenEndAndEnd(second);
-        
+
         // Assert
         Assert.Equal(" World Gap Text", result.ToString());
-        
+
         // Test with invalid other slice (different text)
         var differentText = new StringSlice("Different");
         Assert.Throws<ArgumentOutOfRangeException>(() => first.SubstringBetweenEndAndEnd(differentText));
-        
+
         // Test with invalid other slice (end before this slice's end)
         Assert.Throws<ArgumentOutOfRangeException>(() => second.SubstringBetweenEndAndEnd(first));
+    }
+
+        [Fact]
+    public void TrySubstringBetweenStartAndStart_Test() {
+        // Arrange
+        var text = "Hello World Gap Text";
+        var first = new StringSlice(text, 0..11); // "Hello World"
+        var second = new StringSlice(text, 16..20); // "Text"
+        
+        // Act & Assert - Valid case
+        {
+            bool success = first.TrySubstringBetweenStartAndStart(second, out var result);
+            
+            Assert.True(success);
+            Assert.Equal("Hello World Gap ", result.ToString());
+        }
+        
+        // Act & Assert - Invalid case (second starts before first)
+        {
+            bool success = second.TrySubstringBetweenStartAndStart(first, out var result);
+            
+            Assert.False(success);
+        }
+        
+        // Act & Assert - Different text throws exception
+        {
+            var differentText = new StringSlice("Different");
+            Assert.Throws<ArgumentOutOfRangeException>(() => 
+                first.TrySubstringBetweenStartAndStart(differentText, out _));
+        }
+    }
+    
+    [Fact]
+    public void TrySubstringBetweenStartAndEnd_Test() {
+        // Arrange
+        var text = "Hello World Gap Text";
+        var first = new StringSlice(text, 0..5); // "Hello"
+        var second = new StringSlice(text, 6..11); // "World"
+        
+        // Act & Assert - Valid case
+        {
+            bool success = first.TrySubstringBetweenStartAndEnd(second, out var result);
+            
+            Assert.True(success);
+            Assert.Equal("Hello World", result.ToString());
+        }
+        
+        // Act & Assert - Invalid case (first starts after second ends)
+        {
+            var later = new StringSlice(text, 12..16); // "Gap"
+            bool success = later.TrySubstringBetweenStartAndEnd(second, out var result);
+            
+            Assert.False(success);
+            Assert.Equal("", result.ToString());
+        }
+        
+        // Act & Assert - Different text throws exception
+        {
+            var differentText = new StringSlice("Different");
+            Assert.Throws<ArgumentOutOfRangeException>(() => 
+                first.TrySubstringBetweenStartAndEnd(differentText, out _));
+        }
+    }
+    
+    [Fact]
+    public void TrySubstringBetweenEndAndStart_Test() {
+        // Arrange
+        var text = "Hello World Gap Text";
+        var first = new StringSlice(text, 0..5); // "Hello"
+        var second = new StringSlice(text, 12..15); // "Gap"
+        
+        // Act & Assert - Valid case
+        {
+            bool success = first.TrySubstringBetweenEndAndStart(second, out var result);
+            
+            Assert.True(success);
+            Assert.Equal(" World ", result.ToString());
+        }
+        
+        // Act & Assert - Invalid case (first ends after second starts)
+        {
+            var overlap = new StringSlice(text, 0..13); // "Hello World G"
+            bool success = overlap.TrySubstringBetweenEndAndStart(second, out var result);
+            
+            Assert.False(success);
+            Assert.Equal("", result.ToString());
+        }
+        
+        // Act & Assert - Different text throws exception
+        {
+            var differentText = new StringSlice("Different");
+            Assert.Throws<ArgumentOutOfRangeException>(() => 
+                first.TrySubstringBetweenEndAndStart(differentText, out _));
+        }
+    }
+    
+    [Fact]
+    public void TrySubstringBetweenEndAndEnd_Test() {
+        // Arrange
+        var text = "Hello World Gap Text";
+        var first = new StringSlice(text, 0..5); // "Hello"
+        var second = new StringSlice(text, 6..11); // "World"
+        
+        // Act & Assert - Valid case
+        {
+            bool success = first.TrySubstringBetweenEndAndEnd(second, out var result);
+            
+            Assert.True(success);
+            Assert.Equal(" World", result.ToString());
+        }
+        
+        // Act & Assert - Invalid case (first ends after second ends)
+        {
+            var longer = new StringSlice(text, 0..15); // "Hello World Gap"
+            bool success = longer.TrySubstringBetweenEndAndEnd(second, out var result);
+            
+            Assert.False(success);
+            Assert.Equal("", result.ToString());
+        }
+        
+        // Act & Assert - Different text throws exception
+        {
+            var differentText = new StringSlice("Different");
+            Assert.Throws<ArgumentOutOfRangeException>(() => 
+                first.TrySubstringBetweenEndAndEnd(differentText, out _));
+        }
     }
 }
 
