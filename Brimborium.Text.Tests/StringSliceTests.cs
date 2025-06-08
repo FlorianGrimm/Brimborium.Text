@@ -1056,128 +1056,128 @@ public class StringSliceTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => second.SubstringBetweenEndAndEnd(first));
     }
 
-        [Fact]
+    [Fact]
     public void TrySubstringBetweenStartAndStart_Test() {
         // Arrange
         var text = "Hello World Gap Text";
         var first = new StringSlice(text, 0..11); // "Hello World"
         var second = new StringSlice(text, 16..20); // "Text"
-        
+
         // Act & Assert - Valid case
         {
             bool success = first.TrySubstringBetweenStartAndStart(second, out var result);
-            
+
             Assert.True(success);
             Assert.Equal("Hello World Gap ", result.ToString());
         }
-        
+
         // Act & Assert - Invalid case (second starts before first)
         {
             bool success = second.TrySubstringBetweenStartAndStart(first, out var result);
-            
+
             Assert.False(success);
         }
-        
+
         // Act & Assert - Different text throws exception
         {
             var differentText = new StringSlice("Different");
-            Assert.Throws<ArgumentOutOfRangeException>(() => 
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
                 first.TrySubstringBetweenStartAndStart(differentText, out _));
         }
     }
-    
+
     [Fact]
     public void TrySubstringBetweenStartAndEnd_Test() {
         // Arrange
         var text = "Hello World Gap Text";
         var first = new StringSlice(text, 0..5); // "Hello"
         var second = new StringSlice(text, 6..11); // "World"
-        
+
         // Act & Assert - Valid case
         {
             bool success = first.TrySubstringBetweenStartAndEnd(second, out var result);
-            
+
             Assert.True(success);
             Assert.Equal("Hello World", result.ToString());
         }
-        
+
         // Act & Assert - Invalid case (first starts after second ends)
         {
             var later = new StringSlice(text, 12..16); // "Gap"
             bool success = later.TrySubstringBetweenStartAndEnd(second, out var result);
-            
+
             Assert.False(success);
             Assert.Equal("", result.ToString());
         }
-        
+
         // Act & Assert - Different text throws exception
         {
             var differentText = new StringSlice("Different");
-            Assert.Throws<ArgumentOutOfRangeException>(() => 
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
                 first.TrySubstringBetweenStartAndEnd(differentText, out _));
         }
     }
-    
+
     [Fact]
     public void TrySubstringBetweenEndAndStart_Test() {
         // Arrange
         var text = "Hello World Gap Text";
         var first = new StringSlice(text, 0..5); // "Hello"
         var second = new StringSlice(text, 12..15); // "Gap"
-        
+
         // Act & Assert - Valid case
         {
             bool success = first.TrySubstringBetweenEndAndStart(second, out var result);
-            
+
             Assert.True(success);
             Assert.Equal(" World ", result.ToString());
         }
-        
+
         // Act & Assert - Invalid case (first ends after second starts)
         {
             var overlap = new StringSlice(text, 0..13); // "Hello World G"
             bool success = overlap.TrySubstringBetweenEndAndStart(second, out var result);
-            
+
             Assert.False(success);
             Assert.Equal("", result.ToString());
         }
-        
+
         // Act & Assert - Different text throws exception
         {
             var differentText = new StringSlice("Different");
-            Assert.Throws<ArgumentOutOfRangeException>(() => 
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
                 first.TrySubstringBetweenEndAndStart(differentText, out _));
         }
     }
-    
+
     [Fact]
     public void TrySubstringBetweenEndAndEnd_Test() {
         // Arrange
         var text = "Hello World Gap Text";
         var first = new StringSlice(text, 0..5); // "Hello"
         var second = new StringSlice(text, 6..11); // "World"
-        
+
         // Act & Assert - Valid case
         {
             bool success = first.TrySubstringBetweenEndAndEnd(second, out var result);
-            
+
             Assert.True(success);
             Assert.Equal(" World", result.ToString());
         }
-        
+
         // Act & Assert - Invalid case (first ends after second ends)
         {
             var longer = new StringSlice(text, 0..15); // "Hello World Gap"
             bool success = longer.TrySubstringBetweenEndAndEnd(second, out var result);
-            
+
             Assert.False(success);
             Assert.Equal("", result.ToString());
         }
-        
+
         // Act & Assert - Different text throws exception
         {
             var differentText = new StringSlice("Different");
-            Assert.Throws<ArgumentOutOfRangeException>(() => 
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
                 first.TrySubstringBetweenEndAndEnd(differentText, out _));
         }
     }
@@ -1295,5 +1295,320 @@ public class StringSliceAsSpanTests {
         Assert.Equal(8, orginal.Substring(2).Substring(6).GetOffsetAndLength().Offset);
         Assert.Equal(8, orginal.Substring(8).GetOffsetAndLength().Offset);
 
+    }
+}
+
+public class StringSliceAdjustTests {
+    [Fact]
+    public void TryAdjustStartToLeft_Test() {
+        // Arrange
+        var text = "  Hello World";
+        var slice = new StringSlice(text, 2..13); // "Hello World"
+        
+        // Act - Successfully adjust to include whitespace
+        bool success = slice.TryAdjustStartToLeft(
+            ch => char.IsWhiteSpace(ch) ? true : false, 
+            out var result);
+        
+        // Assert
+        Assert.True(success);
+        Assert.Equal("  ", result.Difference.ToString());
+        Assert.Equal("  Hello World", result.Value.ToString());
+        
+        // Act - Stop adjustment with null return
+        bool nullStop = slice.TryAdjustStartToLeft(
+            ch => null, 
+            out var nullResult);
+        
+        // Assert - Should return false when null is returned
+        Assert.False(nullStop);
+        Assert.Equal("Hello World", nullResult.Value.ToString());
+        
+        // Act - Stop adjustment with false return
+        bool falseStop = slice.TryAdjustStartToLeft(
+            ch => false, 
+            out var falseResult);
+        
+        // Assert - Should return false when false is returned immediately
+        Assert.False(falseStop);
+        Assert.Equal("Hello World", falseResult.Value.ToString());
+    }
+    
+    [Fact]
+    public void TryAdjustStartToRight_Test() {
+        // Arrange
+        var text = "  Hello World";
+        var slice = new StringSlice(text, 0..13); // "  Hello World"
+        
+        // Act - Successfully adjust to exclude whitespace
+        bool success = slice.TryAdjustStartToRight(
+            ch => char.IsWhiteSpace(ch) ? true : false, 
+            out var result);
+        
+        // Assert
+        Assert.True(success);
+        Assert.Equal("  ", result.Difference.ToString());
+        Assert.Equal("Hello World", result.Value.ToString());
+        
+        // Act - Stop adjustment with null return
+        bool nullStop = slice.TryAdjustStartToRight(
+            ch => null, 
+            out var nullResult);
+        
+        // Assert - Should return false when null is returned
+        Assert.False(nullStop);
+        Assert.Equal("  Hello World", nullResult.Value.ToString());
+        
+        // Act - Stop adjustment with false return
+        bool falseStop = slice.TryAdjustStartToRight(
+            ch => false, 
+            out var falseResult);
+        
+        // Assert - Should return false when false is returned immediately
+        Assert.False(falseStop);
+        Assert.Equal("  Hello World", falseResult.Value.ToString());
+    }
+    
+    [Fact]
+    public void TryAdjustEndToLeft_Test() {
+        // Arrange
+        var text = "Hello World  ";
+        var slice = new StringSlice(text, 0..13); // "Hello World  "
+        
+        // Act - Successfully adjust to exclude trailing whitespace
+        bool success = slice.TryAdjustEndToLeft(
+            ch => char.IsWhiteSpace(ch) ? true : false, 
+            out var result);
+        
+        // Assert
+        Assert.True(success);
+        Assert.Equal("  ", result.Difference.ToString());
+        Assert.Equal("Hello World", result.Value.ToString());
+        
+        // Act - Stop adjustment with null return
+        bool nullStop = slice.TryAdjustEndToLeft(
+            ch => null, 
+            out var nullResult);
+        
+        // Assert - Should return false when null is returned
+        Assert.False(nullStop);
+        Assert.Equal("Hello World  ", nullResult.Value.ToString());
+        
+        // Act - Stop adjustment with false return
+        bool falseStop = slice.TryAdjustEndToLeft(
+            ch => false, 
+            out var falseResult);
+        
+        // Assert - Should return false when false is returned immediately
+        Assert.False(falseStop);
+        Assert.Equal("Hello World  ", falseResult.Value.ToString());
+        
+        // Arrange - Slice with mixed content
+        var mixedSlice = new StringSlice("abc123", 0..6);
+        
+        // Act - Adjust to exclude digits with conditional logic
+        bool mixedSuccess = mixedSlice.TryAdjustEndToLeft(
+            ch => {
+                if (char.IsDigit(ch)) return true;
+                return false;
+            }, 
+            out var mixedResult);
+        
+        // Assert
+        Assert.True(mixedSuccess);
+        Assert.Equal("123", mixedResult.Difference.ToString());
+        Assert.Equal("abc", mixedResult.Value.ToString());
+    }
+    
+    [Fact]
+    public void TryAdjustEndToRight_Test() {
+        // Arrange
+        var text = "Hello World";
+        var slice = new StringSlice(text, 0..5); // "Hello"
+        
+        // Act - Successfully adjust to include the space and "World"
+        bool success = slice.TryAdjustEndToRight(
+            ch => true, 
+            out var result);
+        
+        // Assert
+        Assert.True(success);
+        Assert.Equal(" World", result.Difference.ToString());
+        Assert.Equal("Hello World", result.Value.ToString());
+        
+        // Act - Stop adjustment with null return
+        bool nullStop = slice.TryAdjustEndToRight(
+            ch => null, 
+            out var nullResult);
+        
+        // Assert - Should return false when null is returned
+        Assert.False(nullStop);
+        Assert.Equal("Hello", nullResult.Value.ToString());
+        
+        // Act - Stop adjustment with false return
+        bool falseStop = slice.TryAdjustEndToRight(
+            ch => false, 
+            out var falseResult);
+        
+        // Assert - Should return false when false is returned
+        Assert.False(falseStop);
+        Assert.Equal("Hello", falseResult.Value.ToString());
+        
+        // Arrange - Slice with specific condition
+        var specificSlice = new StringSlice("Hello World123", 0..11); // "Hello World"
+        
+        // Act - Adjust to include only digits
+        bool specificSuccess = specificSlice.TryAdjustEndToRight(
+            ch => char.IsDigit(ch) ? true : false, 
+            out var specificResult);
+        
+        // Assert
+        Assert.True(specificSuccess);
+        Assert.Equal("123", specificResult.Difference.ToString());
+        Assert.Equal("Hello World123", specificResult.Value.ToString());
+    }
+    
+    [Fact]
+    public void TryAdjust_WithEmptySlice_ReturnsExpectedResults() {
+        // Arrange
+        var emptySlice = new StringSlice("");
+        
+        // Act & Assert - TryAdjustStartToLeft
+        {
+            bool success = emptySlice.TryAdjustStartToLeft(
+                ch => true, 
+                out var result);
+            
+            Assert.False(success);
+            Assert.Equal("", result.Value.ToString());
+            Assert.Equal("", result.Difference.ToString());
+        }
+        
+        // Act & Assert - TryAdjustStartToRight
+        {
+            bool success = emptySlice.TryAdjustStartToRight(
+                ch => true, 
+                out var result);
+            
+            Assert.False(success);
+            Assert.Equal("", result.Value.ToString());
+            Assert.Equal("", result.Difference.ToString());
+        }
+        
+        // Act & Assert - TryAdjustEndToLeft
+        {
+            bool success = emptySlice.TryAdjustEndToLeft(
+                ch => true, 
+                out var result);
+            
+            Assert.False(success);
+            Assert.Equal("", result.Value.ToString());
+            Assert.Equal("", result.Difference.ToString());
+        }
+        
+        // Act & Assert - TryAdjustEndToRight
+        {
+            bool success = emptySlice.TryAdjustEndToRight(
+                ch => true, 
+                out var result);
+            
+            Assert.False(success);
+            Assert.Equal("", result.Value.ToString());
+            Assert.Equal("", result.Difference.ToString());
+        }
+    }
+    
+    [Fact]
+    public void TryAdjust_WithNestedSlices_MaintainsCorrectOffsets() {
+        // Arrange
+        var originalText = "  Hello World  ";
+        var originalSlice = new StringSlice(originalText);
+        var trimmedSlice = originalSlice.Substring(2..11); // "Hello Wor"
+        
+        // Act - Adjust start to left
+        bool startLeftSuccess = trimmedSlice.TryAdjustStartToLeft(
+            ch => char.IsWhiteSpace(ch) ? true : false, 
+            out var startLeftResult);
+        
+        // Assert
+        Assert.True(startLeftSuccess);
+        Assert.Equal("  ", startLeftResult.Difference.ToString());
+        Assert.Equal("  Hello Wor", startLeftResult.Value.ToString());
+        Assert.Equal(0, startLeftResult.Value.Range.Start.Value);
+        
+        // Act - Adjust end to right
+        bool endRightSuccess = trimmedSlice.TryAdjustEndToRight(
+            ch => ch == 'l' || ch == 'd' || char.IsWhiteSpace(ch) ? true : false, 
+            out var endRightResult);
+        
+        // Assert
+        Assert.True(endRightSuccess);
+        Assert.Equal("ld  ", endRightResult.Difference.ToString());
+        Assert.Equal("Hello World  ", endRightResult.Value.ToString());
+        Assert.Equal(15, endRightResult.Value.Range.End.Value);
+    }
+    
+    [Fact]
+    public void TryAdjust_WithComplexPredicates_WorksCorrectly() {
+        // Arrange
+        var text = "12abc34def56";
+        var slice = new StringSlice(text, 2..8); // "abc34d"
+        
+        // Act - Find digits to the left
+        bool leftDigitsSuccess = slice.TryAdjustStartToLeft(
+            ch => {
+                if (char.IsDigit(ch)) return true;
+                return false;
+            }, 
+            out var leftDigitsResult);
+        
+        // Assert
+        Assert.True(leftDigitsSuccess);
+        Assert.Equal("12", leftDigitsResult.Difference.ToString());
+        Assert.Equal("12abc34d", leftDigitsResult.Value.ToString());
+        
+        // Act - Find digits to the right
+        bool rightDigitsSuccess = slice.TryAdjustEndToRight(
+            ch => {
+                return (ch == 'e' || ch == 'f' || char.IsDigit(ch));
+            }, 
+            out var rightDigitsResult);
+        
+        // Assert
+        Assert.True(rightDigitsSuccess);
+        Assert.Equal("ef56", rightDigitsResult.Difference.ToString());
+        Assert.Equal("abc34def56", rightDigitsResult.Value.ToString());
+    }
+    
+    [Fact]
+    public void TryAdjust_WithConditionalStops_WorksCorrectly() {
+        // Arrange
+        var text = "abc123def456";
+        var slice = new StringSlice(text, 3..6); // "123"
+        
+        // Act - Adjust left until we hit 'b', then stop
+        bool leftSuccess = slice.TryAdjustStartToLeft(
+            ch => {
+                if (ch == 'b') return false; // Stop at 'b'
+                return true;                 // Include everything else
+            }, 
+            out var leftResult);
+        
+        // Assert
+        Assert.True(leftSuccess);
+        Assert.Equal("c", leftResult.Difference.ToString());
+        Assert.Equal("c123", leftResult.Value.ToString());
+        
+        // Act - Adjust right until we hit 'e', then abort
+        bool rightSuccess = slice.TryAdjustEndToRight(
+            ch => {
+                if (ch == 'd') return true;  // Include 'd'
+                return null;                 // Abort for anything else
+            }, 
+            out var rightResult);
+        
+        // Assert
+        Assert.False(rightSuccess); // Should return false because we hit null
+        Assert.Equal("123d", rightResult.Value.ToString());
     }
 }

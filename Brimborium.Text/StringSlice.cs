@@ -158,6 +158,20 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
             : this.Range.GetOffsetAndLength(this.Text.Length);
 
     /// <summary>
+    /// Gets the start and end of the range.
+    /// </summary>
+    /// <param name="GetStartAndEnd("></param>
+    /// <returns>The start and end of the range.</returns>
+    public (int Start, int End) GetStartAndEnd() {
+        if (this.Text is null) {
+            return (Start: 0, End: 0);
+        } else {
+            var (offset, length) = this.Range.GetOffsetAndLength(this.Text.Length);
+            return (Start: offset, End: offset + length);
+        }
+    }
+
+    /// <summary>
     /// The offset(start) of the range.
     /// </summary>
     public int GetOffset() {
@@ -781,12 +795,373 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
         if (0 <= position) {
             var (thisOffset, thisLength) = this.GetOffsetAndLength();
             var start = thisOffset + position;
-            result = new StringSliceSearchResult(this._Text, thisOffset, start, searchFor.Length, thisLength);
+            result = new StringSliceSearchResult(this._Text, thisOffset, start, start + searchFor.Length, thisOffset + thisLength);
             return true;
         } else {
             result = new StringSliceSearchResult(this._Text, -1, -1, -1, -1);
             return false;
         }
+    }
+
+    /// <summary>
+    /// Adjusts the start position of the slice to the left (towards the beginning of the string) 
+    /// while the predicate returns true for each character.
+    /// </summary>
+    /// <param name="predicate">A function that determines whether a character should be included in the adjusted slice.</param>
+    /// <returns>A <see cref="StringSliceSearchResult"/> containing the adjusted slice information.</returns>
+    /// <remarks>
+    /// This method examines characters to the left of the current slice's start position.
+    /// It stops when either the predicate returns false or the beginning of the string is reached.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var slice = new StringSlice("Hello World", 6..11); // "World"
+    /// var result = slice.AdjustStartToLeft(ch => char.IsWhiteSpace(ch));
+    /// Console.WriteLine(result.Value.ToString()); // " World"
+    /// </code>
+    /// </example>
+    public AdjustResult AdjustStartToLeft(Func<char, bool> predicate) {
+        var (thisStart, thisEnd) = this.GetStartAndEnd();
+        var foundStart = thisStart;
+        while (0 < foundStart) {
+            var ch = this._Text[foundStart - 1];
+            if (predicate(ch)) {
+                foundStart--;
+            } else {
+                break;
+            }
+        }
+        return new AdjustResult(
+            Value: new StringSlice(this._Text, new Range(foundStart, thisEnd)),
+            Difference: new StringSlice(this._Text, new Range(foundStart, thisStart)));
+    }
+
+    /// <summary>
+    /// Adjusts the start position of the slice to the right (towards the end of the string) 
+    /// while the predicate returns true for each character.
+    /// </summary>
+    /// <param name="predicate">A function that determines whether a character should be excluded from the adjusted slice.</param>
+    /// <returns>A <see cref="AdjustResult"/> containing the adjusted slice information.</returns>
+    /// <remarks>
+    /// This method examines characters from the current slice's start position moving right.
+    /// It stops when either the predicate returns false or the end of the slice is reached.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var slice = new StringSlice("  Hello World");
+    /// var result = slice.AdjustStartToRight(ch => char.IsWhiteSpace(ch));
+    /// Console.WriteLine(result.Value.ToString()); // "Hello World"
+    /// </code>
+    /// </example>
+    public AdjustResult AdjustStartToRight(Func<char, bool> predicate) {
+        var (thisStart, thisEnd) = this.GetStartAndEnd();
+        var foundStart = thisStart;
+        var textLength = this._Text.Length;
+        while ((foundStart < thisEnd) && (foundStart < textLength)) {
+            var ch = this._Text[foundStart];
+            if (predicate(ch)) {
+                foundStart++;
+            } else {
+                break;
+            }
+        }
+        return new AdjustResult(
+            Value: new StringSlice(this._Text, new Range(foundStart, thisEnd)),
+            Difference: new StringSlice(this._Text, new Range(thisStart, foundStart)));
+    }
+
+    /// <summary>
+    /// Adjusts the end position of the slice to the left (towards the beginning of the string) 
+    /// while the predicate returns true for each character.
+    /// </summary>
+    /// <param name="predicate">A function that determines whether a character should be excluded from the adjusted slice.</param>
+    /// <returns>A <see cref="AdjustResult"/> containing the adjusted slice information.</returns>
+    /// <remarks>
+    /// This method examines characters before the current slice's end position moving left.
+    /// It stops when either the predicate returns false or the start of the slice is reached.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var slice = new StringSlice("Hello World  ");
+    /// var result = slice.AdjustEndToLeft(ch => char.IsWhiteSpace(ch));
+    /// Console.WriteLine(result.Value.ToString()); // "Hello World"
+    /// </code>
+    /// </example>
+    public AdjustResult AdjustEndToLeft(Func<char, bool> predicate) {
+        var (thisStart, thisEnd) = this.GetStartAndEnd();
+        var foundStart = thisStart;
+        var foundEnd = thisEnd;
+        while ((0 < foundEnd) && (foundStart < foundEnd)) {
+            var ch = this._Text[foundEnd - 1];
+            if (predicate(ch)) {
+                foundEnd--;
+            } else {
+                break;
+            }
+        }
+        return new AdjustResult(
+            Value: new StringSlice(this._Text, new Range(thisStart, foundEnd)),
+            Difference: new StringSlice(this._Text, new Range(foundEnd, thisEnd)));
+    }
+
+    /// <summary>
+    /// Adjusts the end position of the slice to the right (towards the end of the string) 
+    /// while the predicate returns true for each character.
+    /// </summary>
+    /// <param name="predicate">A function that determines whether a character should be included in the adjusted slice.</param>
+    /// <returns>A <see cref="AdjustResult"/> containing the adjusted slice information.</returns>
+    /// <remarks>
+    /// This method examines characters after the current slice's end position moving right.
+    /// It stops when either the predicate returns false or the end of the string is reached.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var slice = new StringSlice("Hello World", 0..5); // "Hello"
+    /// var result = slice.AdjustEndToRight(ch => char.IsWhiteSpace(ch));
+    /// Console.WriteLine(result.Value.ToString()); // "Hello "
+    /// </code>
+    /// </example>
+    public AdjustResult AdjustEndToRight(Func<char, bool> predicate) {
+        var (thisStart, thisEnd) = this.GetStartAndEnd();
+        var foundStart = thisEnd;
+        var foundEnd = thisEnd;
+        var textLength = this._Text.Length;
+        while ((foundEnd < textLength)) {
+            var ch = this._Text[foundEnd];
+            if (predicate(ch)) {
+                foundEnd++;
+            } else {
+                break;
+            }
+        }
+        return new AdjustResult(
+            Value:new StringSlice(this._Text, new Range(thisStart, foundEnd)),
+            Difference: new StringSlice(this._Text, new Range(thisEnd, foundEnd)));
+    }
+
+    /// <summary>
+    /// Attempts to adjust the start position of the slice to the left (towards the beginning of the string)
+    /// based on a predicate function that can conditionally include characters.
+    /// </summary>
+    /// <param name="predicate">A function that determines whether a character should be included in the adjusted slice.
+    /// Return true to include the character and continue, false to stop and include previous adjustments,
+    /// or null to stop and discard all adjustments.</param>
+    /// <param name="value">When this method returns, contains the adjusted slice information if successful,
+    /// or the original slice if unsuccessful.</param>
+    /// <returns>true if any adjustments were made and accepted; otherwise, false.</returns>
+    /// <remarks>
+    /// This method examines characters to the left of the current slice's start position.
+    /// It stops when either the predicate returns false/null or the beginning of the string is reached.
+    /// Unlike <see cref="AdjustStartToLeft"/>, this method allows for conditional processing with the
+    /// ability to abort the operation based on the predicate's return value.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var slice = new StringSlice("Hello World", 6..11); // "World"
+    /// bool success = slice.TryAdjustStartToLeft(
+    ///     ch => char.IsWhiteSpace(ch) ? true : false, 
+    ///     out var result);
+    /// Assert.True(success == true && result.Value.ToString() == " World");
+    /// </code>
+    /// </example>
+    public bool TryAdjustStartToLeft(Func<char, bool?> predicate, out AdjustResult value) {
+        var result = false;
+        var (thisStart, thisEnd) = this.GetStartAndEnd();
+        var foundStart = thisStart;
+        while (0 < foundStart) {
+            var ch = this._Text[foundStart - 1];
+            var resultPredicate = predicate(ch);
+            if (resultPredicate.HasValue) {
+                if (resultPredicate.Value) {
+                    foundStart--;
+                    result = true;
+                } else {
+                    value = new AdjustResult(
+                        Value: new StringSlice(this._Text, new Range(foundStart, thisEnd)),
+                        Difference: new StringSlice(this._Text, new Range(foundStart, thisStart)));
+                    return result;
+                }
+            } else {
+                value = new AdjustResult(
+                    Value: new StringSlice(this._Text, new Range(foundStart, thisEnd)),
+                    Difference: new StringSlice(this._Text, new Range(foundStart, thisStart)));
+                return false;
+            }
+        }
+        value = new AdjustResult(
+                    Value: new StringSlice(this._Text, new Range(foundStart, thisEnd)),
+                    Difference: new StringSlice(this._Text, new Range(foundStart, thisStart)));
+        return result;
+    }
+
+    /// <summary>
+    /// Attempts to adjust the start position of the slice to the right (towards the end of the string)
+    /// based on a predicate function that can conditionally exclude characters.
+    /// </summary>
+    /// <param name="predicate">A function that determines whether a character should be excluded from the adjusted slice.
+    /// Return true to exclude the character and continue, false to stop and include previous adjustments,
+    /// or null to stop and discard all adjustments.</param>
+    /// <param name="value">When this method returns, contains the adjusted slice information if successful,
+    /// or the original slice if unsuccessful.</param>
+    /// <returns>true if any adjustments were made and accepted; otherwise, false.</returns>
+    /// <remarks>
+    /// This method examines characters from the current slice's start position moving right.
+    /// It stops when either the predicate returns false/null or the end of the slice is reached.
+    /// Unlike <see cref="AdjustStartToRight"/>, this method allows for conditional processing with the
+    /// ability to abort the operation based on the predicate's return value.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var slice = new StringSlice("  Hello World");
+    /// bool success = slice.TryAdjustStartToRight(
+    ///     ch => char.IsWhiteSpace(ch) ? true : false, 
+    ///     out var result);
+    /// Assert.True(success == true && result.Value.ToString() == "Hello World");
+    /// </code>
+    /// </example>
+    public bool TryAdjustStartToRight(Func<char, bool?> predicate, out AdjustResult value) {
+        var result = false;
+        var (thisStart, thisEnd) = this.GetStartAndEnd();
+        var foundStart = thisStart;
+        var textLength = this._Text.Length;
+        while ((foundStart < thisEnd) && (foundStart < textLength)) {
+            var ch = this._Text[foundStart];
+            var resultPredicate = predicate(ch);
+            if (resultPredicate.HasValue) {
+                if (resultPredicate.Value) {
+                    foundStart++;
+                    result = true;
+                } else {
+                    value = new AdjustResult(
+                        Value: new StringSlice(this._Text, new Range(foundStart, thisEnd)),
+                        Difference: new StringSlice(this._Text, new Range(thisStart, foundStart)));
+                    return result;
+                }
+            } else {
+                value = new AdjustResult(
+                    Value: new StringSlice(this._Text, new Range(foundStart, thisEnd)),
+                    Difference: new StringSlice(this._Text, new Range(thisStart, foundStart)));
+                return false;
+            }
+        }
+        value = new AdjustResult(
+            Value: new StringSlice(this._Text, new Range(foundStart, thisEnd)),
+            Difference: new StringSlice(this._Text, new Range(thisStart, foundStart)));
+        return result;
+    }
+
+    /// <summary>
+    /// Attempts to adjust the end position of the slice to the left (towards the beginning of the string)
+    /// based on a predicate function that can conditionally exclude characters.
+    /// </summary>
+    /// <param name="predicate">A function that determines whether a character should be excluded from the adjusted slice.
+    /// Return true to exclude the character and continue, false to stop and include previous adjustments,
+    /// or null to stop and discard all adjustments.</param>
+    /// <param name="value">When this method returns, contains the adjusted slice information if successful,
+    /// or the original slice if unsuccessful.</param>
+    /// <returns>true if any adjustments were made and accepted; otherwise, false.</returns>
+    /// <remarks>
+    /// This method examines characters before the current slice's end position moving left.
+    /// It stops when either the predicate returns false/null or the start of the slice is reached.
+    /// Unlike <see cref="AdjustEndToLeft"/>, this method allows for conditional processing with the
+    /// ability to abort the operation based on the predicate's return value.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var slice = new StringSlice("Hello World  ");
+    /// bool success = slice.TryAdjustEndToLeft(
+    ///     ch => char.IsWhiteSpace(ch) ? true : false, 
+    ///     out var result);
+    /// // success == true, result.Value.ToString() == "Hello World"
+    /// </code>
+    /// </example>
+    public bool TryAdjustEndToLeft(Func<char, bool?> predicate, out AdjustResult value) {
+        var result = false;
+        var (thisStart, thisEnd) = this.GetStartAndEnd();
+        var foundStart = thisStart;
+        var foundEnd = thisEnd;
+        while ((0 < foundEnd) && (foundStart < foundEnd)) {
+            var ch = this._Text[foundEnd - 1];
+            var resultPredicate = predicate(ch);
+            if (resultPredicate.HasValue) {
+                if (resultPredicate.Value) {
+                    foundEnd--;
+                    result = true;
+                } else {
+                    value = new AdjustResult(
+                        Value: new StringSlice(this._Text, new Range(thisStart, foundEnd)),
+                        Difference: new StringSlice(this._Text, new Range(foundEnd, thisEnd)));
+                    return result;
+                }
+            } else {
+                value = new AdjustResult(
+                    Value: new StringSlice(this._Text, new Range(thisStart, foundEnd)),
+                    Difference: new StringSlice(this._Text, new Range(foundEnd, thisEnd)));
+                return false;
+            }
+        }
+        value = new AdjustResult(
+            Value: new StringSlice(this._Text, new Range(thisStart, foundEnd)),
+            Difference: new StringSlice(this._Text, new Range(foundEnd, thisEnd)));
+        return result;
+    }
+
+
+    /// <summary>
+    /// Attempts to adjust the end position of the slice to the right (towards the end of the string)
+    /// based on a predicate function that can conditionally include characters.
+    /// </summary>
+    /// <param name="predicate">A function that determines whether a character should be included in the adjusted slice.
+    /// Return true to include the character and continue, false to stop and include previous adjustments,
+    /// or null to stop and discard all adjustments.</param>
+    /// <param name="value">When this method returns, contains the adjusted slice information if successful,
+    /// or the original slice if unsuccessful.</param>
+    /// <returns>true if any adjustments were made and accepted; otherwise, false.</returns>
+    /// <remarks>
+    /// This method examines characters after the current slice's end position moving right.
+    /// It stops when either the predicate returns false/null or the end of the string is reached.
+    /// Unlike <see cref="AdjustEndToRight"/>, this method allows for conditional processing with the
+    /// ability to abort the operation based on the predicate's return value.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var slice = new StringSlice("Hello", 0..5); // "Hello"
+    /// bool success = slice.TryAdjustEndToRight(
+    ///     ch => ch == ' ' ? true : false, 
+    ///     out var result);
+    /// // If text is "Hello ", success == true, result.Value.ToString() == "Hello "
+    /// </code>
+    /// </example>
+    public bool TryAdjustEndToRight(Func<char, bool?> predicate, out AdjustResult value) {
+        var (thisStart, thisEnd) = this.GetStartAndEnd();
+        var foundStart = thisEnd;
+        var foundEnd = thisEnd;
+        var textLength = this._Text.Length;
+        var result = false;
+        while (foundEnd < textLength) {
+            var ch = this._Text[foundEnd];
+            var resultPredicate = predicate(ch);
+            if (resultPredicate.HasValue) {
+                if (resultPredicate.Value) {
+                    foundEnd++;
+                    result = true;
+                } else {
+                    value = new AdjustResult(
+                        Value: new StringSlice(this._Text, new Range(thisStart, foundEnd)),
+                        Difference: new StringSlice(this._Text, new Range(thisEnd, foundEnd)));
+                    return result;
+                }
+            } else {
+                value = new AdjustResult(
+                    Value: new StringSlice(this._Text, new Range(thisStart, foundEnd)),
+                    Difference: new StringSlice(this._Text, new Range(thisEnd, foundEnd)));
+                return false;
+            }
+        }
+        value = new AdjustResult(
+            Value: new StringSlice(this._Text, new Range(thisStart, foundEnd)),
+            Difference: new StringSlice(this._Text, new Range(thisEnd, foundEnd)));
+        return result;
     }
 
     /// <summary>
