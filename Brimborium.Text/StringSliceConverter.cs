@@ -1,5 +1,16 @@
 ﻿namespace Brimborium.Text;
 
+/// <summary>
+/// Provides JSON conversion functionality for <see cref="StringSlice"/> type.
+/// </summary>
+/// <remarks>
+/// This converter supports two formats:
+/// 1. Direct string format: "text"
+/// 2. Object format: {"Text": "text"}
+/// 
+/// When serializing, it always uses the direct string format.
+/// When deserializing, it accepts both formats for compatibility.
+/// </remarks>
 public class StringSliceConverter : JsonConverter<StringSlice> {
     private static readonly JsonEncodedText PropName_Text = JsonEncodedText.Encode("Text");
     

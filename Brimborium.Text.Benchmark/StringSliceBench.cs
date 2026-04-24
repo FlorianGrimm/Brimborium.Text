@@ -31,5 +31,15 @@ public class StringSliceBench {
         }
     }
 
+
+    [Benchmark]
+    public void BenchStringAsSpan() {
+        var subString = new StringSlice(text);
+        var limit = subString.Length / 2;
+        for (var i = 0; i < limit; i++) {
+            var subString2 = subString.AsSpan().Slice(i, i);
+            if (subString2.Length != i) { throw new Exception(); }
+        }
+    }
 }
 
