@@ -1,8 +1,8 @@
 ﻿namespace Brimborium.Text;
 
 public class NewlineTokenizerTests {
-    [Fact]
-    public void Tokenize_EmptyString_ReturnsEmptyList() {
+    [Test]
+    public async Task Tokenize_EmptyString_ReturnsEmptyList() {
         // Arrange
         var tokenizer = new NewlineTokenizer();
         var input = StringSlice.Empty;
@@ -11,11 +11,11 @@ public class NewlineTokenizerTests {
         var result = tokenizer.Tokenize(input);
         
         // Assert
-        Assert.Empty(result.ListTokens);
+        await Assert.That(result.ListTokens).IsEmpty();
     }
     
-    [Fact]
-    public void Tokenize_SingleWord_ReturnsWordToken() {
+    [Test]
+    public async Task Tokenize_SingleWord_ReturnsWordToken() {
         // Arrange
         var tokenizer = new NewlineTokenizer();
         var input = new StringSlice("Hello");
@@ -24,14 +24,14 @@ public class NewlineTokenizerTests {
         var result = tokenizer.Tokenize(input);
         
         // Assert
-        Assert.Single(result.ListTokens);
+        await Assert.That(result.ListTokens).HasSingleItem();
         var token = result.ListTokens[0];
-        Assert.Equal("Hello", token.Text.ToString());
-        Assert.Equal(NewlineToken.Word, token.Kind);
+        await Assert.That(token.Text.ToString()).IsEqualTo("Hello");
+        await Assert.That(token.Kind).IsEqualTo(NewlineToken.Word);
     }
     
-    [Fact]
-    public void Tokenize_SingleNewline_ReturnsNewlineToken() {
+    [Test]
+    public async Task Tokenize_SingleNewline_ReturnsNewlineToken() {
         // Arrange
         var tokenizer = new NewlineTokenizer();
         
@@ -40,10 +40,10 @@ public class NewlineTokenizerTests {
             var input = new StringSlice("\n");
             var result = tokenizer.Tokenize(input);
             
-            Assert.Single(result.ListTokens);
+            await Assert.That(result.ListTokens).HasSingleItem();
             var token = result.ListTokens[0];
-            Assert.Equal("\n", token.Text.ToString());
-            Assert.Equal(NewlineToken.Newline, token.Kind);
+            await Assert.That(token.Text.ToString()).IsEqualTo("\n");
+            await Assert.That(token.Kind).IsEqualTo(NewlineToken.Newline);
         }
         
         // Act & Assert - CR
@@ -51,10 +51,10 @@ public class NewlineTokenizerTests {
             var input = new StringSlice("\r");
             var result = tokenizer.Tokenize(input);
             
-            Assert.Single(result.ListTokens);
+            await Assert.That(result.ListTokens).HasSingleItem();
             var token = result.ListTokens[0];
-            Assert.Equal("\r", token.Text.ToString());
-            Assert.Equal(NewlineToken.Newline, token.Kind);
+            await Assert.That(token.Text.ToString()).IsEqualTo("\r");
+            await Assert.That(token.Kind).IsEqualTo(NewlineToken.Newline);
         }
         
         // Act & Assert - CRLF
@@ -62,15 +62,15 @@ public class NewlineTokenizerTests {
             var input = new StringSlice("\r\n");
             var result = tokenizer.Tokenize(input);
             
-            Assert.Single(result.ListTokens);
+            await Assert.That(result.ListTokens).HasSingleItem();
             var token = result.ListTokens[0];
-            Assert.Equal("\r\n", token.Text.ToString());
-            Assert.Equal(NewlineToken.Newline, token.Kind);
+            await Assert.That(token.Text.ToString()).IsEqualTo("\r\n");
+            await Assert.That(token.Kind).IsEqualTo(NewlineToken.Newline);
         }
     }
     
-    [Fact]
-    public void Tokenize_WordAndNewline_ReturnsBothTokens() {
+    [Test]
+    public async Task Tokenize_WordAndNewline_ReturnsBothTokens() {
         // Arrange
         var tokenizer = new NewlineTokenizer();
         var input = new StringSlice("Hello\n");
@@ -79,19 +79,19 @@ public class NewlineTokenizerTests {
         var result = tokenizer.Tokenize(input);
         
         // Assert
-        Assert.Equal(2, result.ListTokens.Count);
-        
+        await Assert.That(result.ListTokens.Count).IsEqualTo(2);
+
         var wordToken = result.ListTokens[0];
-        Assert.Equal("Hello", wordToken.Text.ToString());
-        Assert.Equal(NewlineToken.Word, wordToken.Kind);
-        
+        await Assert.That(wordToken.Text.ToString()).IsEqualTo("Hello");
+        await Assert.That(wordToken.Kind).IsEqualTo(NewlineToken.Word);
+
         var newlineToken = result.ListTokens[1];
-        Assert.Equal("\n", newlineToken.Text.ToString());
-        Assert.Equal(NewlineToken.Newline, newlineToken.Kind);
+        await Assert.That(newlineToken.Text.ToString()).IsEqualTo("\n");
+        await Assert.That(newlineToken.Kind).IsEqualTo(NewlineToken.Newline);
     }
     
-    [Fact]
-    public void Tokenize_NewlineAndWord_ReturnsBothTokens() {
+    [Test]
+    public async Task Tokenize_NewlineAndWord_ReturnsBothTokens() {
         // Arrange
         var tokenizer = new NewlineTokenizer();
         var input = new StringSlice("\nHello");
@@ -100,19 +100,19 @@ public class NewlineTokenizerTests {
         var result = tokenizer.Tokenize(input);
         
         // Assert
-        Assert.Equal(2, result.ListTokens.Count);
-        
+        await Assert.That(result.ListTokens.Count).IsEqualTo(2);
+
         var newlineToken = result.ListTokens[0];
-        Assert.Equal("\n", newlineToken.Text.ToString());
-        Assert.Equal(NewlineToken.Newline, newlineToken.Kind);
-        
+        await Assert.That(newlineToken.Text.ToString()).IsEqualTo("\n");
+        await Assert.That(newlineToken.Kind).IsEqualTo(NewlineToken.Newline);
+
         var wordToken = result.ListTokens[1];
-        Assert.Equal("Hello", wordToken.Text.ToString());
-        Assert.Equal(NewlineToken.Word, wordToken.Kind);
+        await Assert.That(wordToken.Text.ToString()).IsEqualTo("Hello");
+        await Assert.That(wordToken.Kind).IsEqualTo(NewlineToken.Word);
     }
     
-    [Fact]
-    public void Tokenize_MultipleNewlines_ReturnsCorrectTokens() {
+    [Test]
+    public async Task Tokenize_MultipleNewlines_ReturnsCorrectTokens() {
         // Arrange
         var tokenizer = new NewlineTokenizer();
         var input = new StringSlice("\r\n\n\r");
@@ -121,20 +121,20 @@ public class NewlineTokenizerTests {
         var result = tokenizer.Tokenize(input);
         
         // Assert
-        Assert.Equal(3, result.ListTokens.Count);
-        
-        Assert.Equal("\r\n", result.ListTokens[0].Text.ToString());
-        Assert.Equal(NewlineToken.Newline, result.ListTokens[0].Kind);
-        
-        Assert.Equal("\n", result.ListTokens[1].Text.ToString());
-        Assert.Equal(NewlineToken.Newline, result.ListTokens[1].Kind);
-        
-        Assert.Equal("\r", result.ListTokens[2].Text.ToString());
-        Assert.Equal(NewlineToken.Newline, result.ListTokens[2].Kind);
+        await Assert.That(result.ListTokens.Count).IsEqualTo(3);
+
+        await Assert.That(result.ListTokens[0].Text.ToString()).IsEqualTo("\r\n");
+        await Assert.That(result.ListTokens[0].Kind).IsEqualTo(NewlineToken.Newline);
+
+        await Assert.That(result.ListTokens[1].Text.ToString()).IsEqualTo("\n");
+        await Assert.That(result.ListTokens[1].Kind).IsEqualTo(NewlineToken.Newline);
+
+        await Assert.That(result.ListTokens[2].Text.ToString()).IsEqualTo("\r");
+        await Assert.That(result.ListTokens[2].Kind).IsEqualTo(NewlineToken.Newline);
     }
     
-    [Fact]
-    public void Tokenize_ComplexText_ReturnsCorrectTokens() {
+    [Test]
+    public async Task Tokenize_ComplexText_ReturnsCorrectTokens() {
         // Arrange
         var tokenizer = new NewlineTokenizer();
         var input = new StringSlice("Line1\r\nLine2\nLine3\rLine4");
@@ -143,32 +143,32 @@ public class NewlineTokenizerTests {
         var result = tokenizer.Tokenize(input);
         
         // Assert
-        Assert.Equal(7, result.ListTokens.Count);
-        
-        Assert.Equal("Line1", result.ListTokens[0].Text.ToString());
-        Assert.Equal(NewlineToken.Word, result.ListTokens[0].Kind);
-        
-        Assert.Equal("\r\n", result.ListTokens[1].Text.ToString());
-        Assert.Equal(NewlineToken.Newline, result.ListTokens[1].Kind);
-        
-        Assert.Equal("Line2", result.ListTokens[2].Text.ToString());
-        Assert.Equal(NewlineToken.Word, result.ListTokens[2].Kind);
-        
-        Assert.Equal("\n", result.ListTokens[3].Text.ToString());
-        Assert.Equal(NewlineToken.Newline, result.ListTokens[3].Kind);
-        
-        Assert.Equal("Line3", result.ListTokens[4].Text.ToString());
-        Assert.Equal(NewlineToken.Word, result.ListTokens[4].Kind);
-        
-        Assert.Equal("\r", result.ListTokens[5].Text.ToString());
-        Assert.Equal(NewlineToken.Newline, result.ListTokens[5].Kind);
-        
-        Assert.Equal("Line4", result.ListTokens[6].Text.ToString());
-        Assert.Equal(NewlineToken.Word, result.ListTokens[6].Kind);
+        await Assert.That(result.ListTokens.Count).IsEqualTo(7);
+
+        await Assert.That(result.ListTokens[0].Text.ToString()).IsEqualTo("Line1");
+        await Assert.That(result.ListTokens[0].Kind).IsEqualTo(NewlineToken.Word);
+
+        await Assert.That(result.ListTokens[1].Text.ToString()).IsEqualTo("\r\n");
+        await Assert.That(result.ListTokens[1].Kind).IsEqualTo(NewlineToken.Newline);
+
+        await Assert.That(result.ListTokens[2].Text.ToString()).IsEqualTo("Line2");
+        await Assert.That(result.ListTokens[2].Kind).IsEqualTo(NewlineToken.Word);
+
+        await Assert.That(result.ListTokens[3].Text.ToString()).IsEqualTo("\n");
+        await Assert.That(result.ListTokens[3].Kind).IsEqualTo(NewlineToken.Newline);
+
+        await Assert.That(result.ListTokens[4].Text.ToString()).IsEqualTo("Line3");
+        await Assert.That(result.ListTokens[4].Kind).IsEqualTo(NewlineToken.Word);
+
+        await Assert.That(result.ListTokens[5].Text.ToString()).IsEqualTo("\r");
+        await Assert.That(result.ListTokens[5].Kind).IsEqualTo(NewlineToken.Newline);
+
+        await Assert.That(result.ListTokens[6].Text.ToString()).IsEqualTo("Line4");
+        await Assert.That(result.ListTokens[6].Kind).IsEqualTo(NewlineToken.Word);
     }
     
-    [Fact]
-    public void Tokenize_WithPartialStringSlice_ReturnsCorrectTokens() {
+    [Test]
+    public async Task Tokenize_WithPartialStringSlice_ReturnsCorrectTokens() {
         // Arrange
         var tokenizer = new NewlineTokenizer();
         var fullText = "Prefix\nLine1\r\nLine2\nSuffix";
@@ -178,20 +178,20 @@ public class NewlineTokenizerTests {
         var result = tokenizer.Tokenize(input);
         
         // Assert
-        Assert.Equal(3, result.ListTokens.Count);
-        
-        Assert.Equal("Line1", result.ListTokens[0].Text.ToString());
-        Assert.Equal(NewlineToken.Word, result.ListTokens[0].Kind);
-        
-        Assert.Equal("\r\n", result.ListTokens[1].Text.ToString());
-        Assert.Equal(NewlineToken.Newline, result.ListTokens[1].Kind);
-        
-        Assert.Equal("Line2", result.ListTokens[2].Text.ToString());
-        Assert.Equal(NewlineToken.Word, result.ListTokens[2].Kind);
+        await Assert.That(result.ListTokens.Count).IsEqualTo(3);
+
+        await Assert.That(result.ListTokens[0].Text.ToString()).IsEqualTo("Line1");
+        await Assert.That(result.ListTokens[0].Kind).IsEqualTo(NewlineToken.Word);
+
+        await Assert.That(result.ListTokens[1].Text.ToString()).IsEqualTo("\r\n");
+        await Assert.That(result.ListTokens[1].Kind).IsEqualTo(NewlineToken.Newline);
+
+        await Assert.That(result.ListTokens[2].Text.ToString()).IsEqualTo("Line2");
+        await Assert.That(result.ListTokens[2].Kind).IsEqualTo(NewlineToken.Word);
     }
 
-    [Fact]
-    public void Tokenize_And_Join() { 
+    [Test]
+    public async Task Tokenize_And_Join() { 
         // Arrange
         var tokenizer = new NewlineTokenizer();
         var input = new StringSlice("Hello\nWorld\r\nThis is a test.\n");
@@ -210,6 +210,6 @@ public class NewlineTokenizerTests {
         }
         // Assert
         var actual = builder.ToString();
-        Assert.Equal("  Hello\n  World\r\n  This is a test.\n", actual.ToString());
+        await Assert.That(actual.ToString()).IsEqualTo("  Hello\n  World\r\n  This is a test.\n");
     }
 }

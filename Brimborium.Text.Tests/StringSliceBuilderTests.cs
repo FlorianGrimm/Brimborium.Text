@@ -1,17 +1,17 @@
 namespace Brimborium.Text;
 
 public class StringSliceBuilderTests {
-    [Fact]
-    public void Constructor_CreatesEmptyBuilder() {
+    [Test]
+    public async Task Constructor_CreatesEmptyBuilder() {
         // Arrange & Act
         var builder = new StringSliceBuilder();
 
         // Assert
-        Assert.Equal(string.Empty, builder.ToString());
+        await Assert.That(builder.ToString()).IsEqualTo(string.Empty);
     }
 
-    [Fact]
-    public void Append_String_AddsSliceCorrectly() {
+    [Test]
+    public async Task Append_String_AddsSliceCorrectly() {
         // Arrange
         var builder = new StringSliceBuilder();
 
@@ -19,11 +19,11 @@ public class StringSliceBuilderTests {
         builder.Append("Hello").Append(" ").Append("World");
 
         // Assert
-        Assert.Equal("Hello World", builder.ToString());
+        await Assert.That(builder.ToString()).IsEqualTo("Hello World");
     }
 
-    [Fact]
-    public void Append_StringSlice_AddsSliceCorrectly() {
+    [Test]
+    public async Task Append_StringSlice_AddsSliceCorrectly() {
         // Arrange
         var builder = new StringSliceBuilder();
         var slice1 = new StringSlice("Hello World", 0..5);  // "Hello"
@@ -33,11 +33,11 @@ public class StringSliceBuilderTests {
         builder.Append(slice1).Append(" ").Append(slice2);
 
         // Assert
-        Assert.Equal("Hello World", builder.ToString());
+        await Assert.That(builder.ToString()).IsEqualTo("Hello World");
     }
 
-    [Fact]
-    public void Append_EmptySlice_IsIgnored() {
+    [Test]
+    public async Task Append_EmptySlice_IsIgnored() {
         // Arrange
         var builder = new StringSliceBuilder();
         var emptySlice = new StringSlice("abc", 1..1);  // empty slice
@@ -46,11 +46,11 @@ public class StringSliceBuilderTests {
         builder.Append("Hello").Append(emptySlice).Append("World");
 
         // Assert
-        Assert.Equal("HelloWorld", builder.ToString());
+        await Assert.That(builder.ToString()).IsEqualTo("HelloWorld");
     }
 
-    [Fact]
-    public void Append_MultipleSlices_PreservesOrder() {
+    [Test]
+    public async Task Append_MultipleSlices_PreservesOrder() {
         // Arrange
         var builder = new StringSliceBuilder();
         var slices = new[] {
@@ -65,11 +65,11 @@ public class StringSliceBuilderTests {
         }
 
         // Assert
-        Assert.Equal("12345", builder.ToString());
+        await Assert.That(builder.ToString()).IsEqualTo("12345");
     }
 
-    [Fact]
-    public void ToString_WithLargeInput_HandlesCapacityCorrectly() {
+    [Test]
+    public async Task ToString_WithLargeInput_HandlesCapacityCorrectly() {
         // Arrange
         var builder = new StringSliceBuilder();
         var largeString = new string('x', 1000);
@@ -80,12 +80,12 @@ public class StringSliceBuilderTests {
         var result = builder.ToString();
 
         // Assert
-        Assert.Equal(largeString, result);
-        Assert.Equal(1000, result.Length);
+        await Assert.That(result).IsEqualTo(largeString);
+        await Assert.That(result.Length).IsEqualTo(1000);
     }
 
-    [Fact]
-    public void ToString_MultipleCalls_ReturnsSameResult() {
+    [Test]
+    public async Task ToString_MultipleCalls_ReturnsSameResult() {
         // Arrange
         var builder = new StringSliceBuilder();
         builder.Append("Hello").Append(" ").Append("World");
@@ -95,15 +95,15 @@ public class StringSliceBuilderTests {
         var result2 = builder.ToString();
 
         // Assert
-        Assert.Equal(result1, result2);
-        Assert.Equal("Hello World", result1);
+        await Assert.That(result2).IsEqualTo(result1);
+        await Assert.That(result1).IsEqualTo("Hello World");
     }
 
-    [Theory]
-    [InlineData(new[] { "Hello", " ", "World" }, "Hello World")]
-    [InlineData(new[] { "", "Test", "" }, "Test")]
-    [InlineData(new string[] { }, "")]
-    public void Append_VariousInputs_ProducesExpectedResult(string[] inputs, string expected) {
+    [Test]
+    [Arguments(new[] { "Hello", " ", "World" }, "Hello World")]
+    [Arguments(new[] { "", "Test", "" }, "Test")]
+    [Arguments(new string[] { }, "")]
+    public async Task Append_VariousInputs_ProducesExpectedResult(string[] inputs, string expected) {
         // Arrange
         var builder = new StringSliceBuilder();
 
@@ -113,11 +113,11 @@ public class StringSliceBuilderTests {
         }
 
         // Assert
-        Assert.Equal(expected, builder.ToString());
+        await Assert.That(builder.ToString()).IsEqualTo(expected);
     }
 
-    [Fact]
-    public void Append_MixedSlicesAndStrings_ConcatenatesCorrectly() {
+    [Test]
+    public async Task Append_MixedSlicesAndStrings_ConcatenatesCorrectly() {
         // Arrange
         var builder = new StringSliceBuilder();
         var slice = new StringSlice("Hello World", 0..5);  // "Hello"
@@ -130,6 +130,6 @@ public class StringSliceBuilderTests {
             .Append(new StringSlice("!!!!", 0..1));  // "!"
 
         // Assert
-        Assert.Equal("Hello World!", builder.ToString());
+        await Assert.That(builder.ToString()).IsEqualTo("Hello World!");
     }
 }

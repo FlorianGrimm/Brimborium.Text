@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Brimborium.Text;
+﻿namespace Brimborium.Text;
 public class WhitespaceTokenizerTests {
-    [Fact]
-    public void Tokenize_EmptyString_ReturnsEmptyList() {
+    [Test]
+    public async Task Tokenize_EmptyString_ReturnsEmptyList() {
         // Arrange
         var tokenizer = new WhitespaceTokenizer();
         var input = StringSlice.Empty;
@@ -16,11 +10,11 @@ public class WhitespaceTokenizerTests {
         var result = tokenizer.Tokenize(input);
 
         // Assert
-        Assert.Empty(result.ListTokens);
+        await Assert.That(result.ListTokens).IsEmpty();
     }
 
-    [Fact]
-    public void Tokenize_OneSpace_ReturnsSuccess() {
+    [Test]
+    public async Task Tokenize_OneSpace_ReturnsSuccess() {
         // Arrange
         var tokenizer = new WhitespaceTokenizer();
         var input = new StringSlice(" ");
@@ -29,14 +23,13 @@ public class WhitespaceTokenizerTests {
         var result = tokenizer.Tokenize(input);
 
         // Assert
-        Assert.Equal<List<ITokenStringSlice<WhitespaceToken>>>(
-            new List<ITokenStringSlice<WhitespaceToken>>() { 
+        await Assert.That(result.ListTokens).IsEquivalentTo(new List<ITokenStringSlice<WhitespaceToken>>() { 
                 new WhitespaceTokenStringSlice(" ", WhitespaceToken.Whitespace)
-            }, result.ListTokens);
+            });
     }
 
-    [Fact]
-    public void Tokenize_TwoSpace_ReturnsSuccess() {
+    [Test]
+    public async Task Tokenize_TwoSpace_ReturnsSuccess() {
         // Arrange
         var tokenizer = new WhitespaceTokenizer();
         var input = new StringSlice("  ");
@@ -45,15 +38,14 @@ public class WhitespaceTokenizerTests {
         var result = tokenizer.Tokenize(input);
 
         // Assert
-        Assert.Equal<List<ITokenStringSlice<WhitespaceToken>>>(
-            new List<ITokenStringSlice<WhitespaceToken>>() {
+        await Assert.That(result.ListTokens).IsEquivalentTo(new List<ITokenStringSlice<WhitespaceToken>>() {
                 new WhitespaceTokenStringSlice("  ", WhitespaceToken.Whitespace)
-            }, result.ListTokens);
+            });
     }
 
 
-    [Fact]
-    public void Tokenize_TwoSpaceWord_ReturnsSuccess() {
+    [Test]
+    public async Task Tokenize_TwoSpaceWord_ReturnsSuccess() {
         // Arrange
         var tokenizer = new WhitespaceTokenizer();
         var input = new StringSlice("  abc");
@@ -62,11 +54,10 @@ public class WhitespaceTokenizerTests {
         var result = tokenizer.Tokenize(input);
 
         // Assert
-        Assert.Equal<List<ITokenStringSlice<WhitespaceToken>>>(
-            new List<ITokenStringSlice<WhitespaceToken>>() {
+        await Assert.That(result.ListTokens).IsEquivalentTo(new List<ITokenStringSlice<WhitespaceToken>>() {
                 new WhitespaceTokenStringSlice(input.Substring(0, 2), WhitespaceToken.Whitespace),
                 new WhitespaceTokenStringSlice(input.Substring(2, 3), WhitespaceToken.Word)
-            }, result.ListTokens);
+            });
     }
 
 }

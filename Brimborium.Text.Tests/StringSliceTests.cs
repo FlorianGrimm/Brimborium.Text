@@ -1,71 +1,71 @@
 namespace Brimborium.Text;
 
 public class StringSliceTests {
-    [Fact]
-    public void Struct_Ctor_Empty() {
+    [Test]
+    public async Task Struct_Ctor_Empty() {
         StringSlice act = new();
-        Assert.NotNull(act.Text);
+        await Assert.That(act.Text).IsNotNull();
     }
 
-    [Fact]
-    public void SubString_Ctor() {
+    [Test]
+    public async Task SubString_Ctor() {
         {
             var sut = new StringSlice();
-            Assert.Equal("", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("");
         }
         {
             var sut = new StringSlice("abc");
-            Assert.Equal("abc", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("abc");
         }
         {
             var sut = new StringSlice("abc", 1..2);
-            Assert.Equal("b", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("b");
         }
         {
             var sut = new StringSlice("abcdefg", 1..^1);
-            Assert.Equal("bcdef", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("bcdef");
         }
     }
 
-    [Fact()]
-    public void EmptyTest() {
-        Assert.Equal("", StringSlice.Empty.ToString());
+    [Test]
+    public async Task EmptyTest() {
+        await Assert.That(StringSlice.Empty.ToString()).IsEqualTo("");
     }
 
-    [Fact()]
-    public void RangeTest() {
+    [Test]
+    public async Task RangeTest() {
         {
             var sut = new StringSlice("abcdefg");
             var act = sut[1..3];
-            Assert.Equal("bc", act.ToString());
+            await Assert.That(act.ToString()).IsEqualTo("bc");
         }
 
         {
             var sut = new StringSlice("abcdefg", 1..^0);
             var act = sut[1..3];
-            Assert.Equal("cd", act.ToString());
+            await Assert.That(act.ToString()).IsEqualTo("cd");
         }
 
         {
             var sut = new StringSlice("abcdefg", 4..^0);
-            Assert.Equal("efg", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("efg");
 
             var act = sut[1..^0];
-            Assert.Equal("fg", act.ToString());
+            await Assert.That(act.ToString()).IsEqualTo("fg");
         }
 
         {
             var sut = new StringSlice("abcdefg", 4..^0);
-            Assert.Equal("efg", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("efg");
 
             var act1 = sut[1..3];
-            Assert.Equal("fg", act1.ToString());
+            await Assert.That(act1.ToString()).IsEqualTo("fg");
         }
 
 
         {
             var sut = new StringSlice("abcdefg", 5..^0);
-            Assert.Equal("fg", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("fg");
 
             Assert.Throws<ArgumentOutOfRangeException>(() => {
                 var act1 = sut[1..3];
@@ -73,18 +73,18 @@ public class StringSliceTests {
         }
     }
 
-    [Fact()]
-    public void GetSubStringPosTest() {
+    [Test]
+    public async Task GetSubStringPosTest() {
         {
             var abcdefg = new StringSlice("abcdefg");
             var sut = abcdefg.Substring(1);
-            Assert.Equal("bcdefg", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("bcdefg");
         }
         {
             var abcdefg = new StringSlice("abcdefg");
             var bcdef = abcdefg.Substring(1);
             var sut = bcdef.Substring(1);
-            Assert.Equal("cdefg", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("cdefg");
         }
         {
 
@@ -98,18 +98,18 @@ public class StringSliceTests {
         }
     }
 
-    [Fact()]
-    public void GetSubStringPosLengthTest() {
+    [Test]
+    public async Task GetSubStringPosLengthTest() {
         {
             var abcdefg = new StringSlice("abcdefg");
             var sut = abcdefg.Substring(1, 5);
-            Assert.Equal("bcdef", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("bcdef");
         }
         {
             var abcdefg = new StringSlice("abcdefg");
             var bcdef = abcdefg.Substring(1, 5);
             var sut = bcdef.Substring(1, 3);
-            Assert.Equal("cde", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("cde");
         }
         {
 
@@ -132,39 +132,39 @@ public class StringSliceTests {
         }
     }
 
-    [Fact()]
-    public void GetSubStringRangeTest() {
+    [Test]
+    public async Task GetSubStringRangeTest() {
         {
             var abcdefg = new StringSlice("abcdefg");
             var sut = abcdefg.Substring(1..6);
-            Assert.Equal("bcdef", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("bcdef");
         }
         {
             var abcdefg = new StringSlice("abcdefg");
             var bcdef = abcdefg.Substring(1..6);
             var sut = bcdef.Substring(1..4);
-            Assert.Equal("cde", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("cde");
         }
         {
             var abcdefg = new StringSlice("abcdefg");
             var sut = abcdefg.Substring(1..^1);
-            Assert.Equal("bcdef", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("bcdef");
         }
         {
             var abcdefg = new StringSlice("abcdefg");
             var bcdef = abcdefg.Substring(1..^1);
             var sut = bcdef.Substring(1..^1);
-            Assert.Equal("cde", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("cde");
         }
     }
 
-    [Fact]
-    public void LeftTest() {
+    [Test]
+    public async Task LeftTest() {
         {
             var abcdefg = new StringSlice("abcdefg");
             var bcdefg = abcdefg.Substring(1);
             var sut = abcdefg.Left(bcdefg);
-            Assert.Equal("a", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("a");
         }
         {
             var abcdefg = new StringSlice("abcdefg");
@@ -178,261 +178,261 @@ public class StringSliceTests {
             var abc = abcdefg.Substring(0, 3);
             var efg = abcdefg.Substring(4, 3);
             var sut = abc.Left(efg);
-            Assert.Equal("abcd", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("abcd");
         }
     }
 
-    [Fact()]
-    public void AsSpanTest() {
+    [Test]
+    public async Task AsSpanTest() {
         {
             var abcdefg = new StringSlice("abcdefg");
             var sut = abcdefg.AsSpan();
-            Assert.Equal("abcdefg", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("abcdefg");
         }
         {
             var abcdefg = new StringSlice("abcdefg");
             var sut = abcdefg.Substring(1..^1).AsSpan();
-            Assert.Equal("bcdef", sut.ToString());
+            await Assert.That(sut.ToString()).IsEqualTo("bcdef");
         }
     }
 
-    [Fact()]
-    public void IsNullOrEmptyTest() {
+    [Test]
+    public async Task IsNullOrEmptyTest() {
         {
             var sut = new StringSlice();
-            Assert.Equal(true, sut.IsNullOrEmpty());
+            await Assert.That(sut.IsNullOrEmpty()).IsTrue();
         }
         {
             var sut = new StringSlice("abcdefg");
-            Assert.Equal(false, sut.IsNullOrEmpty());
+            await Assert.That(sut.IsNullOrEmpty()).IsFalse();
 
             sut = sut.Substring(1..3);
-            Assert.Equal(false, sut.IsNullOrEmpty());
+            await Assert.That(sut.IsNullOrEmpty()).IsFalse();
 
             sut = sut.Substring(1..1);
-            Assert.Equal(true, sut.IsNullOrEmpty());
+            await Assert.That(sut.IsNullOrEmpty()).IsTrue();
         }
         {
             var sut = new StringSlice("abcdefg", new Range(0, 0));
-            Assert.Equal(true, sut.IsNullOrEmpty());
+            await Assert.That(sut.IsNullOrEmpty()).IsTrue();
         }
     }
 
-    [Fact()]
-    public void IsNullOrWhiteSpaceTest() {
+    [Test]
+    public async Task IsNullOrWhiteSpaceTest() {
         {
             var sut = new StringSlice();
-            Assert.Equal(true, sut.IsNullOrWhiteSpace());
+            await Assert.That(sut.IsNullOrWhiteSpace()).IsTrue();
         }
         {
             var sut = new StringSlice("a     g");
-            Assert.Equal(false, sut.IsNullOrWhiteSpace());
+            await Assert.That(sut.IsNullOrWhiteSpace()).IsFalse();
 
             sut = sut.Substring(1..3);
-            Assert.Equal(true, sut.IsNullOrWhiteSpace());
+            await Assert.That(sut.IsNullOrWhiteSpace()).IsTrue();
 
             sut = sut.Substring(1..1);
-            Assert.Equal(true, sut.IsNullOrWhiteSpace());
+            await Assert.That(sut.IsNullOrWhiteSpace()).IsTrue();
         }
         {
             var sut = new StringSlice("abcdefg", new Range(0, 0));
-            Assert.Equal(true, sut.IsNullOrWhiteSpace());
+            await Assert.That(sut.IsNullOrWhiteSpace()).IsTrue();
         }
         {
             var sut = new StringSlice(" bcdefg", new Range(0, 3));
-            Assert.Equal(false, sut.IsNullOrWhiteSpace());
+            await Assert.That(sut.IsNullOrWhiteSpace()).IsFalse();
         }
     }
 
-    [Fact()]
-    public void IndexOfTest() {
+    [Test]
+    public async Task IndexOfTest() {
         {
             var sut = new StringSlice("abcdef");
-            Assert.Equal(0, sut.IndexOf('a'));
-            Assert.Equal(2, sut.IndexOf('c'));
-            Assert.Equal(5, sut.IndexOf('f'));
-            Assert.Equal(-1, sut.IndexOf('x'));
+            await Assert.That(sut.IndexOf('a')).IsEqualTo(0);
+            await Assert.That(sut.IndexOf('c')).IsEqualTo(2);
+            await Assert.That(sut.IndexOf('f')).IsEqualTo(5);
+            await Assert.That(sut.IndexOf('x')).IsEqualTo(-1);
         }
         {
             var sut = new StringSlice("xxabcdefxx");
             sut = sut.Substring(2..8);
-            Assert.Equal(0, sut.IndexOf('a'));
-            Assert.Equal(2, sut.IndexOf('c'));
-            Assert.Equal(5, sut.IndexOf('f'));
-            Assert.Equal(-1, sut.IndexOf('x'));
+            await Assert.That(sut.IndexOf('a')).IsEqualTo(0);
+            await Assert.That(sut.IndexOf('c')).IsEqualTo(2);
+            await Assert.That(sut.IndexOf('f')).IsEqualTo(5);
+            await Assert.That(sut.IndexOf('x')).IsEqualTo(-1);
         }
 
         {
             var sut = new StringSlice("xxabcdefxx");
             sut = sut.Substring(2..8);
-            Assert.Equal(-1, sut.IndexOf('a', 1..^0));
-            Assert.Equal(2, sut.IndexOf('c', 1..^0));
-            Assert.Equal('c', sut[2]);
-            Assert.Equal(5, sut.IndexOf('f', 1..^0));
-            Assert.Equal('f', sut[5]);
-            Assert.Equal(-1, sut.IndexOf('x', 1..^0));
+            await Assert.That(sut.IndexOf('a', 1..^0)).IsEqualTo(-1);
+            await Assert.That(sut.IndexOf('c', 1..^0)).IsEqualTo(2);
+            await Assert.That(sut[2]).IsEqualTo('c');
+            await Assert.That(sut.IndexOf('f', 1..^0)).IsEqualTo(5);
+            await Assert.That(sut[5]).IsEqualTo('f');
+            await Assert.That(sut.IndexOf('x', 1..^0)).IsEqualTo(-1);
         }
     }
 
-    [Fact()]
-    public void IndexOfAnyTest() {
+    [Test]
+    public async Task IndexOfAnyTest() {
         {
             var sut = new StringSlice("abcdef");
-            Assert.Equal(0, sut.IndexOfAny("a".ToCharArray()));
-            Assert.Equal(2, sut.IndexOfAny("czk".ToCharArray()));
-            Assert.Equal(5, sut.IndexOfAny("fzk".ToCharArray()));
-            Assert.Equal(-1, sut.IndexOfAny("xzk".ToCharArray()));
+            await Assert.That(sut.IndexOfAny("a".ToCharArray())).IsEqualTo(0);
+            await Assert.That(sut.IndexOfAny("czk".ToCharArray())).IsEqualTo(2);
+            await Assert.That(sut.IndexOfAny("fzk".ToCharArray())).IsEqualTo(5);
+            await Assert.That(sut.IndexOfAny("xzk".ToCharArray())).IsEqualTo(-1);
         }
         {
             var sut = new StringSlice("xxabcdefxx");
             sut = sut.Substring(2..8);
-            Assert.Equal(0, sut.IndexOfAny("azk".ToCharArray()));
-            Assert.Equal(2, sut.IndexOfAny("czk".ToCharArray()));
-            Assert.Equal(5, sut.IndexOfAny("fzk".ToCharArray()));
-            Assert.Equal(-1, sut.IndexOfAny("xzk".ToCharArray()));
+            await Assert.That(sut.IndexOfAny("azk".ToCharArray())).IsEqualTo(0);
+            await Assert.That(sut.IndexOfAny("czk".ToCharArray())).IsEqualTo(2);
+            await Assert.That(sut.IndexOfAny("fzk".ToCharArray())).IsEqualTo(5);
+            await Assert.That(sut.IndexOfAny("xzk".ToCharArray())).IsEqualTo(-1);
         }
         {
             var sut = new StringSlice("xxabcdefxx");
             sut = sut.Substring(2..8);
-            Assert.Equal(-1, sut.IndexOfAny("azk".ToCharArray(), 1..^0));
-            Assert.Equal(2, sut.IndexOfAny("czk".ToCharArray(), 1..^0));
-            Assert.Equal(5, sut.IndexOfAny("fzk".ToCharArray(), 1..^0));
-            Assert.Equal(-1, sut.IndexOfAny("xzk".ToCharArray(), 1..^0));
+            await Assert.That(sut.IndexOfAny("azk".ToCharArray(), 1..^0)).IsEqualTo(-1);
+            await Assert.That(sut.IndexOfAny("czk".ToCharArray(), 1..^0)).IsEqualTo(2);
+            await Assert.That(sut.IndexOfAny("fzk".ToCharArray(), 1..^0)).IsEqualTo(5);
+            await Assert.That(sut.IndexOfAny("xzk".ToCharArray(), 1..^0)).IsEqualTo(-1);
 
-            Assert.Equal(-1, sut.IndexOfAny("azk".ToCharArray(), 1..^1));
-            Assert.Equal(2, sut.IndexOfAny("czk".ToCharArray(), 1..^1));
-            Assert.Equal('c', sut[2]);
-            Assert.Equal(-1, sut.IndexOfAny("fzk".ToCharArray(), 1..^1));
-            Assert.Equal(-1, sut.IndexOfAny("xzk".ToCharArray(), 1..^1));
+            await Assert.That(sut.IndexOfAny("azk".ToCharArray(), 1..^1)).IsEqualTo(-1);
+            await Assert.That(sut.IndexOfAny("czk".ToCharArray(), 1..^1)).IsEqualTo(2);
+            await Assert.That(sut[2]).IsEqualTo('c');
+            await Assert.That(sut.IndexOfAny("fzk".ToCharArray(), 1..^1)).IsEqualTo(-1);
+            await Assert.That(sut.IndexOfAny("xzk".ToCharArray(), 1..^1)).IsEqualTo(-1);
         }
     }
 
-    [Fact()]
-    public void SplitIntoSepTest() {
+    [Test]
+    public async Task SplitIntoSepTest() {
         {
 
             var sut = new StringSlice("abc\r\ndef");
             var act = sut.SplitInto("\r\n".ToCharArray());
-            Assert.Equal("abc", act.Found.ToString());
-            Assert.Equal("def", act.Tail.ToString());
+            await Assert.That(act.Found.ToString()).IsEqualTo("abc");
+            await Assert.That(act.Tail.ToString()).IsEqualTo("def");
         }
     }
 
-    [Fact()]
-    public void SplitIntoSepStopTest() {
+    [Test]
+    public async Task SplitIntoSepStopTest() {
         {
             var sut = new StringSlice("abc\r\ndef$ghi");
             var act = sut.SplitInto("\r\n".ToCharArray(), "$".ToCharArray());
-            Assert.Equal("abc", act.Found.ToString());
-            Assert.Equal("def", act.Tail.ToString());
+            await Assert.That(act.Found.ToString()).IsEqualTo("abc");
+            await Assert.That(act.Tail.ToString()).IsEqualTo("def");
         }
     }
 
-    [Fact()]
-    public void SplitIntoNoMatchTest() {
+    [Test]
+    public async Task SplitIntoNoMatchTest() {
         {
             var sut = new StringSlice("abc");
             var act = sut.SplitInto("\r\n".ToCharArray(), "$".ToCharArray());
-            Assert.Equal("abc", act.Found.ToString());
-            Assert.Equal("", act.Tail.ToString());
+            await Assert.That(act.Found.ToString()).IsEqualTo("abc");
+            await Assert.That(act.Tail.ToString()).IsEqualTo("");
         }
     }
 
-    [Fact()]
-    public void SplitIntoEmptyInputTest() {
+    [Test]
+    public async Task SplitIntoEmptyInputTest() {
         {
             var sut = new StringSlice(string.Empty);
             var act = sut.SplitInto("\r\n".ToCharArray(), "$".ToCharArray());
-            Assert.Equal("", act.Found.ToString());
-            Assert.Equal("", act.Tail.ToString());
+            await Assert.That(act.Found.ToString()).IsEqualTo("");
+            await Assert.That(act.Tail.ToString()).IsEqualTo("");
         }
     }
 
-    [Fact()]
+    [Test]
     public async Task UsingInAsyncTest() {
         var sut = await doSomething(new StringSlice("abcdef"));
-        Assert.Equal("bcde", sut.ToString());
+        await Assert.That(sut.ToString()).IsEqualTo("bcde");
         async Task<StringSlice> doSomething(StringSlice subString) {
             await Task.Delay(1);
             return subString.Substring(1..^1);
         }
     }
 
-    [Fact()]
-    public void EqualTest() {
+    [Test]
+    public async Task EqualTest() {
         {
             var a = new StringSlice("0123456789", 1..5);
             var b = new StringSlice("1234");
 
-            Assert.Equal("1234", a.ToString());
-            Assert.True(a.Equals(b));
+            await Assert.That(a.ToString()).IsEqualTo("1234");
+            await Assert.That(a.Equals(b)).IsTrue();
         }
         {
             var a = new StringSlice("0123456789");
             var b = new StringSlice("1234");
 
-            Assert.False(a.Equals(b));
+            await Assert.That(a.Equals(b)).IsFalse();
         }
         {
             object a = new StringSlice("0123456789");
             var b = new StringSlice("0123456789");
-            Assert.True(b.Equals(a));
+            await Assert.That(b.Equals(a)).IsTrue();
         }
         {
             object a = 1;
             var b = new StringSlice("0123456789");
-            Assert.False(b.Equals(a));
+            await Assert.That(b.Equals(a)).IsFalse();
         }
         {
             var sut = new StringSlice("ABC");
-            Assert.True(sut.Equals("abc", StringComparison.OrdinalIgnoreCase));
+            await Assert.That(sut.Equals("abc", StringComparison.OrdinalIgnoreCase)).IsTrue();
         }
         {
             var sut = new StringSlice("0123456789");
-            Assert.True(sut.Equals("0123456789".AsSpan(), StringComparison.Ordinal));
+            await Assert.That(sut.Equals("0123456789".AsSpan(), StringComparison.Ordinal)).IsTrue();
         }
         {
             var s = "1234";
             var a = s.AsStringSlice(1);
             var b = s.AsStringSlice(1);
-            Assert.True(a.Equals(b));
+            await Assert.That(a.Equals(b)).IsTrue();
         }
     }
 
-    [Fact()]
-    public void SplitIntoWhileTest() {
+    [Test]
+    public async Task SplitIntoWhileTest() {
         {
             var sut = new StringSlice("0123456789ABCDEF");
             var act = sut.SplitIntoWhile((c, _) => char.IsDigit(c) ? 0 : 1);
-            Assert.Equal("0123456789", act.Found.ToString());
-            Assert.Equal("ABCDEF", act.Tail.ToString());
+            await Assert.That(act.Found.ToString()).IsEqualTo("0123456789");
+            await Assert.That(act.Tail.ToString()).IsEqualTo("ABCDEF");
         }
         {
             var sut = new StringSlice("0123456789ABCDEF");
             var act = sut.SplitIntoWhile((c, _) => char.IsDigit(c) ? 0 : -1);
-            Assert.Equal("0123456789", act.Found.ToString());
-            Assert.Equal("", act.Tail.ToString());
+            await Assert.That(act.Found.ToString()).IsEqualTo("0123456789");
+            await Assert.That(act.Tail.ToString()).IsEqualTo("");
         }
         {
             var sut = new StringSlice("");
             var act = sut.SplitIntoWhile((c, _) => char.IsDigit(c) ? 0 : -1);
-            Assert.Equal("", act.Found.ToString());
-            Assert.Equal("", act.Tail.ToString());
+            await Assert.That(act.Found.ToString()).IsEqualTo("");
+            await Assert.That(act.Tail.ToString()).IsEqualTo("");
         }
         {
             var sut = new StringSlice("aaaaaaa");
             var act = sut.SplitIntoWhile((c, _) => c == 'a' ? 0 : -1);
-            Assert.Equal("aaaaaaa", act.Found.ToString());
-            Assert.Equal("", act.Tail.ToString());
+            await Assert.That(act.Found.ToString()).IsEqualTo("aaaaaaa");
+            await Assert.That(act.Tail.ToString()).IsEqualTo("");
         }
     }
 
-    [Fact()]
-    public void IndexTest() {
+    [Test]
+    public async Task IndexTest() {
         {
             var sut = new StringSlice("0123456789ABCDEF");
-            Assert.Equal('0', sut[0]);
-            Assert.Equal('F', sut[15]);
+            await Assert.That(sut[0]).IsEqualTo('0');
+            await Assert.That(sut[15]).IsEqualTo('F');
         }
         {
             Assert.Throws<ArgumentOutOfRangeException>(() => {
@@ -451,160 +451,160 @@ public class StringSliceTests {
             var txt = "012345";
             var sut = new StringSlice(txt);
             var act = sut[3];
-            Assert.Equal('3', act);
+            await Assert.That(act).IsEqualTo('3');
         }
         {
             var txt = "012345";
             var sut = new StringSlice(txt).Substring(1).Substring(1);
             var act = sut[1];
-            Assert.Equal('3', act);
+            await Assert.That(act).IsEqualTo('3');
         }
 
     }
 
-    [Fact()]
-    public void StartsWithTest() {
+    [Test]
+    public async Task StartsWithTest() {
         {
             var sut = new StringSlice("0123456789ABCDEF");
-            Assert.True(sut.StartsWith("0123", StringComparison.Ordinal));
-            Assert.False(sut.StartsWith("X", StringComparison.Ordinal));
+            await Assert.That(sut.StartsWith("0123", StringComparison.Ordinal)).IsTrue();
+            await Assert.That(sut.StartsWith("X", StringComparison.Ordinal)).IsFalse();
         }
         {
             var sut = new StringSlice("0123456789ABCDEF");
-            Assert.True(sut.StartsWith("0123".AsSpan(), StringComparison.Ordinal));
-            Assert.False(sut.StartsWith("X".AsSpan(), StringComparison.Ordinal));
+            await Assert.That(sut.StartsWith("0123".AsSpan(), StringComparison.Ordinal)).IsTrue();
+            await Assert.That(sut.StartsWith("X".AsSpan(), StringComparison.Ordinal)).IsFalse();
         }
     }
 
-    [Fact()]
-    public void TrimStartTest() {
+    [Test]
+    public async Task TrimStartTest() {
         {
             var sut = new StringSlice("  0123");
             var act = sut.TrimStart();
-            Assert.Equal("0123", act.ToString());
-            Assert.Equal(2..6, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("0123");
+            await Assert.That(act.Range).IsEqualTo(2..6);
         }
         {
             var sut = new StringSlice("0123");
             var act = sut.TrimStart();
-            Assert.Equal("0123", act.ToString());
-            Assert.Equal(0..4, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("0123");
+            await Assert.That(act.Range).IsEqualTo(0..4);
         }
         {
             var sut = new StringSlice("    ");
             var act = sut.TrimStart();
-            Assert.Equal("", act.ToString());
-            Assert.Equal(4..4, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("");
+            await Assert.That(act.Range).IsEqualTo(4..4);
         }
     }
 
-    [Fact()]
-    public void TrimEndTest() {
+    [Test]
+    public async Task TrimEndTest() {
         {
             var sut = new StringSlice("  0123  ");
             var act = sut.TrimEnd();
-            Assert.Equal("  0123", act.ToString());
-            Assert.Equal(0..6, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("  0123");
+            await Assert.That(act.Range).IsEqualTo(0..6);
         }
         {
             var sut = new StringSlice("0123");
             var act = sut.TrimEnd();
-            Assert.Equal("0123", act.ToString());
-            Assert.Equal(0..4, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("0123");
+            await Assert.That(act.Range).IsEqualTo(0..4);
         }
         {
             var sut = new StringSlice("    ");
             var act = sut.TrimEnd();
-            Assert.Equal("", act.ToString());
-            Assert.Equal(0..0, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("");
+            await Assert.That(act.Range).IsEqualTo(0..0);
         }
 
         {
             var sut = new StringSlice("  0123  ");
             var act = sut.TrimEnd(new char[] { ' ' });
-            Assert.Equal("  0123", act.ToString());
-            Assert.Equal(0..6, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("  0123");
+            await Assert.That(act.Range).IsEqualTo(0..6);
         }
         {
             var sut = new StringSlice("0123");
             var act = sut.TrimEnd(new char[] { ' ' });
-            Assert.Equal("0123", act.ToString());
-            Assert.Equal(0..4, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("0123");
+            await Assert.That(act.Range).IsEqualTo(0..4);
         }
         {
             var sut = new StringSlice("    ");
             var act = sut.TrimEnd(new char[] { ' ' });
-            Assert.Equal("", act.ToString());
-            Assert.Equal(0..0, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("");
+            await Assert.That(act.Range).IsEqualTo(0..0);
         }
     }
 
-    [Fact()]
-    public void TrimTest() {
+    [Test]
+    public async Task TrimTest() {
         {
             var sut = new StringSlice("  0123    ");
             var act = sut.Trim();
-            Assert.Equal("0123", act.ToString());
-            Assert.Equal(2..6, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("0123");
+            await Assert.That(act.Range).IsEqualTo(2..6);
         }
         {
             var sut = new StringSlice("0123");
             var act = sut.Trim();
-            Assert.Equal("0123", act.ToString());
-            Assert.Equal(0..4, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("0123");
+            await Assert.That(act.Range).IsEqualTo(0..4);
         }
         {
             var sut = new StringSlice("    ");
             var act = sut.Trim();
-            Assert.Equal("", act.ToString());
-            Assert.Equal(0..0, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("");
+            await Assert.That(act.Range).IsEqualTo(0..0);
         }
 
         {
             var sut = new StringSlice("  0123  ");
             var act = sut.Trim(new char[] { ' ' });
-            Assert.Equal("0123", act.ToString());
-            Assert.Equal(2..6, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("0123");
+            await Assert.That(act.Range).IsEqualTo(2..6);
         }
         {
             var sut = new StringSlice("0123");
             var act = sut.Trim(new char[] { ' ' });
-            Assert.Equal("0123", act.ToString());
-            Assert.Equal(0..4, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("0123");
+            await Assert.That(act.Range).IsEqualTo(0..4);
         }
         {
             var sut = new StringSlice("    ");
             var act = sut.Trim(new char[] { ' ' });
-            Assert.Equal("", act.ToString());
-            Assert.Equal(0..0, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("");
+            await Assert.That(act.Range).IsEqualTo(0..0);
         }
     }
 
-    [Fact()]
-    public void TrimWhileTest() {
+    [Test]
+    public async Task TrimWhileTest() {
         {
             var sut = new StringSlice("  0123");
             var act = sut.TrimWhile(decide);
-            Assert.Equal("0123", act.ToString());
-            Assert.Equal(2..6, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("0123");
+            await Assert.That(act.Range).IsEqualTo(2..6);
         }
         {
             var sut = new StringSlice("0123");
             var act = sut.TrimWhile(decide);
-            Assert.Equal("0123", act.ToString());
-            Assert.Equal(0..4, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("0123");
+            await Assert.That(act.Range).IsEqualTo(0..4);
         }
         {
             var sut = new StringSlice("    ");
             var act = sut.TrimWhile(decide);
-            Assert.Equal("", act.ToString());
-            Assert.Equal(4..4, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("");
+            await Assert.That(act.Range).IsEqualTo(4..4);
         }
         {
             var sut = new StringSlice("");
             var act = sut.TrimWhile(decide);
-            Assert.Equal("", act.ToString());
-            Assert.Equal(0..0, act.Range);
+            await Assert.That(act.ToString()).IsEqualTo("");
+            await Assert.That(act.Range).IsEqualTo(0..0);
         }
         int decide(char value, int _) {
             if (value == ' ') {
@@ -615,51 +615,51 @@ public class StringSliceTests {
         }
     }
 
-    [Fact]
-    public void ReplaceTest() {
+    [Test]
+    public async Task ReplaceTest() {
         {
             var sut = new StringSlice("0123456789ABCDEF");
             var act = sut.Replace('0', 'X');
-            Assert.Equal("X123456789ABCDEF", act.ToString());
+            await Assert.That(act.ToString()).IsEqualTo("X123456789ABCDEF");
         }
         {
             var sut = new StringSlice("0023456789ABCD00");
             var act = sut.Replace('0', 'X');
-            Assert.Equal("XX23456789ABCDXX", act.ToString());
+            await Assert.That(act.ToString()).IsEqualTo("XX23456789ABCDXX");
         }
         {
             var sut = new StringSlice("0123456789ABCDEF");
             var act = sut.Replace('X', 'Y');
-            Assert.Equal("0123456789ABCDEF", act.ToString());
+            await Assert.That(act.ToString()).IsEqualTo("0123456789ABCDEF");
         }
     }
 
-    [Fact]
-    public void ReadWhileTest() {
+    [Test]
+    public async Task ReadWhileTest() {
         {
             var sut = new StringSlice("");
             var act = sut.ReadWhile((value, idx) => { return char.IsDigit(value) || (idx == 0 && (value == '-' || value == '+')); });
-            Assert.Equal("", act.ToString());
+            await Assert.That(act.ToString()).IsEqualTo("");
         }
         {
             var sut = new StringSlice("0123456789ABCDEF");
             var act = sut.ReadWhile((value, idx) => { return char.IsDigit(value) || (idx == 0 && (value == '-' || value == '+')); });
-            Assert.Equal("0123456789", act.ToString());
+            await Assert.That(act.ToString()).IsEqualTo("0123456789");
         }
         {
             var sut = new StringSlice("-1234 abc");
             var act = sut.ReadWhile((value, idx) => { return char.IsDigit(value) || (idx == 0 && (value == '-' || value == '+')); });
-            Assert.Equal("-1234", act.ToString());
+            await Assert.That(act.ToString()).IsEqualTo("-1234");
         }
         {
             var sut = new StringSlice("ABCDEF");
             var act = sut.ReadWhile((value, idx) => { return char.IsDigit(value) || (idx == 0 && (value == '-' || value == '+')); });
-            Assert.Equal("", act.ToString());
+            await Assert.That(act.ToString()).IsEqualTo("");
         }
     }
 
-    [Fact]
-    public void AsImmutableStringSlice_ReturnsEquivalentImmutableStringSlice() {
+    [Test]
+    public async Task AsImmutableStringSlice_ReturnsEquivalentImmutableStringSlice() {
         // Arrange
         var stringSlice = new StringSlice("Hello World", 0..5);
 
@@ -667,13 +667,13 @@ public class StringSliceTests {
         var immutableSlice = stringSlice.AsImmutableStringSlice();
 
         // Assert
-        Assert.Equal("Hello", immutableSlice.ToString());
-        Assert.Equal(stringSlice.Text, immutableSlice.Text);
-        Assert.Equal(stringSlice.Range, immutableSlice.Range);
+        await Assert.That(immutableSlice.ToString()).IsEqualTo("Hello");
+        await Assert.That(immutableSlice.Text).IsEqualTo(stringSlice.Text);
+        await Assert.That(immutableSlice.Range).IsEqualTo(stringSlice.Range);
     }
 
-    [Fact]
-    public void AsImmutableStringSlice_WithEmptySlice_ReturnsEmptyImmutableStringSlice() {
+    [Test]
+    public async Task AsImmutableStringSlice_WithEmptySlice_ReturnsEmptyImmutableStringSlice() {
         // Arrange
         var stringSlice = new StringSlice("Hello", 2..2);
 
@@ -681,14 +681,14 @@ public class StringSliceTests {
         var immutableSlice = stringSlice.AsImmutableStringSlice();
 
         // Assert
-        Assert.Equal("", immutableSlice.ToString());
-        Assert.Equal(0, immutableSlice.Length);
-        Assert.Equal(2, immutableSlice.Range.Start.Value);
-        Assert.Equal(2, immutableSlice.Range.End.Value);
+        await Assert.That(immutableSlice.ToString()).IsEqualTo("");
+        await Assert.That(immutableSlice.Length).IsEqualTo(0);
+        await Assert.That(immutableSlice.Range.Start.Value).IsEqualTo(2);
+        await Assert.That(immutableSlice.Range.End.Value).IsEqualTo(2);
     }
 
-    [Fact]
-    public void AsImmutableStringSlice_WithMiddleRange_ReturnsCorrectImmutableStringSlice() {
+    [Test]
+    public async Task AsImmutableStringSlice_WithMiddleRange_ReturnsCorrectImmutableStringSlice() {
         // Arrange
         var stringSlice = new StringSlice("Hello World", 6..11);
 
@@ -696,14 +696,14 @@ public class StringSliceTests {
         var immutableSlice = stringSlice.AsImmutableStringSlice();
 
         // Assert
-        Assert.Equal("World", immutableSlice.ToString());
-        Assert.Equal(5, immutableSlice.Length);
-        Assert.Equal(6, immutableSlice.Range.Start.Value);
-        Assert.Equal(11, immutableSlice.Range.End.Value);
+        await Assert.That(immutableSlice.ToString()).IsEqualTo("World");
+        await Assert.That(immutableSlice.Length).IsEqualTo(5);
+        await Assert.That(immutableSlice.Range.Start.Value).IsEqualTo(6);
+        await Assert.That(immutableSlice.Range.End.Value).IsEqualTo(11);
     }
 
-    [Fact]
-    public void AsImmutableStringSlice_PreservesOriginalText() {
+    [Test]
+    public async Task AsImmutableStringSlice_PreservesOriginalText() {
         // Arrange
         var originalText = "Hello World";
         var stringSlice = new StringSlice(originalText, 0..5);
@@ -712,11 +712,11 @@ public class StringSliceTests {
         var immutableSlice = stringSlice.AsImmutableStringSlice();
 
         // Assert
-        Assert.Same(originalText, immutableSlice.Text);  // Verifies same string instance is referenced
+        await Assert.That(immutableSlice.Text).IsSameReferenceAs(originalText);  // Verifies same string instance is referenced
     }
 
-    [Fact]
-    public void AsImmutableStringSlice_AndExplicitConversion_ReturnEquivalentResults() {
+    [Test]
+    public async Task AsImmutableStringSlice_AndExplicitConversion_ReturnEquivalentResults() {
         // Arrange
         var stringSlice = new StringSlice("Hello World", 0..5);
 
@@ -725,13 +725,13 @@ public class StringSliceTests {
         var immutableSlice2 = (ImmutableStringSlice)stringSlice;
 
         // Assert
-        Assert.Equal(immutableSlice1.ToString(), immutableSlice2.ToString());
-        Assert.Equal(immutableSlice1.Text, immutableSlice2.Text);
-        Assert.Equal(immutableSlice1.Range, immutableSlice2.Range);
+        await Assert.That(immutableSlice2.ToString()).IsEqualTo(immutableSlice1.ToString());
+        await Assert.That(immutableSlice2.Text).IsEqualTo(immutableSlice1.Text);
+        await Assert.That(immutableSlice2.Range).IsEqualTo(immutableSlice1.Range);
     }
 
-    [Fact]
-    public void AsMutableStringSliceTest() {
+    [Test]
+    public async Task AsMutableStringSliceTest() {
         // Arrange
         var original = new StringSlice("Hello World", 0..5);
 
@@ -739,90 +739,90 @@ public class StringSliceTests {
         var mutable = original.AsMutableStringSlice();
 
         // Assert
-        Assert.Equal("Hello", mutable.ToString());
-        Assert.Equal(original.Text, mutable.Text);
-        Assert.Equal(original.Range, mutable.Range);
+        await Assert.That(mutable.ToString()).IsEqualTo("Hello");
+        await Assert.That(mutable.Text).IsEqualTo(original.Text);
+        await Assert.That(mutable.Range).IsEqualTo(original.Range);
 
         // Verify mutable behavior
         mutable.Range = 6..11;
-        Assert.Equal("World", mutable.ToString());
+        await Assert.That(mutable.ToString()).IsEqualTo("World");
         // Original should remain unchanged
-        Assert.Equal("Hello", original.ToString());
+        await Assert.That(original.ToString()).IsEqualTo("Hello");
     }
 
-    [Fact()]
-    public void EndsWithTest() {
+    [Test]
+    public async Task EndsWithTest() {
         {
             var sut = new StringSlice("0123456789ABCDEF");
-            Assert.True(sut.EndsWith("CDEF", StringComparison.Ordinal));
-            Assert.False(sut.EndsWith("X", StringComparison.Ordinal));
+            await Assert.That(sut.EndsWith("CDEF", StringComparison.Ordinal)).IsTrue();
+            await Assert.That(sut.EndsWith("X", StringComparison.Ordinal)).IsFalse();
         }
         {
             var sut = new StringSlice("0123456789ABCDEF", 0..12); // "0123456789AB"
-            Assert.True(sut.EndsWith("AB", StringComparison.Ordinal));
-            Assert.False(sut.EndsWith("ABC", StringComparison.Ordinal));
+            await Assert.That(sut.EndsWith("AB", StringComparison.Ordinal)).IsTrue();
+            await Assert.That(sut.EndsWith("ABC", StringComparison.Ordinal)).IsFalse();
         }
         {
             var sut = new StringSlice("Hello WORLD");
-            Assert.True(sut.EndsWith("world", StringComparison.OrdinalIgnoreCase));
-            Assert.False(sut.EndsWith("world", StringComparison.Ordinal));
+            await Assert.That(sut.EndsWith("world", StringComparison.OrdinalIgnoreCase)).IsTrue();
+            await Assert.That(sut.EndsWith("world", StringComparison.Ordinal)).IsFalse();
         }
     }
 
-    [Fact()]
-    public void EndsWithStringSliceTest() {
+    [Test]
+    public async Task EndsWithStringSliceTest() {
         {
             var sut = new StringSlice("0123456789ABCDEF");
             var search = new StringSlice("CDEF");
-            Assert.True(sut.EndsWith(search, StringComparison.Ordinal));
+            await Assert.That(sut.EndsWith(search, StringComparison.Ordinal)).IsTrue();
         }
         {
             var sut = new StringSlice("0123456789ABCDEF", 0..12); // "0123456789AB"
             var search = new StringSlice("ABC");
-            Assert.False(sut.EndsWith(search, StringComparison.Ordinal));
+            await Assert.That(sut.EndsWith(search, StringComparison.Ordinal)).IsFalse();
         }
         {
             var sut = new StringSlice("Hello WORLD");
             var search = new StringSlice("WORLD");
-            Assert.True(sut.EndsWith(search, StringComparison.Ordinal));
-            Assert.True(sut.EndsWith(new StringSlice("world"), StringComparison.OrdinalIgnoreCase));
+            await Assert.That(sut.EndsWith(search, StringComparison.Ordinal)).IsTrue();
+            await Assert.That(sut.EndsWith(new StringSlice("world"), StringComparison.OrdinalIgnoreCase)).IsTrue();
         }
     }
 
-    [Fact()]
-    public void EndsWithSpanTest() {
+    [Test]
+    public async Task EndsWithSpanTest() {
         {
             var sut = new StringSlice("0123456789ABCDEF");
-            Assert.True(sut.EndsWith("CDEF".AsSpan(), StringComparison.Ordinal));
-            Assert.False(sut.EndsWith("X".AsSpan(), StringComparison.Ordinal));
+            await Assert.That(sut.EndsWith("CDEF".AsSpan(), StringComparison.Ordinal)).IsTrue();
+            await Assert.That(sut.EndsWith("X".AsSpan(), StringComparison.Ordinal)).IsFalse();
         }
         {
             var sut = new StringSlice("0123456789ABCDEF", 0..12); // "0123456789AB"
-            Assert.True(sut.EndsWith("AB".AsSpan(), StringComparison.Ordinal));
-            Assert.False(sut.EndsWith("ABC".AsSpan(), StringComparison.Ordinal));
+            await Assert.That(sut.EndsWith("AB".AsSpan(), StringComparison.Ordinal)).IsTrue();
+            await Assert.That(sut.EndsWith("ABC".AsSpan(), StringComparison.Ordinal)).IsFalse();
         }
         {
             var sut = new StringSlice("Hello WORLD");
-            Assert.True(sut.EndsWith("world".AsSpan(), StringComparison.OrdinalIgnoreCase));
-            Assert.False(sut.EndsWith("world".AsSpan(), StringComparison.Ordinal));
+            await Assert.That(sut.EndsWith("world".AsSpan(), StringComparison.OrdinalIgnoreCase)).IsTrue();
+            await Assert.That(sut.EndsWith("world".AsSpan(), StringComparison.Ordinal)).IsFalse();
         }
     }
 
-    [Theory]
-    [InlineData("Hello World", "World", StringComparison.Ordinal, true)]
-    [InlineData("Hello World", "world", StringComparison.Ordinal, false)]
-    [InlineData("Hello World", "world", StringComparison.OrdinalIgnoreCase, true)]
-    [InlineData("Hello World", "Hello", StringComparison.Ordinal, false)]
-    [InlineData("", "", StringComparison.Ordinal, true)]
-    [InlineData("A", "", StringComparison.Ordinal, true)]
-    [InlineData("", "A", StringComparison.Ordinal, false)]
-    public void EndsWithTheory(string input, string search, StringComparison comparison, bool expected) {
+    [Test]
+    [Arguments("Hello World", "World", StringComparison.Ordinal, true)]
+    [Arguments("Hello World", "world", StringComparison.Ordinal, false)]
+    [Arguments("Hello World", "world", StringComparison.OrdinalIgnoreCase, true)]
+    [Arguments("Hello World", "Hello", StringComparison.Ordinal, false)]
+    [Arguments("", "", StringComparison.Ordinal, true)]
+    [Arguments("A", "", StringComparison.Ordinal, true)]
+    [Arguments("", "A", StringComparison.Ordinal, false)]
+    public async Task EndsWithTheory(string input, string search, StringComparison comparison, bool expected) {
         var sut = new StringSlice(input);
-        Assert.Equal(expected, sut.EndsWith(search, comparison));
+        await Assert.That(sut.EndsWith(search, comparison)).IsEqualTo(expected);
     }
 
-    [Fact]
-    public void GetOffsetAndLength_ReturnsCorrectValues() {
+    [Test]
+    public async Task GetOffsetAndLength_ReturnsCorrectValues() {
         // Arrange
         var slice1 = new StringSlice("Hello World", 2..7);  // "llo W"
         var slice2 = new StringSlice("Test", 0..4);         // "Test"
@@ -834,13 +834,13 @@ public class StringSliceTests {
         var result3 = slice3.GetOffsetAndLength();
 
         // Assert
-        Assert.Equal((2, 5), result1);
-        Assert.Equal((0, 4), result2);
-        Assert.Equal((1, 0), result3);
+        await Assert.That(result1).IsEqualTo((2, 5));
+        await Assert.That(result2).IsEqualTo((0, 4));
+        await Assert.That(result3).IsEqualTo((1, 0));
     }
 
-    [Fact]
-    public void TryFind_StringSlice_Test() {
+    [Test]
+    public async Task TryFind_StringSlice_Test() {
         // Arrange
         var slice = new StringSlice("Hello World!");
 
@@ -849,12 +849,12 @@ public class StringSliceTests {
             var searchFor = new StringSlice("World");
             bool found = slice.TryFind(searchFor, out var result);
 
-            Assert.True(found);
-            Assert.Equal("Hello ", result.Before.ToString());
-            Assert.Equal("Hello World", result.BeforeAndFound.ToString());
-            Assert.Equal("World", result.Found.ToString());
-            Assert.Equal("World!", result.FoundAndAfter.ToString());
-            Assert.Equal("!", result.After.ToString());
+            await Assert.That(found).IsTrue();
+            await Assert.That(result.Before.ToString()).IsEqualTo("Hello ");
+            await Assert.That(result.BeforeAndFound.ToString()).IsEqualTo("Hello World");
+            await Assert.That(result.Found.ToString()).IsEqualTo("World");
+            await Assert.That(result.FoundAndAfter.ToString()).IsEqualTo("World!");
+            await Assert.That(result.After.ToString()).IsEqualTo("!");
         }
 
         // Act & Assert - Search with case insensitivity
@@ -862,12 +862,12 @@ public class StringSliceTests {
             var searchFor = new StringSlice("world");
             bool found = slice.TryFind(searchFor, out var result, StringComparison.OrdinalIgnoreCase);
 
-            Assert.True(found);
-            Assert.Equal("Hello ", result.Before.ToString());
-            Assert.Equal("Hello World", result.BeforeAndFound.ToString());
-            Assert.Equal("World", result.Found.ToString());
-            Assert.Equal("World!", result.FoundAndAfter.ToString());
-            Assert.Equal("!", result.After.ToString());
+            await Assert.That(found).IsTrue();
+            await Assert.That(result.Before.ToString()).IsEqualTo("Hello ");
+            await Assert.That(result.BeforeAndFound.ToString()).IsEqualTo("Hello World");
+            await Assert.That(result.Found.ToString()).IsEqualTo("World");
+            await Assert.That(result.FoundAndAfter.ToString()).IsEqualTo("World!");
+            await Assert.That(result.After.ToString()).IsEqualTo("!");
         }
 
         // Act & Assert - Search in middle of string
@@ -875,12 +875,12 @@ public class StringSliceTests {
             var searchFor = new StringSlice("lo Wo");
             bool found = slice.TryFind(searchFor, out var result);
 
-            Assert.True(found);
-            Assert.Equal("Hel", result.Before.ToString());
-            Assert.Equal("Hello Wo", result.BeforeAndFound.ToString());
-            Assert.Equal("lo Wo", result.Found.ToString());
-            Assert.Equal("lo World!", result.FoundAndAfter.ToString());
-            Assert.Equal("rld!", result.After.ToString());
+            await Assert.That(found).IsTrue();
+            await Assert.That(result.Before.ToString()).IsEqualTo("Hel");
+            await Assert.That(result.BeforeAndFound.ToString()).IsEqualTo("Hello Wo");
+            await Assert.That(result.Found.ToString()).IsEqualTo("lo Wo");
+            await Assert.That(result.FoundAndAfter.ToString()).IsEqualTo("lo World!");
+            await Assert.That(result.After.ToString()).IsEqualTo("rld!");
         }
 
         // Act & Assert - Search not found
@@ -888,7 +888,7 @@ public class StringSliceTests {
             var searchFor = new StringSlice("NotFound");
             bool found = slice.TryFind(searchFor, out var result);
 
-            Assert.False(found);
+            await Assert.That(found).IsFalse();
         }
 
         // Act & Assert - Search in substring
@@ -898,22 +898,22 @@ public class StringSliceTests {
 
             bool found = slice2.TryFind(searchFor, out var result);
 
-            Assert.True(found);
-            Assert.Equal("W", result.Before.ToString());
-            Assert.Equal("or", result.Found.ToString());
-            Assert.Equal("ld!", result.After.ToString());
+            await Assert.That(found).IsTrue();
+            await Assert.That(result.Before.ToString()).IsEqualTo("W");
+            await Assert.That(result.Found.ToString()).IsEqualTo("or");
+            await Assert.That(result.After.ToString()).IsEqualTo("ld!");
         }
     }
 
-    [Fact]
-    public void TryGetFirst_Test() {
+    [Test]
+    public async Task TryGetFirst_Test() {
         // Arrange & Act & Assert - Non-empty slice
         {
             var slice = new StringSlice("Hello");
             bool success = slice.TryGetFirst(out var firstChar);
 
-            Assert.True(success);
-            Assert.Equal('H', firstChar);
+            await Assert.That(success).IsTrue();
+            await Assert.That(firstChar).IsEqualTo('H');
         }
 
         // Arrange & Act & Assert - Empty slice
@@ -921,8 +921,8 @@ public class StringSliceTests {
             var slice = new StringSlice("");
             bool success = slice.TryGetFirst(out var firstChar);
 
-            Assert.False(success);
-            Assert.Equal(default, firstChar);
+            await Assert.That(success).IsFalse();
+            await Assert.That(firstChar).IsEqualTo(default);
         }
 
         // Arrange & Act & Assert - Slice with range that makes it empty
@@ -930,8 +930,8 @@ public class StringSliceTests {
             var slice = new StringSlice("Hello", 2..2);
             bool success = slice.TryGetFirst(out var firstChar);
 
-            Assert.False(success);
-            Assert.Equal(default, firstChar);
+            await Assert.That(success).IsFalse();
+            await Assert.That(firstChar).IsEqualTo(default);
         }
 
         // Arrange & Act & Assert - Slice with non-zero start
@@ -939,8 +939,8 @@ public class StringSliceTests {
             var slice = new StringSlice("Hello", 2..5);
             bool success = slice.TryGetFirst(out var firstChar);
 
-            Assert.True(success);
-            Assert.Equal('l', firstChar);
+            await Assert.That(success).IsTrue();
+            await Assert.That(firstChar).IsEqualTo('l');
         }
 
         // Arrange & Act & Assert - Nested slices
@@ -949,8 +949,8 @@ public class StringSliceTests {
             var nested = original.Substring(6..11);
             bool success = nested.TryGetFirst(out var firstChar);
 
-            Assert.True(success);
-            Assert.Equal('W', firstChar);
+            await Assert.That(success).IsTrue();
+            await Assert.That(firstChar).IsEqualTo('W');
         }
 
 
@@ -961,13 +961,13 @@ public class StringSliceTests {
                 current = current.Substring(1);
             }
             var (offset, length) = current.GetOffsetAndLength();
-            Assert.Equal(11, offset);
-            Assert.Equal(0, length);
+            await Assert.That(offset).IsEqualTo(11);
+            await Assert.That(length).IsEqualTo(0);
         }
     }
 
-    [Fact]
-    public void SubstringBetweenStartAndStart_Test() {
+    [Test]
+    public async Task SubstringBetweenStartAndStart_Test() {
         // Arrange
         var original = new StringSlice("Hello World");
         var other = original.Substring(6); // "World"
@@ -976,7 +976,7 @@ public class StringSliceTests {
         var result = original.SubstringBetweenStartAndStart(other);
 
         // Assert
-        Assert.Equal("Hello ", result.ToString());
+        await Assert.That(result.ToString()).IsEqualTo("Hello ");
 
         // Test with invalid other slice (different text)
         var differentText = new StringSlice("Different");
@@ -990,8 +990,8 @@ public class StringSliceTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => original.SubstringBetweenStartAndStart(beyondSlice));
     }
 
-    [Fact]
-    public void SubstringBetweenStartAndEnd_Test() {
+    [Test]
+    public async Task SubstringBetweenStartAndEnd_Test() {
         // Arrange
         var original = new StringSlice("Hello World");
         var other = original.Substring(6, 5); // "World"
@@ -1000,7 +1000,7 @@ public class StringSliceTests {
         var result = original.SubstringBetweenStartAndEnd(other);
 
         // Assert
-        Assert.Equal("Hello World", result.ToString());
+        await Assert.That(result.ToString()).IsEqualTo("Hello World");
 
         // Test with invalid other slice (different text)
         var differentText = new StringSlice("Different");
@@ -1011,11 +1011,11 @@ public class StringSliceTests {
         var longSlice = new StringSlice(longText);
         var partSlice = new StringSlice(longText, 0..11); // "Hello World"
         var act = partSlice.SubstringBetweenStartAndEnd(longSlice);
-        Assert.Equal("Hello World and more text", act.ToString());
+        await Assert.That(act.ToString()).IsEqualTo("Hello World and more text");
     }
 
-    [Fact]
-    public void SubstringBetweenEndAndStart_Test() {
+    [Test]
+    public async Task SubstringBetweenEndAndStart_Test() {
         // Arrange
         var text = "Hello World Gap Text";
         var first = new StringSlice(text)[0..11]; // "Hello World"
@@ -1025,7 +1025,7 @@ public class StringSliceTests {
         var result = first.SubstringBetweenEndAndStart(second);
 
         // Assert
-        Assert.Equal(" Gap ", result.ToString());
+        await Assert.That(result.ToString()).IsEqualTo(" Gap ");
 
         // Test with invalid other slice (different text)
         var differentText = new StringSlice("Different");
@@ -1035,8 +1035,8 @@ public class StringSliceTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => second.SubstringBetweenEndAndStart(first));
     }
 
-    [Fact]
-    public void SubstringBetweenEndAndEnd_Test() {
+    [Test]
+    public async Task SubstringBetweenEndAndEnd_Test() {
         // Arrange
         var text = "Hello World Gap Text";
         var first = new StringSlice(text, 0..5); // "Hello"
@@ -1046,7 +1046,7 @@ public class StringSliceTests {
         var result = first.SubstringBetweenEndAndEnd(second);
 
         // Assert
-        Assert.Equal(" World Gap Text", result.ToString());
+        await Assert.That(result.ToString()).IsEqualTo(" World Gap Text");
 
         // Test with invalid other slice (different text)
         var differentText = new StringSlice("Different");
@@ -1056,8 +1056,8 @@ public class StringSliceTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => second.SubstringBetweenEndAndEnd(first));
     }
 
-    [Fact]
-    public void TrySubstringBetweenStartAndStart_Test() {
+    [Test]
+    public async Task TrySubstringBetweenStartAndStart_Test() {
         // Arrange
         var text = "Hello World Gap Text";
         var first = new StringSlice(text, 0..11); // "Hello World"
@@ -1067,15 +1067,15 @@ public class StringSliceTests {
         {
             bool success = first.TrySubstringBetweenStartAndStart(second, out var result);
 
-            Assert.True(success);
-            Assert.Equal("Hello World Gap ", result.ToString());
+            await Assert.That(success).IsTrue();
+            await Assert.That(result.ToString()).IsEqualTo("Hello World Gap ");
         }
 
         // Act & Assert - Invalid case (second starts before first)
         {
             bool success = second.TrySubstringBetweenStartAndStart(first, out var result);
 
-            Assert.False(success);
+            await Assert.That(success).IsFalse();
         }
 
         // Act & Assert - Different text throws exception
@@ -1086,8 +1086,8 @@ public class StringSliceTests {
         }
     }
 
-    [Fact]
-    public void TrySubstringBetweenStartAndEnd_Test() {
+    [Test]
+    public async Task TrySubstringBetweenStartAndEnd_Test() {
         // Arrange
         var text = "Hello World Gap Text";
         var first = new StringSlice(text, 0..5); // "Hello"
@@ -1097,8 +1097,8 @@ public class StringSliceTests {
         {
             bool success = first.TrySubstringBetweenStartAndEnd(second, out var result);
 
-            Assert.True(success);
-            Assert.Equal("Hello World", result.ToString());
+            await Assert.That(success).IsTrue();
+            await Assert.That(result.ToString()).IsEqualTo("Hello World");
         }
 
         // Act & Assert - Invalid case (first starts after second ends)
@@ -1106,8 +1106,8 @@ public class StringSliceTests {
             var later = new StringSlice(text, 12..16); // "Gap"
             bool success = later.TrySubstringBetweenStartAndEnd(second, out var result);
 
-            Assert.False(success);
-            Assert.Equal("", result.ToString());
+            await Assert.That(success).IsFalse();
+            await Assert.That(result.ToString()).IsEqualTo("");
         }
 
         // Act & Assert - Different text throws exception
@@ -1118,8 +1118,8 @@ public class StringSliceTests {
         }
     }
 
-    [Fact]
-    public void TrySubstringBetweenEndAndStart_Test() {
+    [Test]
+    public async Task TrySubstringBetweenEndAndStart_Test() {
         // Arrange
         var text = "Hello World Gap Text";
         var first = new StringSlice(text, 0..5); // "Hello"
@@ -1129,8 +1129,8 @@ public class StringSliceTests {
         {
             bool success = first.TrySubstringBetweenEndAndStart(second, out var result);
 
-            Assert.True(success);
-            Assert.Equal(" World ", result.ToString());
+            await Assert.That(success).IsTrue();
+            await Assert.That(result.ToString()).IsEqualTo(" World ");
         }
 
         // Act & Assert - Invalid case (first ends after second starts)
@@ -1138,8 +1138,8 @@ public class StringSliceTests {
             var overlap = new StringSlice(text, 0..13); // "Hello World G"
             bool success = overlap.TrySubstringBetweenEndAndStart(second, out var result);
 
-            Assert.False(success);
-            Assert.Equal("", result.ToString());
+            await Assert.That(success).IsFalse();
+            await Assert.That(result.ToString()).IsEqualTo("");
         }
 
         // Act & Assert - Different text throws exception
@@ -1150,8 +1150,8 @@ public class StringSliceTests {
         }
     }
 
-    [Fact]
-    public void TrySubstringBetweenEndAndEnd_Test() {
+    [Test]
+    public async Task TrySubstringBetweenEndAndEnd_Test() {
         // Arrange
         var text = "Hello World Gap Text";
         var first = new StringSlice(text, 0..5); // "Hello"
@@ -1161,8 +1161,8 @@ public class StringSliceTests {
         {
             bool success = first.TrySubstringBetweenEndAndEnd(second, out var result);
 
-            Assert.True(success);
-            Assert.Equal(" World", result.ToString());
+            await Assert.That(success).IsTrue();
+            await Assert.That(result.ToString()).IsEqualTo(" World");
         }
 
         // Act & Assert - Invalid case (first ends after second ends)
@@ -1170,8 +1170,8 @@ public class StringSliceTests {
             var longer = new StringSlice(text, 0..15); // "Hello World Gap"
             bool success = longer.TrySubstringBetweenEndAndEnd(second, out var result);
 
-            Assert.False(success);
-            Assert.Equal("", result.ToString());
+            await Assert.That(success).IsFalse();
+            await Assert.That(result.ToString()).IsEqualTo("");
         }
 
         // Act & Assert - Different text throws exception
@@ -1184,8 +1184,8 @@ public class StringSliceTests {
 }
 
 public class StringSliceAsSpanTests {
-    [Fact]
-    public void AsSpan_WithRange_ReturnsCorrectSubset() {
+    [Test]
+    public async Task AsSpan_WithRange_ReturnsCorrectSubset() {
         // Arrange
         var slice = new StringSlice("Hello World");
 
@@ -1193,11 +1193,11 @@ public class StringSliceAsSpanTests {
         var span = slice.AsSpan(1..4);
 
         // Assert
-        Assert.Equal("ell", span.ToString());
+        await Assert.That(span.ToString()).IsEqualTo("ell");
     }
 
-    [Fact]
-    public void AsSpan_WithFullRange_ReturnsEntireSlice() {
+    [Test]
+    public async Task AsSpan_WithFullRange_ReturnsEntireSlice() {
         // Arrange
         var slice = new StringSlice("Hello World");
 
@@ -1205,11 +1205,11 @@ public class StringSliceAsSpanTests {
         var span = slice.AsSpan(..);
 
         // Assert
-        Assert.Equal("Hello World", span.ToString());
+        await Assert.That(span.ToString()).IsEqualTo("Hello World");
     }
 
-    [Fact]
-    public void AsSpan_WithPartialSlice_ReturnsCorrectSubset() {
+    [Test]
+    public async Task AsSpan_WithPartialSlice_ReturnsCorrectSubset() {
         // Arrange
         var slice = new StringSlice("Hello World", 6..11); // "World"
 
@@ -1217,11 +1217,11 @@ public class StringSliceAsSpanTests {
         var span = slice.AsSpan(1..3); // "or"
 
         // Assert
-        Assert.Equal("or", span.ToString());
+        await Assert.That(span.ToString()).IsEqualTo("or");
     }
 
-    [Fact]
-    public void AsSpan_WithEmptyRange_ReturnsEmptySpan() {
+    [Test]
+    public async Task AsSpan_WithEmptyRange_ReturnsEmptySpan() {
         // Arrange
         var slice = new StringSlice("Hello World");
 
@@ -1229,12 +1229,13 @@ public class StringSliceAsSpanTests {
         var span = slice.AsSpan(1..1);
 
         // Assert
-        Assert.Equal(0, span.Length);
-        Assert.Equal("", span.ToString());
+        var length = span.Length;
+        await Assert.That(span.ToString()).IsEqualTo("");
+        await Assert.That(length).IsEqualTo(0);
     }
 
-    [Fact]
-    public void AsSpan_WithFromEnd_ReturnsCorrectSubset() {
+    [Test]
+    public async Task AsSpan_WithFromEnd_ReturnsCorrectSubset() {
         // Arrange
         var slice = new StringSlice("Hello World");
 
@@ -1242,14 +1243,14 @@ public class StringSliceAsSpanTests {
         var span = slice.AsSpan(^5..^0);
 
         // Assert
-        Assert.Equal("World", span.ToString());
+        await Assert.That(span.ToString()).IsEqualTo("World");
     }
 
-    [Theory]
-    [InlineData(0, false, 5, false, "Hello")]
-    [InlineData(0, false, 0, false, "")]
-    [InlineData(5, true, 0, true, "World")]
-    public void AsSpan_WithVariousRanges_ReturnsExpectedResults(int start, bool startFromEnd, int end, bool endFromEnd, string expected) {
+    [Test]
+    [Arguments(0, false, 5, false, "Hello")]
+    [Arguments(0, false, 0, false, "")]
+    [Arguments(5, true, 0, true, "World")]
+    public async Task AsSpan_WithVariousRanges_ReturnsExpectedResults(int start, bool startFromEnd, int end, bool endFromEnd, string expected) {
         Range range = new Range(new Index(start, startFromEnd), new Index(end, endFromEnd));
         // Arrange
         var slice = new StringSlice("Hello World");
@@ -1258,13 +1259,13 @@ public class StringSliceAsSpanTests {
         var span = slice.AsSpan(range);
 
         // Assert
-        Assert.Equal(expected, span.ToString());
+        await Assert.That(span.ToString()).IsEqualTo(expected);
     }
 
-    [Theory]
-    [InlineData(1, true, 5, false)]
-    [InlineData(0, false, 12, false)]
-    [InlineData(6, false, 5, false)]
+    [Test]
+    [Arguments(1, true, 5, false)]
+    [Arguments(0, false, 12, false)]
+    [Arguments(6, false, 5, false)]
     public void AsSpan_WithInvalidRange_ThrowsArgumentOutOfRangeException(int start, bool startFromEnd, int end, bool endFromEnd) {
         Range range = new Range(new Index(start, startFromEnd), new Index(end, endFromEnd));
 
@@ -1275,8 +1276,8 @@ public class StringSliceAsSpanTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => slice.AsSpan(range));
     }
 
-    [Fact]
-    public void AsSpan_WithNestedSlices_MaintainsCorrectOffsets() {
+    [Test]
+    public async Task AsSpan_WithNestedSlices_MaintainsCorrectOffsets() {
         // Arrange
         var originalSlice = new StringSlice("Hello World", 6..11); // "World"
         var middleSlice = originalSlice.Substring(1..4); // "orl"
@@ -1285,22 +1286,22 @@ public class StringSliceAsSpanTests {
         var finalSpan = middleSlice.AsSpan(1..2); // "r"
 
         // Assert
-        Assert.Equal("r", finalSpan.ToString());
+        await Assert.That(finalSpan.ToString()).IsEqualTo("r");
     }
 
-    [Fact]
-    public void SubstringOffset() {
+    [Test]
+    public async Task SubstringOffset() {
         var orginal = new StringSlice("0123456789ABCDEF");
-        Assert.Equal(0, orginal.GetOffsetAndLength().Offset);
-        Assert.Equal(8, orginal.Substring(2).Substring(6).GetOffsetAndLength().Offset);
-        Assert.Equal(8, orginal.Substring(8).GetOffsetAndLength().Offset);
+        await Assert.That(orginal.GetOffsetAndLength().Offset).IsEqualTo(0);
+        await Assert.That(orginal.Substring(2).Substring(6).GetOffsetAndLength().Offset).IsEqualTo(8);
+        await Assert.That(orginal.Substring(8).GetOffsetAndLength().Offset).IsEqualTo(8);
 
     }
 }
 
 public class StringSliceAdjustTests {
-    [Fact]
-    public void TryAdjustStartToLeft_Test() {
+    [Test]
+    public async Task TryAdjustStartToLeft_Test() {
         // Arrange
         var text = "  Hello World";
         var slice = new StringSlice(text, 2..13); // "Hello World"
@@ -1311,31 +1312,31 @@ public class StringSliceAdjustTests {
             out var result);
         
         // Assert
-        Assert.True(success);
-        Assert.Equal("  ", result.Difference.ToString());
-        Assert.Equal("  Hello World", result.Value.ToString());
-        
+        await Assert.That(success).IsTrue();
+        await Assert.That(result.Difference.ToString()).IsEqualTo("  ");
+        await Assert.That(result.Value.ToString()).IsEqualTo("  Hello World");
+
         // Act - Stop adjustment with null return
         bool nullStop = slice.TryAdjustStartToLeft(
             ch => null, 
             out var nullResult);
         
         // Assert - Should return false when null is returned
-        Assert.False(nullStop);
-        Assert.Equal("Hello World", nullResult.Value.ToString());
-        
+        await Assert.That(nullStop).IsFalse();
+        await Assert.That(nullResult.Value.ToString()).IsEqualTo("Hello World");
+
         // Act - Stop adjustment with false return
         bool falseStop = slice.TryAdjustStartToLeft(
             ch => false, 
             out var falseResult);
         
         // Assert - Should return false when false is returned immediately
-        Assert.False(falseStop);
-        Assert.Equal("Hello World", falseResult.Value.ToString());
+        await Assert.That(falseStop).IsFalse();
+        await Assert.That(falseResult.Value.ToString()).IsEqualTo("Hello World");
     }
     
-    [Fact]
-    public void TryAdjustStartToRight_Test() {
+    [Test]
+    public async Task TryAdjustStartToRight_Test() {
         // Arrange
         var text = "  Hello World";
         var slice = new StringSlice(text, 0..13); // "  Hello World"
@@ -1346,31 +1347,31 @@ public class StringSliceAdjustTests {
             out var result);
         
         // Assert
-        Assert.True(success);
-        Assert.Equal("  ", result.Difference.ToString());
-        Assert.Equal("Hello World", result.Value.ToString());
-        
+        await Assert.That(success).IsTrue();
+        await Assert.That(result.Difference.ToString()).IsEqualTo("  ");
+        await Assert.That(result.Value.ToString()).IsEqualTo("Hello World");
+
         // Act - Stop adjustment with null return
         bool nullStop = slice.TryAdjustStartToRight(
             ch => null, 
             out var nullResult);
         
         // Assert - Should return false when null is returned
-        Assert.False(nullStop);
-        Assert.Equal("  Hello World", nullResult.Value.ToString());
-        
+        await Assert.That(nullStop).IsFalse();
+        await Assert.That(nullResult.Value.ToString()).IsEqualTo("  Hello World");
+
         // Act - Stop adjustment with false return
         bool falseStop = slice.TryAdjustStartToRight(
             ch => false, 
             out var falseResult);
         
         // Assert - Should return false when false is returned immediately
-        Assert.False(falseStop);
-        Assert.Equal("  Hello World", falseResult.Value.ToString());
+        await Assert.That(falseStop).IsFalse();
+        await Assert.That(falseResult.Value.ToString()).IsEqualTo("  Hello World");
     }
     
-    [Fact]
-    public void TryAdjustEndToLeft_Test() {
+    [Test]
+    public async Task TryAdjustEndToLeft_Test() {
         // Arrange
         var text = "Hello World  ";
         var slice = new StringSlice(text, 0..13); // "Hello World  "
@@ -1381,28 +1382,28 @@ public class StringSliceAdjustTests {
             out var result);
         
         // Assert
-        Assert.True(success);
-        Assert.Equal("  ", result.Difference.ToString());
-        Assert.Equal("Hello World", result.Value.ToString());
-        
+        await Assert.That(success).IsTrue();
+        await Assert.That(result.Difference.ToString()).IsEqualTo("  ");
+        await Assert.That(result.Value.ToString()).IsEqualTo("Hello World");
+
         // Act - Stop adjustment with null return
         bool nullStop = slice.TryAdjustEndToLeft(
             ch => null, 
             out var nullResult);
         
         // Assert - Should return false when null is returned
-        Assert.False(nullStop);
-        Assert.Equal("Hello World  ", nullResult.Value.ToString());
-        
+        await Assert.That(nullStop).IsFalse();
+        await Assert.That(nullResult.Value.ToString()).IsEqualTo("Hello World  ");
+
         // Act - Stop adjustment with false return
         bool falseStop = slice.TryAdjustEndToLeft(
             ch => false, 
             out var falseResult);
         
         // Assert - Should return false when false is returned immediately
-        Assert.False(falseStop);
-        Assert.Equal("Hello World  ", falseResult.Value.ToString());
-        
+        await Assert.That(falseStop).IsFalse();
+        await Assert.That(falseResult.Value.ToString()).IsEqualTo("Hello World  ");
+
         // Arrange - Slice with mixed content
         var mixedSlice = new StringSlice("abc123", 0..6);
         
@@ -1415,13 +1416,13 @@ public class StringSliceAdjustTests {
             out var mixedResult);
         
         // Assert
-        Assert.True(mixedSuccess);
-        Assert.Equal("123", mixedResult.Difference.ToString());
-        Assert.Equal("abc", mixedResult.Value.ToString());
+        await Assert.That(mixedSuccess).IsTrue();
+        await Assert.That(mixedResult.Difference.ToString()).IsEqualTo("123");
+        await Assert.That(mixedResult.Value.ToString()).IsEqualTo("abc");
     }
     
-    [Fact]
-    public void TryAdjustEndToRight_Test() {
+    [Test]
+    public async Task TryAdjustEndToRight_Test() {
         // Arrange
         var text = "Hello World";
         var slice = new StringSlice(text, 0..5); // "Hello"
@@ -1432,28 +1433,28 @@ public class StringSliceAdjustTests {
             out var result);
         
         // Assert
-        Assert.True(success);
-        Assert.Equal(" World", result.Difference.ToString());
-        Assert.Equal("Hello World", result.Value.ToString());
-        
+        await Assert.That(success).IsTrue();
+        await Assert.That(result.Difference.ToString()).IsEqualTo(" World");
+        await Assert.That(result.Value.ToString()).IsEqualTo("Hello World");
+
         // Act - Stop adjustment with null return
         bool nullStop = slice.TryAdjustEndToRight(
             ch => null, 
             out var nullResult);
         
         // Assert - Should return false when null is returned
-        Assert.False(nullStop);
-        Assert.Equal("Hello", nullResult.Value.ToString());
-        
+        await Assert.That(nullStop).IsFalse();
+        await Assert.That(nullResult.Value.ToString()).IsEqualTo("Hello");
+
         // Act - Stop adjustment with false return
         bool falseStop = slice.TryAdjustEndToRight(
             ch => false, 
             out var falseResult);
         
         // Assert - Should return false when false is returned
-        Assert.False(falseStop);
-        Assert.Equal("Hello", falseResult.Value.ToString());
-        
+        await Assert.That(falseStop).IsFalse();
+        await Assert.That(falseResult.Value.ToString()).IsEqualTo("Hello");
+
         // Arrange - Slice with specific condition
         var specificSlice = new StringSlice("Hello World123", 0..11); // "Hello World"
         
@@ -1463,13 +1464,13 @@ public class StringSliceAdjustTests {
             out var specificResult);
         
         // Assert
-        Assert.True(specificSuccess);
-        Assert.Equal("123", specificResult.Difference.ToString());
-        Assert.Equal("Hello World123", specificResult.Value.ToString());
+        await Assert.That(specificSuccess).IsTrue();
+        await Assert.That(specificResult.Difference.ToString()).IsEqualTo("123");
+        await Assert.That(specificResult.Value.ToString()).IsEqualTo("Hello World123");
     }
     
-    [Fact]
-    public void TryAdjust_WithEmptySlice_ReturnsExpectedResults() {
+    [Test]
+    public async Task TryAdjust_WithEmptySlice_ReturnsExpectedResults() {
         // Arrange
         var emptySlice = new StringSlice("");
         
@@ -1479,9 +1480,9 @@ public class StringSliceAdjustTests {
                 ch => true, 
                 out var result);
             
-            Assert.False(success);
-            Assert.Equal("", result.Value.ToString());
-            Assert.Equal("", result.Difference.ToString());
+            await Assert.That(success).IsFalse();
+            await Assert.That(result.Value.ToString()).IsEqualTo("");
+            await Assert.That(result.Difference.ToString()).IsEqualTo("");
         }
         
         // Act & Assert - TryAdjustStartToRight
@@ -1490,9 +1491,9 @@ public class StringSliceAdjustTests {
                 ch => true, 
                 out var result);
             
-            Assert.False(success);
-            Assert.Equal("", result.Value.ToString());
-            Assert.Equal("", result.Difference.ToString());
+            await Assert.That(success).IsFalse();
+            await Assert.That(result.Value.ToString()).IsEqualTo("");
+            await Assert.That(result.Difference.ToString()).IsEqualTo("");
         }
         
         // Act & Assert - TryAdjustEndToLeft
@@ -1501,9 +1502,9 @@ public class StringSliceAdjustTests {
                 ch => true, 
                 out var result);
             
-            Assert.False(success);
-            Assert.Equal("", result.Value.ToString());
-            Assert.Equal("", result.Difference.ToString());
+            await Assert.That(success).IsFalse();
+            await Assert.That(result.Value.ToString()).IsEqualTo("");
+            await Assert.That(result.Difference.ToString()).IsEqualTo("");
         }
         
         // Act & Assert - TryAdjustEndToRight
@@ -1512,14 +1513,14 @@ public class StringSliceAdjustTests {
                 ch => true, 
                 out var result);
             
-            Assert.False(success);
-            Assert.Equal("", result.Value.ToString());
-            Assert.Equal("", result.Difference.ToString());
+            await Assert.That(success).IsFalse();
+            await Assert.That(result.Value.ToString()).IsEqualTo("");
+            await Assert.That(result.Difference.ToString()).IsEqualTo("");
         }
     }
     
-    [Fact]
-    public void TryAdjust_WithNestedSlices_MaintainsCorrectOffsets() {
+    [Test]
+    public async Task TryAdjust_WithNestedSlices_MaintainsCorrectOffsets() {
         // Arrange
         var originalText = "  Hello World  ";
         var originalSlice = new StringSlice(originalText);
@@ -1531,25 +1532,25 @@ public class StringSliceAdjustTests {
             out var startLeftResult);
         
         // Assert
-        Assert.True(startLeftSuccess);
-        Assert.Equal("  ", startLeftResult.Difference.ToString());
-        Assert.Equal("  Hello Wor", startLeftResult.Value.ToString());
-        Assert.Equal(0, startLeftResult.Value.Range.Start.Value);
-        
+        await Assert.That(startLeftSuccess).IsTrue();
+        await Assert.That(startLeftResult.Difference.ToString()).IsEqualTo("  ");
+        await Assert.That(startLeftResult.Value.ToString()).IsEqualTo("  Hello Wor");
+        await Assert.That(startLeftResult.Value.Range.Start.Value).IsEqualTo(0);
+
         // Act - Adjust end to right
         bool endRightSuccess = trimmedSlice.TryAdjustEndToRight(
             ch => ch == 'l' || ch == 'd' || char.IsWhiteSpace(ch) ? true : false, 
             out var endRightResult);
         
         // Assert
-        Assert.True(endRightSuccess);
-        Assert.Equal("ld  ", endRightResult.Difference.ToString());
-        Assert.Equal("Hello World  ", endRightResult.Value.ToString());
-        Assert.Equal(15, endRightResult.Value.Range.End.Value);
+        await Assert.That(endRightSuccess).IsTrue();
+        await Assert.That(endRightResult.Difference.ToString()).IsEqualTo("ld  ");
+        await Assert.That(endRightResult.Value.ToString()).IsEqualTo("Hello World  ");
+        await Assert.That(endRightResult.Value.Range.End.Value).IsEqualTo(15);
     }
     
-    [Fact]
-    public void TryAdjust_WithComplexPredicates_WorksCorrectly() {
+    [Test]
+    public async Task TryAdjust_WithComplexPredicates_WorksCorrectly() {
         // Arrange
         var text = "12abc34def56";
         var slice = new StringSlice(text, 2..8); // "abc34d"
@@ -1563,10 +1564,10 @@ public class StringSliceAdjustTests {
             out var leftDigitsResult);
         
         // Assert
-        Assert.True(leftDigitsSuccess);
-        Assert.Equal("12", leftDigitsResult.Difference.ToString());
-        Assert.Equal("12abc34d", leftDigitsResult.Value.ToString());
-        
+        await Assert.That(leftDigitsSuccess).IsTrue();
+        await Assert.That(leftDigitsResult.Difference.ToString()).IsEqualTo("12");
+        await Assert.That(leftDigitsResult.Value.ToString()).IsEqualTo("12abc34d");
+
         // Act - Find digits to the right
         bool rightDigitsSuccess = slice.TryAdjustEndToRight(
             ch => {
@@ -1575,13 +1576,13 @@ public class StringSliceAdjustTests {
             out var rightDigitsResult);
         
         // Assert
-        Assert.True(rightDigitsSuccess);
-        Assert.Equal("ef56", rightDigitsResult.Difference.ToString());
-        Assert.Equal("abc34def56", rightDigitsResult.Value.ToString());
+        await Assert.That(rightDigitsSuccess).IsTrue();
+        await Assert.That(rightDigitsResult.Difference.ToString()).IsEqualTo("ef56");
+        await Assert.That(rightDigitsResult.Value.ToString()).IsEqualTo("abc34def56");
     }
     
-    [Fact]
-    public void TryAdjust_WithConditionalStops_WorksCorrectly() {
+    [Test]
+    public async Task TryAdjust_WithConditionalStops_WorksCorrectly() {
         // Arrange
         var text = "abc123def456";
         var slice = new StringSlice(text, 3..6); // "123"
@@ -1595,10 +1596,10 @@ public class StringSliceAdjustTests {
             out var leftResult);
         
         // Assert
-        Assert.True(leftSuccess);
-        Assert.Equal("c", leftResult.Difference.ToString());
-        Assert.Equal("c123", leftResult.Value.ToString());
-        
+        await Assert.That(leftSuccess).IsTrue();
+        await Assert.That(leftResult.Difference.ToString()).IsEqualTo("c");
+        await Assert.That(leftResult.Value.ToString()).IsEqualTo("c123");
+
         // Act - Adjust right until we hit 'e', then abort
         bool rightSuccess = slice.TryAdjustEndToRight(
             ch => {
@@ -1608,7 +1609,7 @@ public class StringSliceAdjustTests {
             out var rightResult);
         
         // Assert
-        Assert.False(rightSuccess); // Should return false because we hit null
-        Assert.Equal("123d", rightResult.Value.ToString());
+        await Assert.That(rightSuccess).IsFalse(); // Should return false because we hit null
+        await Assert.That(rightResult.Value.ToString()).IsEqualTo("123d");
     }
 }

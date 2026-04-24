@@ -1,8 +1,8 @@
 namespace Brimborium.Text;
 
 public class MutableStringSliceTests {
-    [Fact]
-    public void ExplicitConversion_ToStringSlice_Works() {
+    [Test]
+    public async Task ExplicitConversion_ToStringSlice_Works() {
         // Arrange
         var mutable = new MutableStringSlice("Hello World", 0..5);
 
@@ -10,13 +10,13 @@ public class MutableStringSliceTests {
         StringSlice immutable = (StringSlice)mutable;
 
         // Assert
-        Assert.Equal("Hello", immutable.ToString());
-        Assert.Equal(mutable.Text, immutable.Text);
-        Assert.Equal(mutable.Range, immutable.Range);
+        await Assert.That(immutable.ToString()).IsEqualTo("Hello");
+        await Assert.That(immutable.Text).IsEqualTo(mutable.Text);
+        await Assert.That(immutable.Range).IsEqualTo(mutable.Range);
     }
 
-    [Fact]
-    public void ExplicitConversion_FromStringSlice_Works() {
+    [Test]
+    public async Task ExplicitConversion_FromStringSlice_Works() {
         // Arrange
         var stringSlice = new StringSlice("Hello World", 0..5);
 
@@ -24,45 +24,45 @@ public class MutableStringSliceTests {
         var mutable = (MutableStringSlice)stringSlice;
 
         // Assert
-        Assert.Equal("Hello", mutable.ToString());
-        Assert.Equal(stringSlice.Text, mutable.Text);
-        Assert.Equal(stringSlice.Range, mutable.Range);
+        await Assert.That(mutable.ToString()).IsEqualTo("Hello");
+        await Assert.That(mutable.Text).IsEqualTo(stringSlice.Text);
+        await Assert.That(mutable.Range).IsEqualTo(stringSlice.Range);
     }
 
-    [Fact]
-    public void EqualityOperator_WithStringSlice_Works() {
+    [Test]
+    public async Task EqualityOperator_WithStringSlice_Works() {
         // Arrange
         var mutable = new MutableStringSlice("Hello World", 0..5);
         var stringSlice = new StringSlice("Hello World", 0..5);
         var differentStringSlice = new StringSlice("Hello World", 1..6);
 
         // Assert
-        Assert.True(mutable == stringSlice);
-        Assert.True(stringSlice == mutable);
-        Assert.False(mutable == differentStringSlice);
-        Assert.False(differentStringSlice == mutable);
-        Assert.False(mutable == (MutableStringSlice?)null);
-        Assert.False(null == stringSlice);
+        await Assert.That(mutable == stringSlice).IsTrue();
+        await Assert.That(stringSlice == mutable).IsTrue();
+        await Assert.That(mutable == differentStringSlice).IsFalse();
+        await Assert.That(differentStringSlice == mutable).IsFalse();
+        await Assert.That(mutable == (MutableStringSlice?)null).IsFalse();
+        await Assert.That(null == stringSlice).IsFalse();
     }
 
-    [Fact]
-    public void InequalityOperator_WithStringSlice_Works() {
+    [Test]
+    public async Task InequalityOperator_WithStringSlice_Works() {
         // Arrange
         var mutable = new MutableStringSlice("Hello World", 0..5);
         var stringSlice = new StringSlice("Hello World", 0..5);
         var differentStringSlice = new StringSlice("Hello World", 1..6);
 
         // Assert
-        Assert.False(mutable != stringSlice);
-        Assert.False(stringSlice != mutable);
-        Assert.True(mutable != differentStringSlice);
-        Assert.True(differentStringSlice != mutable);
-        Assert.True(mutable != (MutableStringSlice?)null);
-        Assert.True(null != stringSlice);
+        await Assert.That(mutable != stringSlice).IsFalse();
+        await Assert.That(stringSlice != mutable).IsFalse();
+        await Assert.That(mutable != differentStringSlice).IsTrue();
+        await Assert.That(differentStringSlice != mutable).IsTrue();
+        await Assert.That(mutable != (MutableStringSlice?)null).IsTrue();
+        await Assert.That(null != stringSlice).IsTrue();
     }
 
-    [Fact]
-    public void AsSpan_ReturnsCorrectSpan() {
+    [Test]
+    public async Task AsSpan_ReturnsCorrectSpan() {
         // Arrange
         var slice = new MutableStringSlice("Hello World", 0..5);
         
@@ -70,12 +70,13 @@ public class MutableStringSliceTests {
         var span = slice.AsSpan();
         
         // Assert
-        Assert.Equal("Hello", new string(span));
-        Assert.Equal(5, span.Length);
+        var length = span.Length;
+        await Assert.That(new string(span)).IsEqualTo("Hello");
+        await Assert.That(length).IsEqualTo(5);
     }
 
-    [Fact]
-    public void AsSpan_WithMiddleRange_ReturnsCorrectSpan() {
+    [Test]
+    public async Task AsSpan_WithMiddleRange_ReturnsCorrectSpan() {
         // Arrange
         var slice = new MutableStringSlice("Hello World", 6..11);
         
@@ -83,20 +84,22 @@ public class MutableStringSliceTests {
         var span = slice.AsSpan();
         
         // Assert
-        Assert.Equal("World", new string(span));
-        Assert.Equal(5, span.Length);
+        var length = span.Length;
+        await Assert.That(new string(span)).IsEqualTo("World");
+        await Assert.That(length).IsEqualTo(5);
     }
 
-    [Fact]
-    public void AsSpan_WithEmptyRange_ReturnsEmptySpan() {
+    [Test]
+    public async Task AsSpan_WithEmptyRange_ReturnsEmptySpan() {
         // Arrange
         var slice = new MutableStringSlice("Hello", 2..2);
         
         // Act
         var span = slice.AsSpan();
-        
+
         // Assert
-        Assert.Equal(0, span.Length);
-        Assert.Equal("", new string(span));
+        var length = span.Length;
+        await Assert.That(new string(span)).IsEqualTo("");
+        await Assert.That(length).IsEqualTo(0);
     }
 }

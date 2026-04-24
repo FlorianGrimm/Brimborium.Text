@@ -4,34 +4,34 @@
 /// Tests for the ImmutableStringSlice class.
 /// </summary>
 public class ImmutableStringSliceTests {
-    [Fact]
-    public void Constructor_WithValidInput_CreatesInstance() {
+    [Test]
+    public async Task Constructor_WithValidInput_CreatesInstance() {
         // Arrange & Act
         var slice = new ImmutableStringSlice("Hello World", 0..5);
 
         // Assert
-        Assert.Equal("Hello World", slice.Text);
-        Assert.Equal(0..5, slice.Range);
+        await Assert.That(slice.Text).IsEqualTo("Hello World");
+        await Assert.That(slice.Range).IsEqualTo(0..5);
     }
 
-    [Fact]
+    [Test]
     public void Constructor_WithNullText_ThrowsArgumentNullException() {
         // Arrange & Act & Assert
         Assert.Throws<ArgumentNullException>(() => new ImmutableStringSlice(null!, 0..5));
     }
 
-    [Theory]
-    [InlineData(-1, 5)]  // Invalid start
-    [InlineData(0, 12)]  // Length too long
-    [InlineData(6, 6)]   // Start beyond text length
+    [Test]
+    [Arguments(-1, 5)]  // Invalid start
+    [Arguments(0, 12)]  // Length too long
+    [Arguments(6, 6)]   // Start beyond text length
     public void Constructor_WithInvalidRange_ThrowsArgumentOutOfRangeException(int start, int end) {
         // Arrange & Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => 
             new ImmutableStringSlice("Hello", start..end));
     }
 
-    [Fact]
-    public void Deconstruct_ReturnsCorrectValues() {
+    [Test]
+    public async Task Deconstruct_ReturnsCorrectValues() {
         // Arrange
         var slice = new ImmutableStringSlice("Hello World", 0..5);
 
@@ -39,12 +39,12 @@ public class ImmutableStringSliceTests {
         var (text, range) = slice;
 
         // Assert
-        Assert.Equal("Hello World", text);
-        Assert.Equal(0..5, range);
+        await Assert.That(text).IsEqualTo("Hello World");
+        await Assert.That(range).IsEqualTo(0..5);
     }
 
-    [Fact]
-    public void GetSlice_ReturnsEquivalentStringSlice() {
+    [Test]
+    public async Task GetSlice_ReturnsEquivalentStringSlice() {
         // Arrange
         var immutableSlice = new ImmutableStringSlice("Hello World", 0..5);
 
@@ -52,11 +52,11 @@ public class ImmutableStringSliceTests {
         var stringSlice = immutableSlice.AsStringSlice();
 
         // Assert
-        Assert.Equal("Hello", stringSlice.ToString());
+        await Assert.That(stringSlice.ToString()).IsEqualTo("Hello");
     }
 
-    [Fact]
-    public void ExplicitConversion_ToStringSlice_Works() {
+    [Test]
+    public async Task ExplicitConversion_ToStringSlice_Works() {
         // Arrange
         var immutableSlice = new ImmutableStringSlice("Hello World", 0..5);
 
@@ -64,11 +64,11 @@ public class ImmutableStringSliceTests {
         StringSlice stringSlice = (StringSlice)immutableSlice;
 
         // Assert
-        Assert.Equal("Hello", stringSlice.ToString());
+        await Assert.That(stringSlice.ToString()).IsEqualTo("Hello");
     }
 
-    [Fact]
-    public void ToString_ReturnsCorrectSlice() {
+    [Test]
+    public async Task ToString_ReturnsCorrectSlice() {
         // Arrange
         var slice = new ImmutableStringSlice("Hello World", 0..5);
 
@@ -76,11 +76,11 @@ public class ImmutableStringSliceTests {
         var result = slice.ToString();
 
         // Assert
-        Assert.Equal("Hello", result);
+        await Assert.That(result).IsEqualTo("Hello");
     }
 
-    [Fact]
-    public void ToString_CachesResult() {
+    [Test]
+    public async Task ToString_CachesResult() {
         // Arrange
         var slice = new ImmutableStringSlice("Hello World", 0..5);
 
@@ -89,49 +89,49 @@ public class ImmutableStringSliceTests {
         var result2 = slice.ToString();
 
         // Assert
-        Assert.Same(result1, result2); // Should return the same string instance
+        await Assert.That(result2).IsSameReferenceAs(result1); // Should return the same string instance
     }
 
-    [Fact]
-    public void Equals_WithSameContent_ReturnsTrue() {
+    [Test]
+    public async Task Equals_WithSameContent_ReturnsTrue() {
         // Arrange
         var slice1 = new ImmutableStringSlice("Hello World", 0..5);
         var slice2 = new ImmutableStringSlice("Hello World", 0..5);
 
         // Act & Assert
-        Assert.True(slice1.Equals(slice2));
+        await Assert.That(slice1.Equals(slice2)).IsTrue();
     }
 
-    [Fact]
-    public void Equals_WithDifferentContent_ReturnsFalse() {
+    [Test]
+    public async Task Equals_WithDifferentContent_ReturnsFalse() {
         // Arrange
         var slice1 = new ImmutableStringSlice("Hello World", 0..5);
         var slice2 = new ImmutableStringSlice("Hello World", 1..6);
 
         // Act & Assert
-        Assert.False(slice1.Equals(slice2));
+        await Assert.That(slice1.Equals(slice2)).IsFalse();
     }
 
-    [Fact]
-    public void Equals_WithNull_ReturnsFalse() {
+    [Test]
+    public async Task Equals_WithNull_ReturnsFalse() {
         // Arrange
         var slice = new ImmutableStringSlice("Hello World", 0..5);
 
         // Act & Assert
-        Assert.False(slice.Equals(null));
+        await Assert.That(slice.Equals(null)).IsFalse();
     }
 
-    [Fact]
-    public void Equals_WithSameInstance_ReturnsTrue() {
+    [Test]
+    public async Task Equals_WithSameInstance_ReturnsTrue() {
         // Arrange
         var slice = new ImmutableStringSlice("Hello World", 0..5);
 
         // Act & Assert
-        Assert.True(slice.Equals(slice));
+        await Assert.That(slice.Equals(slice)).IsTrue();
     }
 
-    [Fact]
-    public void GetHashCode_ReturnsSameValueForEqualContent() {
+    [Test]
+    public async Task GetHashCode_ReturnsSameValueForEqualContent() {
         // Arrange
         var slice1 = new ImmutableStringSlice("Hello World", 0..5);
         var slice2 = new ImmutableStringSlice("Hello World", 0..5);
@@ -141,11 +141,11 @@ public class ImmutableStringSliceTests {
         var hash2 = slice2.GetHashCode();
 
         // Assert
-        Assert.Equal(hash1, hash2);
+        await Assert.That(hash2).IsEqualTo(hash1);
     }
 
-    [Fact]
-    public void GetHashCode_ReturnsDifferentValueForDifferentContent() {
+    [Test]
+    public async Task GetHashCode_ReturnsDifferentValueForDifferentContent() {
         // Arrange
         var slice1 = new ImmutableStringSlice("Hello World", 0..5);
         var slice2 = new ImmutableStringSlice("Hello World", 1..6);
@@ -155,11 +155,11 @@ public class ImmutableStringSliceTests {
         var hash2 = slice2.GetHashCode();
 
         // Assert
-        Assert.NotEqual(hash1, hash2);
+        await Assert.That(hash2).IsNotEqualTo(hash1);
     }
 
-    [Fact]
-    public void EqualityComparer_ComparesCorrectly() {
+    [Test]
+    public async Task EqualityComparer_ComparesCorrectly() {
         // Arrange
         var slice1 = new ImmutableStringSlice("Hello World", 0..5);
         var slice2 = new ImmutableStringSlice("Hello World", 0..5);
@@ -169,14 +169,14 @@ public class ImmutableStringSliceTests {
         var comparer = slice1 as IEqualityComparer<ImmutableStringSlice>;
 
         // Assert
-        Assert.True(comparer.Equals(slice1, slice2));
-        Assert.False(comparer.Equals(slice1, slice3));
-        Assert.False(comparer.Equals(slice1, null));
-        Assert.False(comparer.Equals(null, slice1));
-        Assert.True(comparer.Equals(null, null));
+        await Assert.That(comparer.Equals(slice1, slice2)).IsTrue();
+        await Assert.That(comparer.Equals(slice1, slice3)).IsFalse();
+        await Assert.That(comparer.Equals(slice1, null)).IsFalse();
+        await Assert.That(comparer.Equals(null, slice1)).IsFalse();
+        await Assert.That(comparer.Equals(null, null)).IsTrue();
     }
 
-    [Fact]
+    [Test]
     public void EqualityComparer_GetHashCode_ThrowsForNull() {
         // Arrange
         var slice = new ImmutableStringSlice("Hello World", 0..5);
@@ -188,19 +188,19 @@ public class ImmutableStringSliceTests {
         Assert.Throws<ArgumentNullException>(() => comparer.GetHashCode(null!));
     }
 
-    [Fact]
-    public void DifferentStrings_SameContent_AreEqual() {
+    [Test]
+    public async Task DifferentStrings_SameContent_AreEqual() {
         // Arrange
         var slice1 = new ImmutableStringSlice("Hello World", 0..5);
         var slice2 = new ImmutableStringSlice("Hello Different", 0..5);
 
         // Act & Assert
-        Assert.True(slice1.Equals(slice2));
-        Assert.Equal(slice1.GetHashCode(), slice2.GetHashCode());
+        await Assert.That(slice1.Equals(slice2)).IsTrue();
+        await Assert.That(slice2.GetHashCode()).IsEqualTo(slice1.GetHashCode());
     }
 
-    [Fact]
-    public void AsSpan_ReturnsCorrectSpan() {
+    [Test]
+    public async Task AsSpan_ReturnsCorrectSpan() {
         // Arrange
         var slice = new ImmutableStringSlice("Hello World", 0..5);
         
@@ -208,12 +208,13 @@ public class ImmutableStringSliceTests {
         var span = slice.AsSpan();
         
         // Assert
-        Assert.Equal("Hello", new string(span));
-        Assert.Equal(5, span.Length);
+        var length = span.Length;
+        await Assert.That(new string(span)).IsEqualTo("Hello");
+        await Assert.That(length).IsEqualTo(5);
     }
 
-    [Fact]
-    public void AsSpan_WithMiddleRange_ReturnsCorrectSpan() {
+    [Test]
+    public async Task AsSpan_WithMiddleRange_ReturnsCorrectSpan() {
         // Arrange
         var slice = new ImmutableStringSlice("Hello World", 6..11);
         
@@ -221,12 +222,13 @@ public class ImmutableStringSliceTests {
         var span = slice.AsSpan();
         
         // Assert
-        Assert.Equal("World", new string(span));
-        Assert.Equal(5, span.Length);
+        var length = span.Length;
+        await Assert.That(new string(span)).IsEqualTo("World");
+        await Assert.That(length).IsEqualTo(5);
     }
 
-    [Fact]
-    public void AsSpan_WithEmptyRange_ReturnsEmptySpan() {
+    [Test]
+    public async Task AsSpan_WithEmptyRange_ReturnsEmptySpan() {
         // Arrange
         var slice = new ImmutableStringSlice("Hello", 2..2);
         
@@ -234,12 +236,13 @@ public class ImmutableStringSliceTests {
         var span = slice.AsSpan();
         
         // Assert
-        Assert.Equal(0, span.Length);
-        Assert.Equal("", new string(span));
+        var length = span.Length;
+        await Assert.That(new string(span)).IsEqualTo("");
+        await Assert.That(length).IsEqualTo(0);
     }
 
-    [Fact]
-    public void AsStringSlice_ReturnsEquivalentStringSlice() {
+    [Test]
+    public async Task AsStringSlice_ReturnsEquivalentStringSlice() {
         // Arrange
         var immutableSlice = new ImmutableStringSlice("Hello World", 0..5);
 
@@ -247,13 +250,13 @@ public class ImmutableStringSliceTests {
         var stringSlice = immutableSlice.AsStringSlice();
 
         // Assert
-        Assert.Equal("Hello", stringSlice.ToString());
-        Assert.Equal(immutableSlice.Text, stringSlice.Text);
-        Assert.Equal(immutableSlice.Range, stringSlice.Range);
+        await Assert.That(stringSlice.ToString()).IsEqualTo("Hello");
+        await Assert.That(stringSlice.Text).IsEqualTo(immutableSlice.Text);
+        await Assert.That(stringSlice.Range).IsEqualTo(immutableSlice.Range);
     }
 
-    [Fact]
-    public void AsStringSlice_WithEmptySlice_ReturnsEmptyStringSlice() {
+    [Test]
+    public async Task AsStringSlice_WithEmptySlice_ReturnsEmptyStringSlice() {
         // Arrange
         var immutableSlice = new ImmutableStringSlice("Hello", 2..2);
 
@@ -261,14 +264,14 @@ public class ImmutableStringSliceTests {
         var stringSlice = immutableSlice.AsStringSlice();
 
         // Assert
-        Assert.Equal("", stringSlice.ToString());
-        Assert.Equal(0, stringSlice.Length);
-        Assert.Equal(2, stringSlice.Range.Start.Value);
-        Assert.Equal(2, stringSlice.Range.End.Value);
+        await Assert.That(stringSlice.ToString()).IsEqualTo("");
+        await Assert.That(stringSlice.Length).IsEqualTo(0);
+        await Assert.That(stringSlice.Range.Start.Value).IsEqualTo(2);
+        await Assert.That(stringSlice.Range.End.Value).IsEqualTo(2);
     }
 
-    [Fact]
-    public void AsStringSlice_WithMiddleRange_ReturnsCorrectStringSlice() {
+    [Test]
+    public async Task AsStringSlice_WithMiddleRange_ReturnsCorrectStringSlice() {
         // Arrange
         var immutableSlice = new ImmutableStringSlice("Hello World", 6..11);
 
@@ -276,14 +279,14 @@ public class ImmutableStringSliceTests {
         var stringSlice = immutableSlice.AsStringSlice();
 
         // Assert
-        Assert.Equal("World", stringSlice.ToString());
-        Assert.Equal(5, stringSlice.Length);
-        Assert.Equal(6, stringSlice.Range.Start.Value);
-        Assert.Equal(11, stringSlice.Range.End.Value);
+        await Assert.That(stringSlice.ToString()).IsEqualTo("World");
+        await Assert.That(stringSlice.Length).IsEqualTo(5);
+        await Assert.That(stringSlice.Range.Start.Value).IsEqualTo(6);
+        await Assert.That(stringSlice.Range.End.Value).IsEqualTo(11);
     }
 
-    [Fact]
-    public void AsStringSlice_PreservesOriginalText() {
+    [Test]
+    public async Task AsStringSlice_PreservesOriginalText() {
         // Arrange
         var originalText = "Hello World";
         var immutableSlice = new ImmutableStringSlice(originalText, 0..5);
@@ -292,11 +295,11 @@ public class ImmutableStringSliceTests {
         var stringSlice = immutableSlice.AsStringSlice();
 
         // Assert
-        Assert.Same(originalText, stringSlice.Text);  // Verifies same string instance is referenced
+        await Assert.That(stringSlice.Text).IsSameReferenceAs(originalText);  // Verifies same string instance is referenced
     }
 
-    [Fact]
-    public void AsStringSlice_AndGetSlice_ReturnEquivalentResults() {
+    [Test]
+    public async Task AsStringSlice_AndGetSlice_ReturnEquivalentResults() {
         // Arrange
         var immutableSlice = new ImmutableStringSlice("Hello World", 0..5);
 
@@ -305,59 +308,59 @@ public class ImmutableStringSliceTests {
         var stringSlice2 = immutableSlice.AsStringSlice();
 
         // Assert
-        Assert.Equal(stringSlice1.ToString(), stringSlice2.ToString());
-        Assert.Equal(stringSlice1.Text, stringSlice2.Text);
-        Assert.Equal(stringSlice1.Range, stringSlice2.Range);
+        await Assert.That(stringSlice2.ToString()).IsEqualTo(stringSlice1.ToString());
+        await Assert.That(stringSlice2.Text).IsEqualTo(stringSlice1.Text);
+        await Assert.That(stringSlice2.Range).IsEqualTo(stringSlice1.Range);
     }
 
-    [Fact]
-    public void Length_ReturnsCorrectValue() {
+    [Test]
+    public async Task Length_ReturnsCorrectValue() {
         // Arrange
         var slice = new ImmutableStringSlice("Hello World", 0..5);
 
         // Act & Assert
-        Assert.Equal(5, slice.Length);
+        await Assert.That(slice.Length).IsEqualTo(5);
     }
 
-    [Fact]
-    public void Length_WithEmptySlice_ReturnsZero() {
+    [Test]
+    public async Task Length_WithEmptySlice_ReturnsZero() {
         // Arrange
         var slice = new ImmutableStringSlice("Hello", 2..2);
 
         // Act & Assert
-        Assert.Equal(0, slice.Length);
+        await Assert.That(slice.Length).IsEqualTo(0);
     }
 
-    [Fact]
-    public void Length_WithFullString_ReturnsFullLength() {
+    [Test]
+    public async Task Length_WithFullString_ReturnsFullLength() {
         // Arrange
         var text = "Hello World";
         var slice = new ImmutableStringSlice(text, 0..text.Length);
 
         // Act & Assert
-        Assert.Equal(text.Length, slice.Length);
+        await Assert.That(slice.Length).IsEqualTo(text.Length);
     }
 
-    [Fact]
-    public void Length_WithMiddleRange_ReturnsCorrectLength() {
+    [Test]
+    public async Task Length_WithMiddleRange_ReturnsCorrectLength() {
         // Arrange
         var slice = new ImmutableStringSlice("Hello World", 6..11);
 
         // Act & Assert
-        Assert.Equal(5, slice.Length);
+        await Assert.That(slice.Length).IsEqualTo(5);
     }
 
-    [Fact]
-    public void Length_MatchesSpanLength() {
+    [Test]
+    public async Task Length_MatchesSpanLength() {
         // Arrange
         var slice = new ImmutableStringSlice("Hello World", 3..8);
 
         // Act & Assert
-        Assert.Equal(slice.AsSpan().Length, slice.Length);
+        await Assert.That(slice.Length).IsEqualTo(slice.AsSpan().Length);
     }
 
-    [Fact]
-    public void AsMutableStringSlice_ReturnsEquivalentMutableStringSlice() {
+    [Test]
+    public async Task AsMutableStringSlice_ReturnsEquivalentMutableStringSlice() {
         // Arrange
         var immutableSlice = new ImmutableStringSlice("Hello World", 0..5);
 
@@ -365,13 +368,13 @@ public class ImmutableStringSliceTests {
         var mutableSlice = immutableSlice.AsMutableStringSlice();
 
         // Assert
-        Assert.Equal("Hello", mutableSlice.ToString());
-        Assert.Equal(immutableSlice.Text, mutableSlice.Text);
-        Assert.Equal(immutableSlice.Range, mutableSlice.Range);
+        await Assert.That(mutableSlice.ToString()).IsEqualTo("Hello");
+        await Assert.That(mutableSlice.Text).IsEqualTo(immutableSlice.Text);
+        await Assert.That(mutableSlice.Range).IsEqualTo(immutableSlice.Range);
     }
 
-    [Fact]
-    public void AsMutableStringSlice_WithEmptySlice_ReturnsEmptyMutableStringSlice() {
+    [Test]
+    public async Task AsMutableStringSlice_WithEmptySlice_ReturnsEmptyMutableStringSlice() {
         // Arrange
         var immutableSlice = new ImmutableStringSlice("Hello", 2..2);
 
@@ -379,14 +382,14 @@ public class ImmutableStringSliceTests {
         var mutableSlice = immutableSlice.AsMutableStringSlice();
 
         // Assert
-        Assert.Equal("", mutableSlice.ToString());
-        Assert.Equal(0, mutableSlice.Length);
-        Assert.Equal(2, mutableSlice.Range.Start.Value);
-        Assert.Equal(2, mutableSlice.Range.End.Value);
+        await Assert.That(mutableSlice.ToString()).IsEqualTo("");
+        await Assert.That(mutableSlice.Length).IsEqualTo(0);
+        await Assert.That(mutableSlice.Range.Start.Value).IsEqualTo(2);
+        await Assert.That(mutableSlice.Range.End.Value).IsEqualTo(2);
     }
 
-    [Fact]
-    public void AsMutableStringSlice_WithMiddleRange_ReturnsCorrectMutableStringSlice() {
+    [Test]
+    public async Task AsMutableStringSlice_WithMiddleRange_ReturnsCorrectMutableStringSlice() {
         // Arrange
         var immutableSlice = new ImmutableStringSlice("Hello World", 6..11);
 
@@ -394,14 +397,14 @@ public class ImmutableStringSliceTests {
         var mutableSlice = immutableSlice.AsMutableStringSlice();
 
         // Assert
-        Assert.Equal("World", mutableSlice.ToString());
-        Assert.Equal(5, mutableSlice.Length);
-        Assert.Equal(6, mutableSlice.Range.Start.Value);
-        Assert.Equal(11, mutableSlice.Range.End.Value);
+        await Assert.That(mutableSlice.ToString()).IsEqualTo("World");
+        await Assert.That(mutableSlice.Length).IsEqualTo(5);
+        await Assert.That(mutableSlice.Range.Start.Value).IsEqualTo(6);
+        await Assert.That(mutableSlice.Range.End.Value).IsEqualTo(11);
     }
 
-    [Fact]
-    public void AsMutableStringSlice_PreservesOriginalText() {
+    [Test]
+    public async Task AsMutableStringSlice_PreservesOriginalText() {
         // Arrange
         var originalText = "Hello World";
         var immutableSlice = new ImmutableStringSlice(originalText, 0..5);
@@ -410,11 +413,11 @@ public class ImmutableStringSliceTests {
         var mutableSlice = immutableSlice.AsMutableStringSlice();
 
         // Assert
-        Assert.Same(originalText, mutableSlice.Text);  // Verifies same string instance is referenced
+        await Assert.That(mutableSlice.Text).IsSameReferenceAs(originalText);  // Verifies same string instance is referenced
     }
 
-    [Fact]
-    public void AsMutableStringSlice_AllowsRangeModification() {
+    [Test]
+    public async Task AsMutableStringSlice_AllowsRangeModification() {
         // Arrange
         var immutableSlice = new ImmutableStringSlice("Hello World", 0..5);
         var mutableSlice = immutableSlice.AsMutableStringSlice();
@@ -423,7 +426,7 @@ public class ImmutableStringSliceTests {
         mutableSlice.Range = 6..11;
 
         // Assert
-        Assert.Equal("World", mutableSlice.ToString());
-        Assert.Equal("Hello", immutableSlice.ToString()); // Original remains unchanged
+        await Assert.That(mutableSlice.ToString()).IsEqualTo("World");
+        await Assert.That(immutableSlice.ToString()).IsEqualTo("Hello"); // Original remains unchanged
     }
 }

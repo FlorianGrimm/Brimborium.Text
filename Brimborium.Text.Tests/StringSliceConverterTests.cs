@@ -1,37 +1,36 @@
-﻿using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace Brimborium.Text;
 
 public class StringSliceConverterTests {
-    [Fact]
-    public void TestSerializeWithStringSliceConverter() {
+    [Test]
+    public async Task TestSerializeWithStringSliceConverter() {
         var sut = new StringSlice("abc");
         JsonSerializerOptions options = new(System.Text.Json.JsonSerializerOptions.Default) { WriteIndented = true };
         options.Converters.Add(new StringSliceConverter());
 
         var act = System.Text.Json.JsonSerializer.Serialize(sut, options);
-        Assert.Equal(@"""abc""", act);
+        await Assert.That(act).IsEqualTo(@"""abc""");
     }
 
-    [Fact]
-    public void TestSerializeWithoutStringSliceConverter() {
+    [Test]
+    public async Task TestSerializeWithoutStringSliceConverter() {
         var sut = new StringSlice("abc");
         JsonSerializerOptions options = new(System.Text.Json.JsonSerializerOptions.Default) { WriteIndented = false };
 
         var act = System.Text.Json.JsonSerializer.Serialize(sut, options);
-        Assert.Equal("""{"Text":"abc","Range":{"Start":{"Value":0,"IsFromEnd":false},"End":{"Value":3,"IsFromEnd":false}}}""", act);
+        await Assert.That(act).IsEqualTo("""{"Text":"abc","Range":{"Start":{"Value":0,"IsFromEnd":false},"End":{"Value":3,"IsFromEnd":false}}}""");
     }
 
-    [Fact]
-    public void TestDeserializeWithStringSliceConverter() {
+    [Test]
+    public async Task TestDeserializeWithStringSliceConverter() {
         {
             var sut = @"""abc""";
             JsonSerializerOptions options = new(System.Text.Json.JsonSerializerOptions.Default) { WriteIndented = false };
             options.Converters.Add(new StringSliceConverter());
 
             var act = System.Text.Json.JsonSerializer.Deserialize<StringSlice>(sut, options);
-            Assert.Equal("abc", act.ToString());
+            await Assert.That(act.ToString()).IsEqualTo("abc");
         }
         {
             var sut = """{"Text":"abc"}""";
@@ -39,26 +38,26 @@ public class StringSliceConverterTests {
             options.Converters.Add(new StringSliceConverter());
 
             var act = System.Text.Json.JsonSerializer.Deserialize<StringSlice>(sut, options);
-            Assert.Equal("abc", act.ToString());
+            await Assert.That(act.ToString()).IsEqualTo("abc");
         }
     }
 
-    [Fact]
-    public void TestDeserializeWithoutStringSliceConverter() {
+    [Test]
+    public async Task TestDeserializeWithoutStringSliceConverter() {
         {
             var sut = """{"Text":"abc"}""";
             JsonSerializerOptions options = new(System.Text.Json.JsonSerializerOptions.Default) { WriteIndented = false };
 
             var act = System.Text.Json.JsonSerializer.Serialize<StringSlice>(sut, options);
 
-            Assert.NotEqual("abc", act.ToString());
+            await Assert.That(act.ToString()).IsNotEqualTo("abc");
         }
     }
     
 
     
-    [Fact]
-    public void Serialize_StringSlice_UsesDirectStringFormat()
+    [Test]
+    public async Task Serialize_StringSlice_UsesDirectStringFormat()
     {
         // Arrange
         var slice = new StringSlice("test data");
@@ -70,16 +69,16 @@ public class StringSliceConverterTests {
         var json = JsonSerializer.Serialize(slice, options);
 
         // Assert
-        Assert.Equal(@"""test data""", json);
+        await Assert.That(json).IsEqualTo(@"""test data""");
     }
 
 
-    [Theory]
-    [InlineData("\"test data\"", "test data")]
-    [InlineData("\"\"", "")]  // Empty string
-    [InlineData("\"  \"", "  ")] // Whitespace
-    [InlineData("\"\\\"escaped\\\"\"", "\"escaped\"")] // Escaped quotes
-    public void Deserialize_DirectStringFormat_Success(string json, string expected)
+    [Test]
+    [Arguments("\"test data\"", "test data")]
+    [Arguments("\"\"", "")]  // Empty string
+    [Arguments("\"  \"", "  ")] // Whitespace
+    [Arguments("\"\\\"escaped\\\"\"", "\"escaped\"")] // Escaped quotes
+    public async Task Deserialize_DirectStringFormat_Success(string json, string expected)
     {
         JsonSerializerOptions options = new(System.Text.Json.JsonSerializerOptions.Default) { WriteIndented = true };
         options.Converters.Add(new StringSliceConverter());
@@ -88,15 +87,15 @@ public class StringSliceConverterTests {
         var slice = JsonSerializer.Deserialize<StringSlice>(json, options);
 
         // Assert
-        Assert.Equal(expected, slice.ToString());
+        await Assert.That(slice.ToString()).IsEqualTo(expected);
     }
 
-    [Theory]
-    [InlineData("""{"Text":"test data"}""", "test data")]
-    [InlineData("""{"Text":""}""", "")] // Empty string
-    [InlineData("""{"Text":"  "}""", "  ")] // Whitespace
-    [InlineData("""{"Text":"\"escaped\""}""", "\"escaped\"")] // Escaped quotes
-    public void Deserialize_ObjectFormat_Success(string json, string expected)
+    [Test]
+    [Arguments("""{"Text":"test data"}""", "test data")]
+    [Arguments("""{"Text":""}""", "")] // Empty string
+    [Arguments("""{"Text":"  "}""", "  ")] // Whitespace
+    [Arguments("""{"Text":"\"escaped\""}""", "\"escaped\"")] // Escaped quotes
+    public async Task Deserialize_ObjectFormat_Success(string json, string expected)
     {
         JsonSerializerOptions options = new(System.Text.Json.JsonSerializerOptions.Default) { WriteIndented = true };
         options.Converters.Add(new StringSliceConverter());
@@ -105,11 +104,11 @@ public class StringSliceConverterTests {
         var slice = JsonSerializer.Deserialize<StringSlice>(json, options);
 
         // Assert
-        Assert.Equal(expected, slice.ToString());
+        await Assert.That(slice.ToString()).IsEqualTo(expected);
     }
 
-    [Fact]
-    public void Deserialize_NullValue_ReturnsEmptySlice()
+    [Test]
+    public async Task Deserialize_NullValue_ReturnsEmptySlice()
     {
         JsonSerializerOptions options = new(System.Text.Json.JsonSerializerOptions.Default) { WriteIndented = true };
         options.Converters.Add(new StringSliceConverter());
@@ -121,16 +120,16 @@ public class StringSliceConverterTests {
         var slice = JsonSerializer.Deserialize<StringSlice>(json, options);
 
         // Assert
-        Assert.Equal(string.Empty, slice.ToString());
+        await Assert.That(slice.ToString()).IsEqualTo(string.Empty);
     }
 
-    [Theory]
-    [InlineData("{}")]  // Empty object
-    [InlineData("""{"WrongProperty":"value"}""")] // Wrong property name
-    [InlineData("42")] // Number instead of string
-    [InlineData("true")] // Boolean instead of string
-    [InlineData("""{"Text":42}""")] // Number in Text property
-    [InlineData("""{"Text":true}""")] // Boolean in Text property
+    [Test]
+    [Arguments("{}")]  // Empty object
+    [Arguments("""{"WrongProperty":"value"}""")] // Wrong property name
+    [Arguments("42")] // Number instead of string
+    [Arguments("true")] // Boolean instead of string
+    [Arguments("""{"Text":42}""")] // Number in Text property
+    [Arguments("""{"Text":true}""")] // Boolean in Text property
     public void Deserialize_InvalidFormat_ThrowsJsonException(string json)
     {
         JsonSerializerOptions options = new(System.Text.Json.JsonSerializerOptions.Default) { WriteIndented = true };
@@ -141,8 +140,8 @@ public class StringSliceConverterTests {
             JsonSerializer.Deserialize<StringSlice>(json, options));
     }
 
-    [Fact]
-    public void SerializeDeserialize_RoundTrip_PreservesValue()
+    [Test]
+    public async Task SerializeDeserialize_RoundTrip_PreservesValue()
     {
         // Arrange
         var original = new StringSlice("test data");
@@ -154,6 +153,6 @@ public class StringSliceConverterTests {
         var deserialized = JsonSerializer.Deserialize<StringSlice>(json, options);
 
         // Assert
-        Assert.Equal(original.ToString(), deserialized.ToString());
+        await Assert.That(deserialized.ToString()).IsEqualTo(original.ToString());
     }
 }

@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Brimborium.Text;
 
 public class TokenizedTextTests {

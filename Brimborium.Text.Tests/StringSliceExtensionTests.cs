@@ -1,131 +1,131 @@
 ﻿namespace Brimborium.Text;
 
 public class StringSliceExtensionTests {
-    [Fact()]
-    public void AsStringSliceTest() {
-        Assert.Equal("abc", "abc".AsStringSlice().ToString());
-        Assert.Equal("bc", "abc".AsStringSlice(1).ToString());
-        Assert.Equal("bc", "abcd".AsStringSlice(1, 2).ToString());
-        Assert.Equal("b", "abcd".AsStringSlice(1..2).ToString());
+    [Test]
+    public async Task AsStringSliceTest() {
+        await Assert.That("abc".AsStringSlice().ToString()).IsEqualTo("abc");
+        await Assert.That("abc".AsStringSlice(1).ToString()).IsEqualTo("bc");
+        await Assert.That("abcd".AsStringSlice(1, 2).ToString()).IsEqualTo("bc");
+        await Assert.That("abcd".AsStringSlice(1..2).ToString()).IsEqualTo("b");
     }
 
-    [Fact]
-    public void ReadWhileMatchesTest() {
+    [Test]
+    public async Task ReadWhileMatchesTest() {
         {
             var slice = "aabccc".AsStringSlice();
             var matches = new char[] { 'a', 'b' };
-            Assert.True(matches.ReadWhileMatches(ref slice, 1, out var match));
-            Assert.Equal("a", match.ToString());
-            Assert.Equal("abccc", slice.ToString());
-        }
-        {
-            var slice = "aabccc".AsStringSlice();
-            var matches = new char[] { 'a', 'b' };
-            Assert.True(matches.ReadWhileMatches(ref slice, 2, out var match));
-            Assert.Equal("aa", match.ToString());
-            Assert.Equal("bccc", slice.ToString());
+            await Assert.That(matches.ReadWhileMatches(ref slice, 1, out var match)).IsTrue();
+            await Assert.That(match.ToString()).IsEqualTo("a");
+            await Assert.That(slice.ToString()).IsEqualTo("abccc");
         }
         {
             var slice = "aabccc".AsStringSlice();
             var matches = new char[] { 'a', 'b' };
-            Assert.True(matches.ReadWhileMatches(ref slice, 3, out var match));
-            Assert.Equal("aab", match.ToString());
-            Assert.Equal("ccc", slice.ToString());
+            await Assert.That(matches.ReadWhileMatches(ref slice, 2, out var match)).IsTrue();
+            await Assert.That(match.ToString()).IsEqualTo("aa");
+            await Assert.That(slice.ToString()).IsEqualTo("bccc");
         }
         {
             var slice = "aabccc".AsStringSlice();
             var matches = new char[] { 'a', 'b' };
-            Assert.True(matches.ReadWhileMatches(ref slice, 4, out var match));
-            Assert.Equal("aab", match.ToString());
-            Assert.Equal("ccc", slice.ToString());
+            await Assert.That(matches.ReadWhileMatches(ref slice, 3, out var match)).IsTrue();
+            await Assert.That(match.ToString()).IsEqualTo("aab");
+            await Assert.That(slice.ToString()).IsEqualTo("ccc");
+        }
+        {
+            var slice = "aabccc".AsStringSlice();
+            var matches = new char[] { 'a', 'b' };
+            await Assert.That(matches.ReadWhileMatches(ref slice, 4, out var match)).IsTrue();
+            await Assert.That(match.ToString()).IsEqualTo("aab");
+            await Assert.That(slice.ToString()).IsEqualTo("ccc");
         }
         {
             var slice = "123456aabccc".AsStringSlice().Substring(6);
             var matches = new char[] { 'a', 'b' };
-            Assert.True(matches.ReadWhileMatches(ref slice, 1, out var match));
-            Assert.Equal("a", match.ToString());
-            Assert.Equal("abccc", slice.ToString());
+            await Assert.That(matches.ReadWhileMatches(ref slice, 1, out var match)).IsTrue();
+            await Assert.That(match.ToString()).IsEqualTo("a");
+            await Assert.That(slice.ToString()).IsEqualTo("abccc");
         }
         {
             var slice = "123456aabccc".AsStringSlice().Substring(6);
             var matches = new char[] { 'a', 'b' };
-            Assert.True(matches.ReadWhileMatches(ref slice, 2, out var match));
-            Assert.Equal("aa", match.ToString());
-            Assert.Equal("bccc", slice.ToString());
+            await Assert.That(matches.ReadWhileMatches(ref slice, 2, out var match)).IsTrue();
+            await Assert.That(match.ToString()).IsEqualTo("aa");
+            await Assert.That(slice.ToString()).IsEqualTo("bccc");
         }
         {
             var slice = "123456aabccc".AsStringSlice().Substring(6);
             var matches = new char[] { 'a', 'b' };
-            Assert.True(matches.ReadWhileMatches(ref slice, 3, out var match));
-            Assert.Equal("aab", match.ToString());
-            Assert.Equal("ccc", slice.ToString());
+            await Assert.That(matches.ReadWhileMatches(ref slice, 3, out var match)).IsTrue();
+            await Assert.That(match.ToString()).IsEqualTo("aab");
+            await Assert.That(slice.ToString()).IsEqualTo("ccc");
         }
         {
             var slice = "123456aabccc".AsStringSlice().Substring(6);
             var matches = new char[] { 'a', 'b' };
-            Assert.True(matches.ReadWhileMatches(ref slice, 4, out var match));
-            Assert.Equal("aab", match.ToString());
-            Assert.Equal("ccc", slice.ToString());
+            await Assert.That(matches.ReadWhileMatches(ref slice, 4, out var match)).IsTrue();
+            await Assert.That(match.ToString()).IsEqualTo("aab");
+            await Assert.That(slice.ToString()).IsEqualTo("ccc");
         }
     }
 
-    [Fact]
-    public void ReadWhileNotMatchesTest() {
+    [Test]
+    public async Task ReadWhileNotMatchesTest() {
         {
             var slice = "abccc".AsStringSlice();
             var matches = new char[] { 'c' };
-            Assert.True(matches.ReadWhileNotMatches(ref slice, 1, out var match));
-            Assert.Equal("a", match.ToString());
-            Assert.Equal("bccc", slice.ToString());
+            await Assert.That(matches.ReadWhileNotMatches(ref slice, 1, out var match)).IsTrue();
+            await Assert.That(match.ToString()).IsEqualTo("a");
+            await Assert.That(slice.ToString()).IsEqualTo("bccc");
         }
         {
             var slice = "abccc".AsStringSlice();
             var matches = new char[] { 'c' };
-            Assert.True(matches.ReadWhileNotMatches(ref slice, 2, out var match));
-            Assert.Equal("ab", match.ToString());
-            Assert.Equal("ccc", slice.ToString());
+            await Assert.That(matches.ReadWhileNotMatches(ref slice, 2, out var match)).IsTrue();
+            await Assert.That(match.ToString()).IsEqualTo("ab");
+            await Assert.That(slice.ToString()).IsEqualTo("ccc");
         }
         {
             var slice = "aabccc".AsStringSlice();
             var matches = new char[] { 'c' };
-            Assert.True(matches.ReadWhileNotMatches(ref slice, 3, out var match));
-            Assert.Equal("aab", match.ToString());
-            Assert.Equal("ccc", slice.ToString());
+            await Assert.That(matches.ReadWhileNotMatches(ref slice, 3, out var match)).IsTrue();
+            await Assert.That(match.ToString()).IsEqualTo("aab");
+            await Assert.That(slice.ToString()).IsEqualTo("ccc");
         }
         {
             var slice = "aabccc".AsStringSlice();
             var matches = new char[] { 'c' };
-            Assert.True(matches.ReadWhileNotMatches(ref slice, 4, out var match));
-            Assert.Equal("aab", match.ToString());
-            Assert.Equal("ccc", slice.ToString());
+            await Assert.That(matches.ReadWhileNotMatches(ref slice, 4, out var match)).IsTrue();
+            await Assert.That(match.ToString()).IsEqualTo("aab");
+            await Assert.That(slice.ToString()).IsEqualTo("ccc");
         }
         {
             var slice = "123456aabccc".AsStringSlice().Substring(6);
             var matches = new char[] { 'c' };
-            Assert.True(matches.ReadWhileNotMatches(ref slice, 1, out var match));
-            Assert.Equal("a", match.ToString());
-            Assert.Equal("abccc", slice.ToString());
+            await Assert.That(matches.ReadWhileNotMatches(ref slice, 1, out var match)).IsTrue();
+            await Assert.That(match.ToString()).IsEqualTo("a");
+            await Assert.That(slice.ToString()).IsEqualTo("abccc");
         }
         {
             var slice = "123456aabccc".AsStringSlice().Substring(6);
             var matches = new char[] { 'c' };
-            Assert.True(matches.ReadWhileNotMatches(ref slice, 2, out var match));
-            Assert.Equal("aa", match.ToString());
-            Assert.Equal("bccc", slice.ToString());
+            await Assert.That(matches.ReadWhileNotMatches(ref slice, 2, out var match)).IsTrue();
+            await Assert.That(match.ToString()).IsEqualTo("aa");
+            await Assert.That(slice.ToString()).IsEqualTo("bccc");
         }
         {
             var slice = "123456aabccc".AsStringSlice().Substring(6);
             var matches = new char[] { 'c' };
-            Assert.True(matches.ReadWhileNotMatches(ref slice, 3, out var match));
-            Assert.Equal("aab", match.ToString());
-            Assert.Equal("ccc", slice.ToString());
+            await Assert.That(matches.ReadWhileNotMatches(ref slice, 3, out var match)).IsTrue();
+            await Assert.That(match.ToString()).IsEqualTo("aab");
+            await Assert.That(slice.ToString()).IsEqualTo("ccc");
         }
         {
             var slice = "123456aabccc".AsStringSlice().Substring(6);
             var matches = new char[] { 'c' };
-            Assert.True(matches.ReadWhileNotMatches(ref slice, 4, out var match));
-            Assert.Equal("aab", match.ToString());
-            Assert.Equal("ccc", slice.ToString());
+            await Assert.That(matches.ReadWhileNotMatches(ref slice, 4, out var match)).IsTrue();
+            await Assert.That(match.ToString()).IsEqualTo("aab");
+            await Assert.That(slice.ToString()).IsEqualTo("ccc");
         }
     }
 
@@ -137,16 +137,16 @@ public class StringSliceExtensionTests {
     private static readonly char[] _ArrCharValueEndNotQuoted = new char[] { ' ', '\t', '\n', '\r' };
     private static readonly char[] _ArrCharValueEndDoubleQuoted = new char[] { '"' };
 
-    [Fact]
-    public void ReadWhileMatchesComplexTest() {
+    [Test]
+    public async Task ReadWhileMatchesComplexTest() {
         // "([._A-Za-z0-9]+)(?:\\W*)(?:[=])(?:\\W*)(?:[\"])([^\"]*)(?:[\"])"
         var ssParameter = "abc=\"def\" ghi=123".AsStringSlice();
         var act = ParseParameter(ssParameter);
-        Assert.Equal(2, act.ListParameter.Count);
-        Assert.Equal("abc", act.ListParameter[0].Name.ToString());
-        Assert.Equal("def", act.ListParameter[0].Value.ToString());
-        Assert.Equal("ghi", act.ListParameter[1].Name.ToString());
-        Assert.Equal("123", act.ListParameter[1].Value.ToString());
+        await Assert.That(act.ListParameter.Count).IsEqualTo(2);
+        await Assert.That(act.ListParameter[0].Name.ToString()).IsEqualTo("abc");
+        await Assert.That(act.ListParameter[0].Value.ToString()).IsEqualTo("def");
+        await Assert.That(act.ListParameter[1].Name.ToString()).IsEqualTo("ghi");
+        await Assert.That(act.ListParameter[1].Value.ToString()).IsEqualTo("123");
 
         static ParseParameterResult ParseParameter(StringSlice ssParameter) {
             List<Parameter> result = new();
