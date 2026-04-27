@@ -87,7 +87,7 @@ StringSplice allows to replace parts of a string.
 ## Test
 
 ```cmd
-dotnet test
+dotnet run --project .\Brimborium.Text.Tests\Brimborium.Text.Tests.csproj
 ```
 
 ## Benchmark

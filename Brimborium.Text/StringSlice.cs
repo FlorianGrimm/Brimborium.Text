@@ -134,7 +134,7 @@ public readonly struct StringSlice : IEquatable<StringSlice> {
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when the index is negative or greater than or equal to the length of the slice.
     /// </exception>
-    public StringSlice this[Range range] {
+    public readonly StringSlice this[Range range] {
         get {
             var (offset, length) = this.Range.GetOffsetAndLength(this.Text.Length);
             var end = offset + length;
