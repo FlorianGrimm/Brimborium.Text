@@ -10,10 +10,10 @@ public interface IBGTokenizerCombiner<TResult, T1, T2> {
 
 public class BGTokenizerCombinerDelegate<TResult, T1, T2>
     : IBGTokenizerCombiner<TResult, T1, T2> {
-    public readonly IBGTokenizerCombiner<TResult, T1, T2> SelectResult;
+    public readonly Func<BGToken<T1>, BGToken<T2>, StringRange, TResult> SelectResult;
 
     public BGTokenizerCombinerDelegate(
-            IBGTokenizerCombiner<TResult, T1, T2> selectResult
+            Func<BGToken<T1>, BGToken<T2>, StringRange, TResult> selectResult
         ) {
         this.SelectResult = selectResult;
     }
@@ -23,7 +23,7 @@ public class BGTokenizerCombinerDelegate<TResult, T1, T2>
         in BGToken<T2> token2,
         StringRange match
         ) {
-        return this.SelectResult.Aggregate(token1, token2, match);
+        return this.SelectResult(token1, token2, match);
     }
 }
 

@@ -278,11 +278,15 @@ public class ParserTest {
             BGTokenizer.AcceptCharSet(" \t\r\n"), 0, 1024);
         var TokenizerCommentMultiLineStart = BGTokenizer.Sequence(
                 BGTokenizer.AcceptString("/*"),
-                TokenizerWhitespace
+                TokenizerWhitespace,
+                new BGTokenizerCombinerDelegate<BGVoid, BGVoid, BGVoid>(
+                    (_, _, _) => new BGVoid())
             );
         var TokenizerCommentMultiLineEnd = BGTokenizer.Sequence(
-            TokenizerWhitespace,
-            BGTokenizer.AcceptString("*/"));
+                TokenizerWhitespace,
+                BGTokenizer.AcceptString("*/"),
+                new BGTokenizerCombinerDelegate<BGVoid, BGVoid, BGVoid>((_, _, _) => new BGVoid())
+            );
 
         var TokenizerPrefixMacro = BGTokenizer.AcceptString("#Macro:");
         var TokenizerName = BGTokenizer.Combine<string, BGVoid>(
@@ -292,7 +296,8 @@ public class ParserTest {
                     BGTokenizer.Predicate(char.IsLetterOrDigit),
                     1, 1024)
             ],
-            (_, match) => match.ToString());
+            new BGTokenizerListCombiner<string, BGVoid>(
+                (_, match) => match.ToString()));
 
         //var ParserCommentMultiLineStart = BGParser.Sequence(
         //        BGParser.Token(TokenizerCommentMultiLineStart),
@@ -301,13 +306,13 @@ public class ParserTest {
         //var ParserCommentMultiLineStart = BGParser.Sequence(
         //        BGParser.Token(TokenizerWhitespace),
         //        BGParser.Token(TokenizerCommentMultiLineStop));
-        
+
         var seq =
             BGParser.Sequence(
-                TokenizerCommentMultiLineStart,
+                BGParser.Token(TokenizerCommentMultiLineStart),
                 BGParser.Token(TokenizerPrefixMacro),
                 BGParser.Token(TokenizerName),
-                TokenizerCommentMultiLineEnd,
+                BGParser.Token(TokenizerCommentMultiLineEnd),
                 combine: BGCombine.Delegate<string, BGVoid, BGVoid, string, BGVoid>((_, _, name, _) => name));
         BGParserInput input = new(new("#Macro:ABC"), new());
         var succ = seq.Parse(input, out var ok, out var err, out var next);
