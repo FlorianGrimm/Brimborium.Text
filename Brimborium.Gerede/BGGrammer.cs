@@ -49,7 +49,7 @@ public static class BSErrorEnhancedExtension {
 }
 
 
-public class BGGrammer<T> {
+public class BGGrammer<T> : IBGParser<T> {
     public readonly IBGParser<T> Parser;
 
     public BGGrammer(
@@ -63,8 +63,8 @@ public class BGGrammer<T> {
         [MaybeNullWhen(false)] out T match,
         [MaybeNullWhen(true)] out BGErrorEnhanced error) {
         if (this.Parser.Parse(
-            new (input.Value, new BGTokenList()), 
-            out var resultMatch, 
+            new(input.Value, new BGTokenList()),
+            out var resultMatch,
             out var resultError,
             out var next)) {
             // TODO: handle next
@@ -76,5 +76,13 @@ public class BGGrammer<T> {
             match = default;
             return false;
         }
+    }
+
+    public bool Parse(
+        BGParserInput input,
+        [MaybeNullWhen(false)] out BGResult<T> match,
+        [MaybeNullWhen(true)] out BGError error,
+        out BGParserInput next) {
+        return this.Parser.Parse(input, out match, out error, out next);
     }
 }

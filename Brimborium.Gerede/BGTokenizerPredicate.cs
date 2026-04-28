@@ -1,18 +1,15 @@
 ﻿namespace Brimborium.Gerede;
 
-public class BGTokenizerAcceptCharSet<T> : IBGTokenizer<T> {
-    public readonly char[] AcceptCharSet;
-    public readonly System.Buffers.SearchValues<char> AcceptSearchValues;
+public class BGTokenizerPredicate<T> : IBGTokenizer<T> {
+    public readonly Func<char, bool> Predicate;
     public readonly T AcceptValue;
 
-    public BGTokenizerAcceptCharSet(
-        IEnumerable<char> acceptCharSet,
+    public BGTokenizerPredicate(
+        Func<char, bool> predicate,
         T acceptValue
     ) {
-        this.AcceptCharSet = (acceptCharSet is char[] list)?list:acceptCharSet.ToArray();
+        this.Predicate = predicate;
         this.AcceptValue = acceptValue;
-        ReadOnlySpan<char> chars = this.AcceptCharSet.AsSpan();
-        this.AcceptSearchValues = System.Buffers.SearchValues.Create(chars);
     }
 
     public bool TryGetToken(
@@ -22,7 +19,7 @@ public class BGTokenizerAcceptCharSet<T> : IBGTokenizer<T> {
         ) {
         if (!value.IsEmpty) {
             if (value.TryGetFirst(out var c)) {
-                var result = this.AcceptCharSet.Contains(c);
+                var result = this.Predicate(c);
                 if (result) {
                     token = new(value.SubString(0, 1), this.AcceptValue);
                     next = value.SubString(1);
@@ -37,3 +34,7 @@ public class BGTokenizerAcceptCharSet<T> : IBGTokenizer<T> {
         }
     }
 }
+
+
+
+

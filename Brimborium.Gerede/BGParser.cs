@@ -15,6 +15,12 @@ public static class BGParser {
             tokenizer
         );
 
+    //public static BGChain<T> StartWith<T>(
+    //    IBGParser<T> parser
+    //) => new BGChain<T>(
+    //    parser
+    //);
+
     public static BGParserRepeat<TResult, TInner> Repeat<TResult, TInner>(
             IBGParser<TInner> parserInner,
             int minElements,
@@ -40,6 +46,12 @@ public static class BGParser {
             factory,
             aggregation
         );
+
+    public static BGParserOr<T> Or<T>(
+        IEnumerable<IBGParser<T>> listParser
+    ) => new BGParserOr<T>(
+         listParser
+    );
 
     public static BGParserSequence<TResult, T1, T2> Sequence<TResult, T1, T2>(
             IBGParser<T1> parser1,

@@ -12,6 +12,18 @@ public class BGTokenizerRepeat<TResult, TInner>
         IBGTokenizer<TInner> tokenizer,
         int minElements,
         int maxElements,
+        IBGFactoryAggregation<TResult, TInner> factoryAggregation
+    ) {
+        this.Tokenizer = tokenizer;
+        this.MinElements = minElements;
+        this.MaxElements = maxElements;
+        this.Factory = factoryAggregation;
+        this.Aggregation = factoryAggregation;
+    }
+    public BGTokenizerRepeat(
+        IBGTokenizer<TInner> tokenizer,
+        int minElements,
+        int maxElements,
         IBGFactory<TResult> factory,
         IBGResultAggregation<TResult, TInner> aggregation
     ) {
@@ -32,6 +44,7 @@ public class BGTokenizerRepeat<TResult, TInner>
         int loop = 0;
         while (loop < this.MaxElements) {
             if (this.Tokenizer.TryGetToken(current, out var subToken, out var subNext)) {
+                loop++;
                 result = this.Aggregation.Aggregate(subToken.Value, result);
                 current = subNext;
             } else {
