@@ -47,7 +47,7 @@ public class BGTokenizerNext<T, N, R> : IBGTokenizer<R> {
     public bool TryGetToken(StringRange value, [MaybeNullWhen(false)] out BGToken<R> token, out StringRange next) {
         if (this.Tokenizer.TryGetToken(value, out var firstToken, out var afterFirst)) {
             if (this.NextTokenizer.TryGetToken(afterFirst, out var nextToken, out var afterNext)) {
-                var match = value.SubString(0, afterNext.Start - value.Start);
+                var match = value.Substring(0, afterNext.Start - value.Start);
                 token = new BGToken<R>(match, this.SelectResult.Select(firstToken, nextToken, match));
                 next = afterNext;
                 return true;

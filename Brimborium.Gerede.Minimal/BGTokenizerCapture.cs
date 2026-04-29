@@ -18,7 +18,7 @@ public class BGTokenizerCapture<T> : IBGTokenizer<T> {
         [MaybeNullWhen(false)] out BGToken<T> token,
         out StringRange next) {
         if (this.Tokenizer.TryGetToken(value, out var innerNext)) {
-            var tokenMatch = value.SubString(0, innerNext.Start - value.Start);
+            var tokenMatch = value.Substring(0, innerNext.Start - value.Start);
             var tokenValue = this.SelectResult.Select(tokenMatch);
             token = new BGToken<T>(tokenMatch, tokenValue);
             next = innerNext;
@@ -50,7 +50,7 @@ public class BGTokenizerCapture<T, I> : IBGTokenizer<T> {
         [MaybeNullWhen(false)] out BGToken<T> token,
         out StringRange next) {
         if (this.Tokenizer.TryGetToken(value, out var _, out var innerNext)) {
-            var tokenMatch = value.SubString(0, innerNext.Start - value.Start);
+            var tokenMatch = value.Substring(0, innerNext.Start - value.Start);
             var tokenValue = this.SelectResult.Select(tokenMatch);
             token = new BGToken<T>(tokenMatch, tokenValue);
             next = innerNext;

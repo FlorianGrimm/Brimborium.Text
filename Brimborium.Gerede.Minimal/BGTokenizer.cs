@@ -9,13 +9,25 @@ public static class BGTokenizer {
     ) => new BGTokenizerAcceptEOF<T>(acceptValue);
 
     public static IBGTokenizer AcceptChar(
-        IEnumerable<char> value
-    ) => new BGTokenizerAcceptChar(value);
+        IEnumerable<char> acceptChar
+    ) => new BGTokenizerAcceptChar(acceptChar);
 
     public static IBGTokenizer<T> AcceptChar<T>(
-        IEnumerable<char> value,
+        IEnumerable<char> acceptChar,
         IBGTokenizerResultAccept<T> selectResult
-    ) => new BGTokenizerAcceptChar<T>(value, selectResult);
+    ) => new BGTokenizerAcceptChar<T>(acceptChar, selectResult);
+
+    public static IBGTokenizer AcceptString(
+        string acceptText,
+        StringComparison comparisonType = StringComparison.Ordinal
+    ) => new BGTokenizerAcceptString(acceptText, comparisonType);
+
+    public static IBGTokenizer<T> AcceptString<T>(
+        string acceptText,
+        StringComparison comparisonType,
+        IBGTokenizerResultAccept<T> selectResult
+    ) => new BGTokenizerAcceptString<T>(acceptText, comparisonType, selectResult);
+
 
     public static IBGTokenizer Or(
         IEnumerable<IBGTokenizer> listTokenizer
@@ -26,7 +38,7 @@ public static class BGTokenizer {
     ) => new BGTokenizerOr<T>(listTokenizer);
 
     extension(IBGTokenizer tokenizer) {
-        IBGTokenizer Next(
+        public IBGTokenizer Next(
             IBGTokenizer nextTokenizer
         ) => new BGTokenizerNext(tokenizer, nextTokenizer);
 

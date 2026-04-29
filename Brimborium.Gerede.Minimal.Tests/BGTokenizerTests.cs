@@ -111,7 +111,7 @@ public class BGTokenizerTests {
     [Test]
     public async Task Capture_Matches_ProducesGenericToken_Test() {
         IBGTokenizer inner = BGTokenizer.AcceptChar("a").Repeat(1, 10);
-        var tokenizer = inner.Capture(new StringSelector());
+        var tokenizer = inner.Capture(new BGTokenizerResultAcceptString());
         var result = tokenizer.TryGetToken(new StringRange("aaabc"), out var token, out var next);
         await Assert.That(result).IsTrue();
         await Assert.That(token.Match.ToString()).IsEqualTo("aaa");
@@ -122,15 +122,53 @@ public class BGTokenizerTests {
     [Test]
     public async Task Capture_NotMatches_Test() {
         IBGTokenizer inner = BGTokenizer.AcceptChar("a").Repeat(1, 10);
-        var tokenizer = inner.Capture(new StringSelector());
+        var tokenizer = inner.Capture(new BGTokenizerResultAcceptString());
         var result = tokenizer.TryGetToken(new StringRange("xyz"), out var token, out var next);
         await Assert.That(result).IsFalse();
         await Assert.That(next.ToString()).IsEqualTo("xyz");
     }
-}
 
-internal sealed class StringSelector : IBGTokenizerResultAccept<string> {
-    public string Select(StringRange match) => match.ToString();
+    private (bool result, string n) TokenizerRun(IBGTokenizer tokenizer, string input) {
+        if (tokenizer.TryGetToken(new StringRange(input), out var next)) {
+            return (true, next.ToString());
+        } else {
+            return (false, next.ToString());
+        }
+    }
+
+    [Test]
+    public async Task TokenizerMacroComment() {
+        // /* #Macro:abc */
+        var tokenWhitespace = BGTokenizer.AcceptChar(" /t\r\n").Repeat(0, 1024);
+        var tokenMultiCommentStart =
+            BGTokenizer.AcceptChar("/")
+            .Next(BGTokenizer.AcceptChar("*").Repeat(1, 10))
+            .Next(tokenWhitespace);
+        var tokenPrefixMacro = BGTokenizer.AcceptString("#Macro:");
+        var tokenIdentifierStart = BGTokenizer.AcceptChar("ABCDEFGHIJKLMNOPQRSTUWXYZabcdefghijklmnopqrstuvwxyz");
+        var tokenIdentifierRest = BGTokenizer.AcceptChar("_ABCDEFGHIJKLMNOPQRSTUWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+        var tokenIdentifier = tokenIdentifierStart
+            .Next(tokenIdentifierRest.Repeat(0, 255));
+        var tokenName = BGTokenizer.AcceptString("#Macro:");
+        var tokenMultiCommentEnd =
+            tokenWhitespace
+            .Next(BGTokenizer.AcceptChar("*").Repeat(1, 10))
+            .Next(BGTokenizer.AcceptChar("/"))
+            ;
+
+        await Assert.That(TokenizerRun(tokenWhitespace, "  /t$")).IsEquivalentTo((true, "$"));
+        await Assert.That(TokenizerRun(tokenMultiCommentStart, "/*$")).IsEquivalentTo((true, "$"));
+        await Assert.That(TokenizerRun(tokenMultiCommentStart, "/**$")).IsEquivalentTo((true, "$"));
+        await Assert.That(TokenizerRun(tokenMultiCommentStart, "abc$")).IsEquivalentTo((false, "abc$"));
+        await Assert.That(TokenizerRun(tokenPrefixMacro, "#Macro:$")).IsEquivalentTo((true, "$"));
+        await Assert.That(TokenizerRun(tokenPrefixMacro, "#define$")).IsEquivalentTo((false, "#define$"));
+        await Assert.That(TokenizerRun(tokenIdentifier, "abc$")).IsEquivalentTo((true, "$"));
+        await Assert.That(TokenizerRun(tokenIdentifier, "#abc$")).IsEquivalentTo((false, "#abc$"));
+        await Assert.That(TokenizerRun(tokenMultiCommentEnd, "*/$")).IsEquivalentTo((true, "$"));
+        await Assert.That(TokenizerRun(tokenMultiCommentEnd, "**/$")).IsEquivalentTo((true, "$"));
+        await Assert.That(TokenizerRun(tokenMultiCommentEnd, " **/$")).IsEquivalentTo((true, "$"));
+        await Assert.That(TokenizerRun(tokenMultiCommentEnd, "abc*/$")).IsEquivalentTo((false, "abc*/$"));
+    }
 }
 
 internal sealed class CharSelector : IBGTokenizerResultAccept<char> {

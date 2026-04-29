@@ -58,7 +58,7 @@ public class BGTokenizerRepeat<T, R> : IBGTokenizer<R> {
             current = afterItem;
         }
         if (this.MinRepeat <= items.Count) {
-            var match = value.SubString(0, current.Start - value.Start);
+            var match = value.Substring(0, current.Start - value.Start);
             token = new BGToken<R>(match, this.SelectResult.Select(items, match));
             next = current;
             return true;

@@ -13,7 +13,7 @@
 /// </para>
 /// <para>
 /// Because <see cref="StringRange"/> is a <see langword="readonly struct"/>, instances are
-/// immutable; operations that derive a new range (such as <see cref="SubString(int)"/> or the
+/// immutable; operations that derive a new range (such as <see cref="Substring(int)"/> or the
 /// <see cref="this[System.Range]"/> indexer) return new <see cref="StringRange"/> values
 /// without copying the underlying string data.
 /// </para>
@@ -108,7 +108,7 @@ public readonly struct StringRange {
     /// </summary>
     /// <param name="start">The number of characters to advance the start position by, relative to this range.</param>
     /// <returns>A new <see cref="StringRange"/> starting at <c>this.Start + start</c>.</returns>
-    public readonly StringRange SubString(int start) {
+    public readonly StringRange Substring(int start) {
         var nextStart = this.Start + start;
         var validStart = (nextStart < this.End) ? nextStart : this.End;
         return new StringRange(this.Text, validStart, this.End);
@@ -122,7 +122,7 @@ public readonly struct StringRange {
     /// <param name="start">The number of characters to advance the start position by, relative to this range.</param>
     /// <param name="length">The maximum number of characters to include in the returned range.</param>
     /// <returns>A new <see cref="StringRange"/> covering at most <paramref name="length"/> characters.</returns>
-    public readonly StringRange SubString(int start, int length) {
+    public readonly StringRange Substring(int start, int length) {
         var nextStart = this.Start + start;
         var validStart = (nextStart < this.End) ? nextStart : this.End;
         var nextEnd = validStart + length;

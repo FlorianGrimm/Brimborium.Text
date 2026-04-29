@@ -24,8 +24,8 @@ public class BGTokenizerAcceptCharSet<T> : IBGTokenizer<T> {
             if (value.TryGetFirst(out var c)) {
                 var result = this.AcceptCharSet.Contains(c);
                 if (result) {
-                    token = new(value.SubString(0, 1), this.AcceptValue);
-                    next = value.SubString(1);
+                    token = new(value.Substring(0, 1), this.AcceptValue);
+                    next = value.Substring(1);
                     return result;
                 }
             }

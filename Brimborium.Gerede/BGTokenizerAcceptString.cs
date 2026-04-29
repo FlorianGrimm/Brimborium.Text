@@ -21,8 +21,8 @@ public class BGTokenizerAcceptString<T> : IBGTokenizer<T> {
             var result = value.StartsWith(this.AcceptText);
             if (result) {
                 var length = this.AcceptText.Length;
-                token = new(value.SubString(0, length), this.AcceptValue);
-                next = value.SubString(length);
+                token = new(value.Substring(0, length), this.AcceptValue);
+                next = value.Substring(length);
                 return result;
             }
         }

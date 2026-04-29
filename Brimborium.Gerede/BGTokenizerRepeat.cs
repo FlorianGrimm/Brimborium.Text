@@ -52,7 +52,7 @@ public class BGTokenizerRepeat<TResult, TInner>
             }
         }
         if (this.MinElements <= loop) {
-            token = new(value.SubString(0, current.Start - value.Start), result);
+            token = new(value.Substring(0, current.Start - value.Start), result);
             next = current;
             return true;
         } else {

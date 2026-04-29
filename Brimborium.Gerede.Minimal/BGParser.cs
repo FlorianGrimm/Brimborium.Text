@@ -4,6 +4,10 @@ namespace Brimborium.Gerede;
 
 public static class BGParser {
     // Token
+    public static IBGParser<BGVoid> Token(
+        IBGTokenizer tokenizer
+    ) => new BGParserTokenizer(tokenizer);
+
     public static IBGParser<T> Token<T>(
         IBGTokenizer<T> tokenizer
     ) => new BGParserTokenizer<T>(tokenizer);
@@ -19,7 +23,28 @@ public static class BGParser {
         }
     }
 
+    extension(IBGParser<BGVoid> parser) {
+        public IBGParser<BGVoid> Next(
+            IBGParser<BGVoid> nextParser
+        ) => throw new NotImplementedException(); //new BGParserNext<BGVoid, N, N>(parser, nextParser, selectResult);
+
+        public IBGParser<N> Next<N>(
+            IBGParser<N> nextParser
+        //) => new BGParserNext<BGVoid, N, N>(parser, nextParser, selectResult);
+        ) => throw new NotImplementedException();
+
+        public IBGParser<N> Next<N>(
+            IBGParser<N> nextParser,
+            Func<StringRange, N, N> x
+        //) => new BGParserNext<BGVoid, N, N>(parser, nextParser, selectResult);
+        ) => throw new NotImplementedException();
+    }
+
     extension<T>(IBGParser<T> parser) {
+        public IBGParser<T> Next(
+            IBGParser<BGVoid> nextParser
+        ) => throw new NotImplementedException();
+
         public IBGParser<R> Next<N, R>(
             IBGParser<N> nextParser,
             IBGParserResultNext<T, N, R> selectResult
@@ -59,6 +84,16 @@ public record struct BGParserInput(
         return new(next, TokenList);
     }
 }
+
+public interface IBGParser {
+    bool Parse(
+        BGParserInput input,
+        [MaybeNullWhen(false)] out BGResult<BGVoid> match,
+        [MaybeNullWhen(true)] out BGError error,
+        out BGParserInput next
+        );
+}
+
 
 public interface IBGParser<T> {
     bool Parse(

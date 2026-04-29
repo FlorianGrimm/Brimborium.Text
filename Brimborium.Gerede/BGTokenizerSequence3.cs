@@ -65,7 +65,7 @@ public class BGTokenizerSequence<TResult, T1, T2, T3>
         if (this.Tokenizer1.TryGetToken(value, out var token1, out var next1)) {
             if (this.Tokenizer2.TryGetToken(next1, out var token2, out var next2)) {
                 if (this.Tokenizer3.TryGetToken(next2, out var token3, out var next3)) {
-                    var match = value.SubString(0, next3.End - value.Start);
+                    var match = value.Substring(0, next3.End - value.Start);
                     var result = this.Combiner.Aggregate(token1, token2, token3, match);
                     token = new BGToken<TResult>(match, result);
                     next = next3;

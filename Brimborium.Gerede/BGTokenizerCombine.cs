@@ -54,10 +54,10 @@ public class BGTokenizerListCombine<TResult, TInner>
         }
         if (success) {
             var length = current.End - value.Start;
-            StringRange match = value.SubString(0, length);
+            StringRange match = value.Substring(0, length);
             var result = this.SelectResult.Aggregate(listResult, match);
             token = new BGToken<TResult>(match, result);
-            next = value.SubString(length);
+            next = value.Substring(length);
             return true;
         } else {
             token = default;

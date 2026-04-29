@@ -88,7 +88,7 @@ public class StringRangeTests {
 
     [Test]
     public async Task SubString_Start_AdvancesStartPosition() {
-        var sut = new StringRange("abcdefg").SubString(2);
+        var sut = new StringRange("abcdefg").Substring(2);
         await Assert.That(sut.Start).IsEqualTo(2);
         await Assert.That(sut.End).IsEqualTo(7);
         await Assert.That(sut.AsSpan().ToString()).IsEqualTo("cdefg");
@@ -97,7 +97,7 @@ public class StringRangeTests {
     [Test]
     public async Task SubString_Start_OnAlreadyOffsetRange_AddsToParentStart() {
         var parent = new StringRange("abcdefg", 1, 6); // "bcdef"
-        var sut = parent.SubString(2);                 // "def"
+        var sut = parent.Substring(2);                 // "def"
         await Assert.That(sut.Start).IsEqualTo(3);
         await Assert.That(sut.End).IsEqualTo(6);
         await Assert.That(sut.AsSpan().ToString()).IsEqualTo("def");
@@ -105,7 +105,7 @@ public class StringRangeTests {
 
     [Test]
     public async Task SubString_Start_BeyondLength_ClampsToEnd() {
-        var sut = new StringRange("abc").SubString(10);
+        var sut = new StringRange("abc").Substring(10);
         await Assert.That(sut.IsEmpty).IsTrue();
         await Assert.That(sut.Start).IsEqualTo(3);
         await Assert.That(sut.End).IsEqualTo(3);
@@ -113,7 +113,7 @@ public class StringRangeTests {
 
     [Test]
     public async Task SubString_StartLength_TakesRequestedSlice() {
-        var sut = new StringRange("abcdefg").SubString(1, 3);
+        var sut = new StringRange("abcdefg").Substring(1, 3);
         await Assert.That(sut.Start).IsEqualTo(1);
         await Assert.That(sut.End).IsEqualTo(4);
         await Assert.That(sut.AsSpan().ToString()).IsEqualTo("bcd");
@@ -121,7 +121,7 @@ public class StringRangeTests {
 
     [Test]
     public async Task SubString_StartLength_LengthExceedingRemainder_IsClamped() {
-        var sut = new StringRange("abcdefg").SubString(4, 100);
+        var sut = new StringRange("abcdefg").Substring(4, 100);
         await Assert.That(sut.Start).IsEqualTo(4);
         await Assert.That(sut.End).IsEqualTo(7);
         await Assert.That(sut.AsSpan().ToString()).IsEqualTo("efg");
@@ -129,7 +129,7 @@ public class StringRangeTests {
 
     [Test]
     public async Task SubString_StartLength_StartBeyondLength_ReturnsEmptyAtEnd() {
-        var sut = new StringRange("abc").SubString(10, 5);
+        var sut = new StringRange("abc").Substring(10, 5);
         await Assert.That(sut.IsEmpty).IsTrue();
         await Assert.That(sut.Start).IsEqualTo(3);
         await Assert.That(sut.End).IsEqualTo(3);
@@ -138,7 +138,7 @@ public class StringRangeTests {
     [Test]
     public async Task SubString_StartLength_OnAlreadyOffsetRange_AddsToParentStart() {
         var parent = new StringRange("abcdefg", 2, 7); // "cdefg"
-        var sut = parent.SubString(1, 2);              // "de"
+        var sut = parent.Substring(1, 2);              // "de"
         await Assert.That(sut.Start).IsEqualTo(3);
         await Assert.That(sut.End).IsEqualTo(5);
         await Assert.That(sut.AsSpan().ToString()).IsEqualTo("de");
@@ -259,7 +259,7 @@ public class StringRangeTests {
     
     [Test]
     public async Task SubString_SubString() {
-        var sut = new StringRange("abcdefg").SubString(2).SubString(2);
+        var sut = new StringRange("abcdefg").Substring(2).Substring(2);
         await Assert.That(sut.Start).IsEqualTo(4);
         await Assert.That(sut.End).IsEqualTo(7);
         await Assert.That(sut.AsSpan().ToString()).IsEqualTo("efg");

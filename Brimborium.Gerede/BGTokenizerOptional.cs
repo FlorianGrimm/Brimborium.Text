@@ -19,7 +19,7 @@ public class BGTokenizerOptional<T>
         if (this.Tokenizer.TryGetToken(value, out token, out next)) {
             return true;
         } else {
-            token = new BGToken<T>(value.SubString(0), this.OtherwiseValue);
+            token = new BGToken<T>(value.Substring(0), this.OtherwiseValue);
             next = value;
             return true;
         }

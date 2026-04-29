@@ -30,7 +30,7 @@ public class BGParserRepeat<T, R> : IBGParser<R> {
             current = afterItem;
         }
         if (this.MinRepeat <= items.Count) {
-            var span = input.Input.SubString(0, current.Input.Start - input.Input.Start);
+            var span = input.Input.Substring(0, current.Input.Start - input.Input.Start);
             match = new BGResult<R>(span, this.SelectResult.Select(items, span));
             error = default;
             next = current;

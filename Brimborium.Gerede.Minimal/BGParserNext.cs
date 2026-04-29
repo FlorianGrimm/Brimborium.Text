@@ -21,15 +21,23 @@ public class BGParserNext<T, N, R> : IBGParser<R> {
         out BGParserInput next) {
         if (this.Parser.Parse(input, out var firstMatch, out error, out var afterFirst)) {
             if (this.NextParser.Parse(afterFirst, out var nextMatch, out error, out var afterNext)) {
-                var span = input.Input.SubString(0, afterNext.Input.Start - input.Input.Start);
+                var span = input.Input.Substring(0, afterNext.Input.Start - input.Input.Start);
                 match = new BGResult<R>(span, this.SelectResult.Select(firstMatch, nextMatch, span));
                 error = default;
                 next = afterNext;
                 return true;
+            } else {
+                match = default;
+                error = new BGError(input.Input.Substring(afterFirst.Input.End - input.Input.Start), "");
+                next = input;
+                return false;
             }
+        } else {
+
+            match = default;
+
+            next = input;
+            return false;
         }
-        match = default;
-        next = input;
-        return false;
     }
 }
