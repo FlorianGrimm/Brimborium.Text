@@ -2,7 +2,7 @@
 
 namespace Brimborium.Gerede;
 
-public class BGTokenizerAcceptChar : IBGTokenizer {
+public sealed class BGTokenizerAcceptChar : IBGTokenizer {
     public BGTokenizerAcceptChar(
         IEnumerable<char> acceptChar
         ) {
@@ -29,7 +29,8 @@ public class BGTokenizerAcceptChar : IBGTokenizer {
         return false;
     }
 }
-public class BGTokenizerAcceptChar<T> : IBGTokenizer<T> {
+
+public sealed class BGTokenizerAcceptChar<T> : IBGTokenizer<T> {
     public BGTokenizerAcceptChar(
         IEnumerable<char> acceptChar,
         IBGTokenizerResultAccept<T> selectResult) {

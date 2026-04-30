@@ -1,6 +1,6 @@
 ﻿namespace Brimborium.Gerede;
 
-public class BGTokenList {
+public sealed class BGTokenList {
     private readonly List<object?> _Items = new();
 
     public IReadOnlyList<object?> Items => this._Items;

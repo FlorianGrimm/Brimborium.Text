@@ -1,6 +1,6 @@
 namespace Brimborium.Gerede;
 
-public class BGParserRepeat<T, R> : IBGParser<R> {
+public sealed class BGParserRepeat<T, R> : IBGParser<R> {
     public BGParserRepeat(
         IBGParser<T> parser,
         int minRepeat,

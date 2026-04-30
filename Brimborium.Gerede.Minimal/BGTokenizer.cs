@@ -8,14 +8,48 @@ public static class BGTokenizer {
         T acceptValue
     ) => new BGTokenizerAcceptEOF<T>(acceptValue);
 
+    public static IBGTokenizer ExceptEOF(
+    ) => new BGTokenizerExceptEOF();
+
+    public static IBGTokenizer<T> ExceptEOF<T>(
+        IBGTokenizerResultAccept<T> selectResult
+    ) => new BGTokenizerExceptEOF<T>(selectResult);
+
     public static IBGTokenizer AcceptChar(
         IEnumerable<char> acceptChar
     ) => new BGTokenizerAcceptChar(acceptChar);
+
+    public static IBGTokenizer AcceptChar(
+        IBGCharSet acceptCharSet
+    ) => new BGTokenizerAcceptChar(acceptCharSet.Build());
 
     public static IBGTokenizer<T> AcceptChar<T>(
         IEnumerable<char> acceptChar,
         IBGTokenizerResultAccept<T> selectResult
     ) => new BGTokenizerAcceptChar<T>(acceptChar, selectResult);
+
+    public static IBGTokenizer<T> AcceptChar<T>(
+        IBGCharSet acceptCharSet,
+        IBGTokenizerResultAccept<T> selectResult
+    ) => new BGTokenizerAcceptChar<T>(acceptCharSet.Build(), selectResult);
+
+    public static IBGTokenizer ExceptChar(
+        IEnumerable<char> exceptChar
+    ) => new BGTokenizerExceptChar(exceptChar);
+
+    public static IBGTokenizer ExceptChar(
+        IBGCharSet exceptChar
+    ) => new BGTokenizerExceptChar(exceptChar.Build());
+
+    public static IBGTokenizer<T> ExceptChar<T>(
+        IEnumerable<char> exceptChar,
+        IBGTokenizerResultAccept<T> selectResult
+    ) => new BGTokenizerExceptChar<T>(exceptChar, selectResult);
+
+    public static IBGTokenizer<T> ExceptChar<T>(
+        IBGCharSet exceptChar,
+        IBGTokenizerResultAccept<T> selectResult
+    ) => new BGTokenizerExceptChar<T>(exceptChar.Build(), selectResult);
 
     public static IBGTokenizer AcceptString(
         string acceptText,
@@ -47,9 +81,17 @@ public static class BGTokenizer {
             int maxRepeat
         ) => new BGTokenizerRepeat(tokenizer, minRepeat, maxRepeat);
 
+        public IBGTokenizer Capture(
+        ) => new BGTokenizerCapture(tokenizer);
+
         public IBGTokenizer<T> Capture<T>(
             IBGTokenizerResultAccept<T> selectResult
         ) => new BGTokenizerCapture<T>(tokenizer, selectResult);
+
+        public BGTokenizerExcept Except(
+            IBGTokenizer tokenizerNext,
+            IBGTokenizer? tokenizerSkip = default
+        ) => new BGTokenizerExcept(tokenizerNext, tokenizerSkip);
     }
 
     extension<T>(IBGTokenizer<T> tokenizer) {

@@ -1,6 +1,6 @@
 ﻿namespace Brimborium.Gerede;
 
-public class BGValueList<T> {
+public sealed class BGValueList<T> {
     private readonly List<T> _Items;
 
     public BGValueList() {

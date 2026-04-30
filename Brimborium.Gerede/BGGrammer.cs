@@ -1,8 +1,4 @@
-﻿using Brimborium.Text;
-
-using System.Diagnostics.CodeAnalysis;
-
-namespace Brimborium.Gerede;
+﻿namespace Brimborium.Gerede;
 
 public sealed class BGInput {
     public readonly string Filename;
@@ -36,8 +32,7 @@ public static class BSErrorEnhancedExtension {
         BGInput input
         ) {
         string message = error.Message;
-        int column = 0;
-        int row = 0;
+        var (row, column) = error.Match.GetRowColumn();
         return new BGErrorEnhanced(
             error.Match,
             input.Filename,
@@ -49,7 +44,7 @@ public static class BSErrorEnhancedExtension {
 }
 
 
-public class BGGrammer<T> : IBGParser<T> {
+public sealed class BGGrammer<T> : IBGParser<T> {
     public readonly IBGParser<T> Parser;
 
     public BGGrammer(

@@ -1,94 +1,128 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Brimborium.Gerede;
+﻿namespace Brimborium.Gerede;
 
 public static class BGTokenizer {
-    public static BGTokenizerAcceptEOF<T> AcceptEOF<T>(
+    public static IBGTokenizer AcceptEOF(
+    ) => new BGTokenizerAcceptEOF();
+
+    public static IBGTokenizer<T> AcceptEOF<T>(
         T acceptValue
     ) => new BGTokenizerAcceptEOF<T>(acceptValue);
 
-    public static BGTokenizerAcceptChar<T> AcceptChar<T>(
-        char acceptChar,
-        T acceptValue
-    ) => new BGTokenizerAcceptChar<T>(acceptChar, acceptValue);
+    public static IBGTokenizer ExceptEOF(
+    ) => new BGTokenizerExceptEOF();
 
-    public static BGTokenizerAcceptCharSet<T> AcceptCharSet<T>(
-        IEnumerable<char> acceptCharSet,
-        T acceptValue
-    ) => new BGTokenizerAcceptCharSet<T>(acceptCharSet, acceptValue);
+    public static IBGTokenizer<T> ExceptEOF<T>(
+        IBGTokenizerResultAccept<T> selectResult
+    ) => new BGTokenizerExceptEOF<T>(selectResult);
 
-    public static BGTokenizerAcceptCharSet<BGVoid> AcceptCharSet(
-        IEnumerable<char> acceptCharSet
-    ) => new BGTokenizerAcceptCharSet<BGVoid>(acceptCharSet, new BGVoid());
+    public static IBGTokenizer AcceptChar(
+        IEnumerable<char> acceptChar
+    ) => new BGTokenizerAcceptChar(acceptChar);
 
-    public static BGTokenizerPredicate<T> Predicate<T>(
-        Func<char, bool> predicate,
-        T acceptValue
-    ) => new BGTokenizerPredicate<T>(predicate, acceptValue);
+    public static IBGTokenizer AcceptChar(
+        IBGCharSet acceptCharSet
+    ) => new BGTokenizerAcceptChar(acceptCharSet.Build());
+
+    public static IBGTokenizer<T> AcceptChar<T>(
+        IEnumerable<char> acceptChar,
+        IBGTokenizerResultAccept<T> selectResult
+    ) => new BGTokenizerAcceptChar<T>(acceptChar, selectResult);
+
+    public static IBGTokenizer<T> AcceptChar<T>(
+        IBGCharSet acceptCharSet,
+        IBGTokenizerResultAccept<T> selectResult
+    ) => new BGTokenizerAcceptChar<T>(acceptCharSet.Build(), selectResult);
+
+    public static IBGTokenizer ExceptChar(
+        IEnumerable<char> exceptChar
+    ) => new BGTokenizerExceptChar(exceptChar);
+
+    public static IBGTokenizer ExceptChar(
+        IBGCharSet exceptChar
+    ) => new BGTokenizerExceptChar(exceptChar.Build());
+
+    public static IBGTokenizer ExceptChar<T>(
+        IEnumerable<char> exceptChar,
+        IBGTokenizerResultAccept<T> selectResult
+    ) => new BGTokenizerExceptChar<T>(exceptChar, selectResult);
+
+    public static IBGTokenizer ExceptChar<T>(
+        IBGCharSet exceptChar,
+        IBGTokenizerResultAccept<T> selectResult
+    ) => new BGTokenizerExceptChar<T>(exceptChar.Build(), selectResult);
 
 
-    public static BGTokenizerPredicate<BGVoid> Predicate(
-        Func<char, bool> predicate
-    ) => new BGTokenizerPredicate<BGVoid>(predicate, new BGVoid());
-
-    public static BGTokenizerAcceptString<T> AcceptString<T>(
+    public static IBGTokenizer AcceptString(
         string acceptText,
-        T acceptValue
-    ) => new BGTokenizerAcceptString<T>(acceptText, acceptValue);
+        StringComparison comparisonType = StringComparison.Ordinal
+    ) => new BGTokenizerAcceptString(acceptText, comparisonType);
 
-    public static BGTokenizerAcceptString<BGVoid> AcceptString(
-        string acceptText
-    ) => new BGTokenizerAcceptString<BGVoid>(acceptText, new BGVoid());
-
-    public static BGTokenizerRepeat<TResult, TInner> Repeat<TResult, TInner>(
-        IBGTokenizer<TInner> tokenizer,
-        int minElements,
-        int maxElements,
-        IBGFactoryAggregation<TResult, TInner> factoryAggregation
-    ) => new BGTokenizerRepeat<TResult, TInner>(tokenizer, minElements, maxElements, factoryAggregation, factoryAggregation);
-
-    public static BGTokenizerRepeat<TResult, TInner> Repeat<TResult, TInner>(
-        IBGTokenizer<TInner> tokenizer,
-        int minElements,
-        int maxElements,
-        IBGFactory<TResult> factory,
-        IBGResultAggregation<TResult, TInner> aggregation
-    ) => new BGTokenizerRepeat<TResult, TInner>(tokenizer, minElements, maxElements, factory, aggregation);
+    public static IBGTokenizer<T> AcceptString<T>(
+        string acceptText,
+        StringComparison comparisonType,
+        IBGTokenizerResultAccept<T> selectResult
+    ) => new BGTokenizerAcceptString<T>(acceptText, comparisonType, selectResult);
 
 
-    public static BGTokenizerRepeat<BGVoid, BGVoid> Repeat(
-        IBGTokenizer<BGVoid> tokenizer,
-        int minElements,
-        int maxElements
-    ) => new BGTokenizerRepeat<BGVoid, BGVoid>(tokenizer, minElements, maxElements, BGFactoryAggregation.BGVoid());
+    public static IBGTokenizer Or(
+        IEnumerable<IBGTokenizer> listTokenizer
+    ) => new BGTokenizerOr(listTokenizer);
 
-
-    public static BGTokenizerOptional<T> Optional<T>(
-        IBGTokenizer<T> tokenizer,
-        T otherwiseValue
-    ) => new BGTokenizerOptional<T>(tokenizer, otherwiseValue);
-
-    public static BGTokenizerOr<T> Or<T>(
+    public static IBGTokenizer<T> Or<T>(
         IEnumerable<IBGTokenizer<T>> listTokenizer
     ) => new BGTokenizerOr<T>(listTokenizer);
 
-    public static BGTokenizerListCombine<TResult, TInner> Combine<TResult, TInner>(
-        IEnumerable<IBGTokenizer<TInner>> listTokenizer,
-        IBGTokenizerListCombiner<TResult, TInner> selectResult
-    ) => new BGTokenizerListCombine<TResult, TInner>(listTokenizer, selectResult);
+    extension(IBGTokenizer tokenizer) {
+        public IBGTokenizer Next(
+            IBGTokenizer nextTokenizer
+        ) => new BGTokenizerNext(tokenizer, nextTokenizer);
 
-    public static IBGTokenizer<TResult> Sequence<TResult, T1, T2>(
-        IBGTokenizer<T1> tokenizer1,
-        IBGTokenizer<T2> tokenizer2,
-        IBGTokenizerCombiner<TResult, T1, T2> combiner
-    ) => new BGTokenizerSequence<TResult, T1, T2>(tokenizer1, tokenizer2, combiner);
+        public IBGTokenizer Repeat(
+            int minRepeat,
+            int maxRepeat
+        ) => new BGTokenizerRepeat(tokenizer, minRepeat, maxRepeat);
 
-    public static IBGTokenizer<TResult> Sequence<TResult, T1, T2, T3>(
-        IBGTokenizer<T1> tokenizer1,
-        IBGTokenizer<T2> tokenizer2,
-        IBGTokenizer<T3> tokenizer3,
-        IBGTokenizerCombiner<TResult, T1, T2, T3> combiner
-    ) => new BGTokenizerSequence<TResult, T1, T2, T3>(tokenizer1, tokenizer2, tokenizer3, combiner);
+        public IBGTokenizer Capture(
+        ) => new BGTokenizerCapture(tokenizer);
+
+        public IBGTokenizer<T> Capture<T>(
+            IBGTokenizerResultAccept<T> selectResult
+        ) => new BGTokenizerCapture<T>(tokenizer, selectResult);
+
+        public BGTokenizerExcept Except(
+            IBGTokenizer tokenizerNext,
+            IBGTokenizer? tokenizerSkip = default
+        ) => new BGTokenizerExcept(tokenizerNext, tokenizerSkip);
+    }
+
+    extension<T>(IBGTokenizer<T> tokenizer) {
+        public IBGTokenizer<R> Next<N, R>(
+            IBGTokenizer<N> nextTokenizer,
+            IBGTokenizerResultNext<T, N, R> selectResult
+        ) => new BGTokenizerNext<T, N, R>(tokenizer, nextTokenizer, selectResult);
+
+        public IBGTokenizer<R> Repeat<R>(
+            int minRepeat,
+            int maxRepeat,
+            IBGTokenizerResultRepeat<T, R> selectResult
+        ) => new BGTokenizerRepeat<T, R>(tokenizer, minRepeat, maxRepeat, selectResult);
+
+        public IBGTokenizer<R> Capture<R>(
+           IBGTokenizerResultAccept<R> selectResult
+        ) => new BGTokenizerCapture<R, T>(tokenizer, selectResult);
+    }
+}
+
+public interface IBGTokenizerResultAccept<T> {
+    T Select(StringRange match);
+}
+
+public interface IBGTokenizerResultNext<T, N, R> {
+    R Select(BGToken<T> first, BGToken<N> next, StringRange match);
+}
+
+public interface IBGTokenizerResultRepeat<T, R> {
+    R Select(IReadOnlyList<BGToken<T>> items, StringRange match);
 }
 
 public readonly struct BGToken<T> {
@@ -104,7 +138,26 @@ public readonly struct BGToken<T> {
     }
 }
 
+public interface IBGTokenizer {
+    /// <summary>
+    /// Try to read and categorize the token
+    /// </summary>
+    /// <param name="value">the input</param>
+    /// <param name="next">the next input use if matches or not</param>
+    /// <returns>true if matched</returns>
+    bool TryGetToken(
+        StringRange value,
+        out StringRange next);
+}
+
 public interface IBGTokenizer<T> {
+    /// <summary>
+    /// Try to read and categorize the token
+    /// </summary>
+    /// <param name="value">the input</param>
+    /// <param name="token">the found token - if returns true.</param>
+    /// <param name="next">the next input use if matches or not</param>
+    /// <returns>true if matched</returns>
     bool TryGetToken(
         StringRange value,
         [MaybeNullWhen(false)] out BGToken<T> token,

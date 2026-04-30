@@ -1,64 +1,70 @@
 ﻿namespace Brimborium.Gerede;
 
-public class BGTokenizerRepeat<TResult, TInner>
-    : IBGTokenizer<TResult> {
-    public readonly IBGTokenizer<TInner> Tokenizer;
-    public readonly int MinElements;
-    public readonly int MaxElements;
-    public readonly IBGFactory<TResult> Factory;
-    public readonly IBGResultAggregation<TResult, TInner> Aggregation;
-
+public sealed class BGTokenizerRepeat : IBGTokenizer {
     public BGTokenizerRepeat(
-        IBGTokenizer<TInner> tokenizer,
-        int minElements,
-        int maxElements,
-        IBGFactoryAggregation<TResult, TInner> factoryAggregation
-    ) {
+        IBGTokenizer tokenizer,
+        int minRepeat,
+        int maxRepeat) {
         this.Tokenizer = tokenizer;
-        this.MinElements = minElements;
-        this.MaxElements = maxElements;
-        this.Factory = factoryAggregation;
-        this.Aggregation = factoryAggregation;
-    }
-    public BGTokenizerRepeat(
-        IBGTokenizer<TInner> tokenizer,
-        int minElements,
-        int maxElements,
-        IBGFactory<TResult> factory,
-        IBGResultAggregation<TResult, TInner> aggregation
-    ) {
-        this.Tokenizer = tokenizer;
-        this.MinElements = minElements;
-        this.MaxElements = maxElements;
-        this.Factory = factory;
-        this.Aggregation = aggregation;
+        this.MinRepeat = minRepeat;
+        this.MaxRepeat = maxRepeat;
     }
 
-    public bool TryGetToken(
-        StringRange value,
-        [MaybeNullWhen(false)] out BGToken<TResult> token,
-        out StringRange next
-    ) {
-        StringRange current = value;
-        TResult result = this.Factory.Create();
-        int loop = 0;
-        while (loop < this.MaxElements) {
-            if (this.Tokenizer.TryGetToken(current, out var subToken, out var subNext)) {
-                loop++;
-                result = this.Aggregation.Aggregate(subToken.Value, result);
-                current = subNext;
-            } else {
-                break;
-            }
+    public IBGTokenizer Tokenizer { get; }
+    public int MinRepeat { get; }
+    public int MaxRepeat { get; }
+
+    public bool TryGetToken(StringRange value, out StringRange next) {
+        var current = value;
+        var loop = 0;
+        while (loop < this.MaxRepeat
+            && this.Tokenizer.TryGetToken(current,  out var afterItem)) {
+            current = afterItem;
+            loop++;
         }
-        if (this.MinElements <= loop) {
-            token = new(value.Substring(0, current.Start - value.Start), result);
+        if (this.MinRepeat <= loop) {
             next = current;
             return true;
         } else {
-            token = default;
             next = value;
             return false;
         }
+    }
+}
+
+public sealed class BGTokenizerRepeat<T, R> : IBGTokenizer<R> {
+    public BGTokenizerRepeat(
+        IBGTokenizer<T> tokenizer,
+        int minRepeat,
+        int maxRepeat,
+        IBGTokenizerResultRepeat<T, R> selectResult) {
+        this.Tokenizer = tokenizer;
+        this.MinRepeat = minRepeat;
+        this.MaxRepeat = maxRepeat;
+        this.SelectResult = selectResult;
+    }
+
+    public IBGTokenizer<T> Tokenizer { get; }
+    public int MinRepeat { get; }
+    public int MaxRepeat { get; }
+    public IBGTokenizerResultRepeat<T, R> SelectResult { get; }
+
+    public bool TryGetToken(StringRange value, [MaybeNullWhen(false)] out BGToken<R> token, out StringRange next) {
+        var items = new List<BGToken<T>>();
+        var current = value;
+        while (items.Count < this.MaxRepeat
+            && this.Tokenizer.TryGetToken(current, out var item, out var afterItem)) {
+            items.Add(item);
+            current = afterItem;
+        }
+        if (this.MinRepeat <= items.Count) {
+            var match = value.Substring(0, current.Start - value.Start);
+            token = new BGToken<R>(match, this.SelectResult.Select(items, match));
+            next = current;
+            return true;
+        }
+        token = default;
+        next = value;
+        return false;
     }
 }

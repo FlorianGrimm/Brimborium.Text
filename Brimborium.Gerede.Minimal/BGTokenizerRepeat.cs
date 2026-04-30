@@ -1,6 +1,6 @@
 ﻿namespace Brimborium.Gerede;
 
-public class BGTokenizerRepeat : IBGTokenizer {
+public sealed class BGTokenizerRepeat : IBGTokenizer {
     public BGTokenizerRepeat(
         IBGTokenizer tokenizer,
         int minRepeat,
@@ -32,7 +32,7 @@ public class BGTokenizerRepeat : IBGTokenizer {
     }
 }
 
-public class BGTokenizerRepeat<T, R> : IBGTokenizer<R> {
+public sealed class BGTokenizerRepeat<T, R> : IBGTokenizer<R> {
     public BGTokenizerRepeat(
         IBGTokenizer<T> tokenizer,
         int minRepeat,

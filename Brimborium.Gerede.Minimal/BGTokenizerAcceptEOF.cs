@@ -1,6 +1,6 @@
 namespace Brimborium.Gerede;
 
-public class BGTokenizerAcceptEOF : IBGTokenizer {
+public sealed class BGTokenizerAcceptEOF : IBGTokenizer {
     public bool TryGetToken(
         StringRange value,
         out StringRange next) {
@@ -10,7 +10,7 @@ public class BGTokenizerAcceptEOF : IBGTokenizer {
     }
 }
 
-public class BGTokenizerAcceptEOF<T> : IBGTokenizer<T> {
+public sealed class BGTokenizerAcceptEOF<T> : IBGTokenizer<T> {
     public BGTokenizerAcceptEOF(
         T acceptValue
     ) {

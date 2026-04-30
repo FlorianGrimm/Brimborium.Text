@@ -44,7 +44,7 @@ public static class BSErrorEnhancedExtension {
 }
 
 
-public class BGGrammer<T> : IBGParser<T> {
+public sealed class BGGrammer<T> : IBGParser<T> {
     public readonly IBGParser<T> Parser;
 
     public BGGrammer(

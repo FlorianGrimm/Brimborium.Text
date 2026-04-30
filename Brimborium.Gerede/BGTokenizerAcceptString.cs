@@ -1,38 +1,52 @@
-﻿namespace Brimborium.Gerede;
+﻿namespace Brimborium.Gerede; 
 
-public class BGTokenizerAcceptString<T> : IBGTokenizer<T> {
-    public readonly string AcceptText;
-    public readonly T AcceptValue;
-
-    public BGTokenizerAcceptString(
-        string acceptText,
-        T acceptValue
-    ) {
+public sealed class BGTokenizerAcceptString : IBGTokenizer {
+    public BGTokenizerAcceptString(string acceptText, StringComparison comparisonType) {
         this.AcceptText = acceptText;
-        this.AcceptValue = acceptValue;
+        this.ComparisonType = comparisonType;
     }
 
-    public bool TryGetToken(
-        StringRange value,
-        [MaybeNullWhen(false)] out BGToken<T> token,
-        out StringRange next
-        ) {
-        if (!value.IsEmpty) {
-            var result = value.StartsWith(this.AcceptText);
-            if (result) {
-                var length = this.AcceptText.Length;
-                token = new(value.Substring(0, length), this.AcceptValue);
-                next = value.Substring(length);
-                return result;
-            }
-        }
-        {
-            token = default;
+    public string AcceptText { get; }
+    public StringComparison ComparisonType { get; }
+
+    public bool TryGetToken(StringRange value, out StringRange next) {
+        if (value.StartsWith(this.AcceptText, this.ComparisonType)) {
+            next = value.Substring(this.AcceptText.Length); 
+            return true;
+        } else {
             next = value;
             return false;
         }
     }
 }
 
+public sealed class BGTokenizerAcceptString<T> : IBGTokenizer<T> {
+    public BGTokenizerAcceptString(
+        string acceptText, 
+        StringComparison comparisonType,
+        IBGTokenizerResultAccept<T> selectResult
+        ) {
+        this.AcceptText = acceptText;
+        this.ComparisonType = comparisonType;
+        this.SelectResult = selectResult;
+    }
 
+    public string AcceptText { get; }
+    public StringComparison ComparisonType { get; }
+    public IBGTokenizerResultAccept<T> SelectResult { get; }
 
+    public bool TryGetToken(StringRange value, [MaybeNullWhen(false)] out BGToken<T> token, out StringRange next) {
+        if (value.StartsWith(this.AcceptText, this.ComparisonType)) {
+            var length = this.AcceptText.Length;
+            var tokenMatch = value.Substring(0, length);
+            var tokenValue = this.SelectResult.Select(tokenMatch);
+            token = new BGToken<T>(tokenMatch, tokenValue);
+            next = value.Substring(length);
+            return true;
+        } else {
+            token = default;
+            next = value;
+            return false;
+        }
+    }
+}

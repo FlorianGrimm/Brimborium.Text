@@ -1,73 +1,44 @@
-﻿namespace Brimborium.Gerede;
+namespace Brimborium.Gerede;
 
-public class BGParserRepeat<TResult, TInner>
-    : IBGParser<TResult> {
-    public readonly IBGParser<TInner> ParserInner;
-    public readonly IBGFactory<TResult> Factory;
-    public readonly IBGResultAggregation<TResult, TInner> Aggregation;
-    public readonly int MinElements;
-    public readonly int MaxElements;
-
+public sealed class BGParserRepeat<T, R> : IBGParser<R> {
     public BGParserRepeat(
-        IBGParser<TInner> parserInner,
-        int minElements,
-        int maxElements,
-        IBGFactoryAggregation<TResult, TInner> factoryAggregation
-    ) : this(
-        parserInner,
-        minElements,
-        maxElements,
-        factoryAggregation, factoryAggregation
-    ) {
+        IBGParser<T> parser,
+        int minRepeat,
+        int maxRepeat,
+        IBGParserResultRepeat<T, R> selectResult) {
+        this.Parser = parser;
+        this.MinRepeat = minRepeat;
+        this.MaxRepeat = maxRepeat;
+        this.SelectResult = selectResult;
     }
 
-    public BGParserRepeat(
-        IBGParser<TInner> parserInner,
-        int minElements,
-        int maxElements,
-        IBGFactory<TResult> factory,
-        IBGResultAggregation<TResult, TInner> aggregation
-    ) {
-        this.ParserInner = parserInner;
-        this.MinElements = minElements;
-        this.MaxElements = maxElements;
-        this.Factory = factory;
-        this.Aggregation = aggregation;
-    }
-
+    public IBGParser<T> Parser { get; }
+    public int MinRepeat { get; }
+    public int MaxRepeat { get; }
+    public IBGParserResultRepeat<T, R> SelectResult { get; }
 
     public bool Parse(
         BGParserInput input,
-        [MaybeNullWhen(false)] out BGResult<TResult> match,
+        [MaybeNullWhen(false)] out BGResult<R> match,
         [MaybeNullWhen(true)] out BGError error,
-        out BGParserInput next
-    ) {
-        TResult result = this.Factory.Create();
-        int count = 0;
-        
-        BGParserInput current = input;
-        while (!current.Input.IsEmpty) {
-            if (this.ParserInner.Parse(current, out var resultMatch, out error, out next)) {
-                count++;
-                result = this.Aggregation.Aggregate(resultMatch.Value, result);
-                current = next;
-                if (this.MaxElements <= count) {
-                    break;
-                }
-            } else {
-                break;
-            }
+        out BGParserInput next) {
+        var items = new List<BGResult<T>>();
+        var current = input;
+        while (items.Count < this.MaxRepeat
+            && this.Parser.Parse(current, out var item, out _, out var afterItem)) {
+            items.Add(item);
+            current = afterItem;
         }
-        if (this.MinElements <= count) {
-            match = new(input.Input, result);
-            next = current;
+        if (this.MinRepeat <= items.Count) {
+            var span = input.Input.Substring(0, current.Input.Start - input.Input.Start);
+            match = new BGResult<R>(span, this.SelectResult.Select(items, span));
             error = default;
+            next = current;
             return true;
-        } else {
-            match = default;
-            error = new(current.Input, "");
-            next = input;
-            return false;
         }
+        match = default;
+        error = new BGError(input.Input, "minimum repeat not satisfied");
+        next = input;
+        return false;
     }
 }

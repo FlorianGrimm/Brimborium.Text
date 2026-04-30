@@ -1,6 +1,6 @@
 ﻿namespace Brimborium.Gerede;
 
-public class BGTokenizerOr : IBGTokenizer {
+public sealed class BGTokenizerOr : IBGTokenizer {
     public BGTokenizerOr(IEnumerable<IBGTokenizer> listTokenizer) {
         this.ListTokenizer = listTokenizer.ToArray();
     }
@@ -20,7 +20,7 @@ public class BGTokenizerOr : IBGTokenizer {
     }
 }
 
-public class BGTokenizerOr<T> : IBGTokenizer<T> {
+public sealed class BGTokenizerOr<T> : IBGTokenizer<T> {
     public BGTokenizerOr(IEnumerable<IBGTokenizer<T>> listTokenizer) {
         this.ListTokenizer = listTokenizer.ToArray();
     }

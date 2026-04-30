@@ -1,6 +1,6 @@
 ﻿namespace Brimborium.Gerede; 
 
-public class BGTokenizerAcceptString : IBGTokenizer {
+public sealed class BGTokenizerAcceptString : IBGTokenizer {
     public BGTokenizerAcceptString(string acceptText, StringComparison comparisonType) {
         this.AcceptText = acceptText;
         this.ComparisonType = comparisonType;
@@ -20,7 +20,7 @@ public class BGTokenizerAcceptString : IBGTokenizer {
     }
 }
 
-public class BGTokenizerAcceptString<T> : IBGTokenizer<T> {
+public sealed class BGTokenizerAcceptString<T> : IBGTokenizer<T> {
     public BGTokenizerAcceptString(
         string acceptText, 
         StringComparison comparisonType,

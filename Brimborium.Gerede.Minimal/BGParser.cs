@@ -17,6 +17,16 @@ public static class BGParser {
         IEnumerable<IBGParser<T>> listParser
     ) => new BGParserOr<T>(listParser);
 
+
+    public static IBGParser<T> Lazy<T>(
+        Lazy<IBGParser<T>> lazyParser
+    ) => new BGParserLazy<T>(lazyParser);
+
+    public static IBGParser<T> Refer<T>(
+        Func<IBGParser<T>> getParser
+    ) => new BGParserRefer<T>(getParser);
+
+
     extension<T>(IBGTokenizer<T> tokenizer) {
         public IBGParser<T> Parser() {
             return new BGParserTokenizer<T>(tokenizer);

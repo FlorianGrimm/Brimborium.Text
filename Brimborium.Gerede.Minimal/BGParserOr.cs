@@ -1,6 +1,6 @@
 namespace Brimborium.Gerede;
 
-public class BGParserOr<T> : IBGParser<T> {
+public sealed class BGParserOr<T> : IBGParser<T> {
     public BGParserOr(IEnumerable<IBGParser<T>> listParser) {
         this.ListParser = (listParser is IBGParser<T>[] array)
             ? array
