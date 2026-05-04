@@ -1,16 +1,21 @@
 ﻿namespace Brimborium.Gerede;
 
-public sealed class BGParserTokenizer : IBGParser<BGVoid> {
-    public BGParserTokenizer(IBGTokenizer tokenizer) {
-        this.Tokenizer = tokenizer;
-    }
+public sealed class BGParserTokenizerSelect<T, R>(
+        IBGTokenizer<T> tokenizer,
+        IBGTokenizerResultTransform<T, R> selectResult
+    ) : IBGParser<R> {
+    public IBGTokenizer<T> Tokenizer { get; } = tokenizer;
+    public IBGTokenizerResultTransform<T, R> SelectResult { get; } = selectResult;
 
-    public IBGTokenizer Tokenizer { get; }
-
-    public bool Parse(BGParserInput input, [MaybeNullWhen(false)] out BGResult<BGVoid> match, [MaybeNullWhen(true)] out BGError error, out BGParserInput next) {
-        if (this.Tokenizer.TryGetToken(input.Input, out var nextRange)) {
+    public bool Parse(
+        BGParserInput input, 
+        [MaybeNullWhen(false)] out BGResult<R> match, 
+        [MaybeNullWhen(true)] out BGError error, 
+        out BGParserInput next) {
+        if (this.Tokenizer.TryGetToken(input.Input, out var token, out var nextRange)) {
             var tokenMatch = input.Input.Substring(0, nextRange.Start - input.Input.Start);
-            match = new BGResult<BGVoid>(tokenMatch, new BGVoid());
+            var tokenResult = this.SelectResult.Select(token, tokenMatch);
+            match = new BGResult<R>(tokenMatch, tokenResult);
             error = default;
             next = input.With(nextRange);
             return true;
@@ -19,15 +24,13 @@ public sealed class BGParserTokenizer : IBGParser<BGVoid> {
         error = new BGError(input.Input, "no match");
         next = input;
         return false;
-    }
+    } 
 }
 
-public sealed class BGParserTokenizer<T> : IBGParser<T> {
-    public BGParserTokenizer(IBGTokenizer<T> tokenizer) {
-        this.Tokenizer = tokenizer;
-    }
-
-    public IBGTokenizer<T> Tokenizer { get; }
+public sealed class BGParserTokenizer<T>(
+        IBGTokenizer<T> tokenizer
+    ) : IBGParser<T> {
+    public IBGTokenizer<T> Tokenizer { get; } = tokenizer;
 
     public bool Parse(BGParserInput input, [MaybeNullWhen(false)] out BGResult<T> match, [MaybeNullWhen(true)] out BGError error, out BGParserInput next) {
         if (this.Tokenizer.TryGetToken(input.Input, out var token, out var nextRange)) {

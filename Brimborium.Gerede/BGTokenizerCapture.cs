@@ -1,72 +1,21 @@
 namespace Brimborium.Gerede;
 
-public sealed class BGTokenizerCapture : IBGTokenizer {
-    public BGTokenizerCapture(
-        IBGTokenizer tokenizer
-        ) {
-        this.Tokenizer = tokenizer;
-    }
+public sealed class BGTokenizerCapture<T1, R>(
+        IBGTokenizer<T1> tokenizer,
+        IBGTokenizerResultTransform<T1, R> selectResult
+    ) : IBGTokenizer<R> {
+    public IBGTokenizer<T1> Tokenizer { get; } = tokenizer;
 
-    public IBGTokenizer Tokenizer { get; }
-
-    public bool TryGetToken(StringRange value, out StringRange next) {
-        return this.Tokenizer.TryGetToken(value, out next);
-    }
-}
-
-public sealed class BGTokenizerCapture<T> : IBGTokenizer<T> {
-    public BGTokenizerCapture(
-        IBGTokenizer tokenizer,
-        IBGTokenizerResultAccept<T> selectResult
-    ) {
-        this.Tokenizer = tokenizer;
-        this.SelectResult = selectResult;
-    }
-
-    public IBGTokenizer Tokenizer { get; }
-
-    public IBGTokenizerResultAccept<T> SelectResult { get; }
+    public IBGTokenizerResultTransform<T1, R> SelectResult { get; } = selectResult;
 
     public bool TryGetToken(
         StringRange value,
-        [MaybeNullWhen(false)] out BGToken<T> token,
+        [MaybeNullWhen(false)] out BGToken<R> token,
         out StringRange next) {
-        if (this.Tokenizer.TryGetToken(value, out var innerNext)) {
+        if (this.Tokenizer.TryGetToken(value, out var token1, out var innerNext)) {
             var tokenMatch = value.Substring(0, innerNext.Start - value.Start);
-            var tokenValue = this.SelectResult.Select(tokenMatch);
-            token = new BGToken<T>(tokenMatch, tokenValue);
-            next = innerNext;
-            return true;
-        } else {
-            token = default;
-            next = value;
-            return false;
-        }
-    }
-}
-
-
-public sealed class BGTokenizerCapture<T, I> : IBGTokenizer<T> {
-    public BGTokenizerCapture(
-        IBGTokenizer<I> tokenizer,
-        IBGTokenizerResultAccept<T> selectResult
-    ) {
-        this.Tokenizer = tokenizer;
-        this.SelectResult = selectResult;
-    }
-
-    public IBGTokenizer<I> Tokenizer { get; }
-
-    public IBGTokenizerResultAccept<T> SelectResult { get; }
-
-    public bool TryGetToken(
-        StringRange value,
-        [MaybeNullWhen(false)] out BGToken<T> token,
-        out StringRange next) {
-        if (this.Tokenizer.TryGetToken(value, out var _, out var innerNext)) {
-            var tokenMatch = value.Substring(0, innerNext.Start - value.Start);
-            var tokenValue = this.SelectResult.Select(tokenMatch);
-            token = new BGToken<T>(tokenMatch, tokenValue);
+            var tokenValue = this.SelectResult.Select(token1, tokenMatch);
+            token = new BGToken<R>(tokenMatch, tokenValue);
             next = innerNext;
             return true;
         } else {

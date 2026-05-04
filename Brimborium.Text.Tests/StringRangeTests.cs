@@ -265,4 +265,22 @@ public class StringRangeTests {
         await Assert.That(sut.AsSpan().ToString()).IsEqualTo("efg");
     }
 
+    [Test]
+    public async Task TryCombine_Success() {
+        //                               0123456789
+        StringRange text = new("abcdefghij");
+        var text_cd = text.Substring(2, 2);
+        var text_ef = text.Substring(4, 2);
+        await Assert.That(text_cd.TryCombine(text_ef, out var act) ? act.ToString() : "#NO#").IsEqualTo("cdef");
+    }
+
+
+    [Test]
+    public async Task TryCombine_NotContinues() {
+        //                               0123456789
+        StringRange text = new("abcdefghij");
+        var text_cd = text.Substring(2, 2);
+        var text_ef = text.Substring(6, 2);
+        await Assert.That(text_cd.TryCombine(text_ef, out var act) ? act.ToString() : "#NO#").IsEqualTo("#NO#");
+    }
 }

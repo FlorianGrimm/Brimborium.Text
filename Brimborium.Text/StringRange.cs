@@ -187,4 +187,15 @@ public readonly struct StringRange {
 
     public override string ToString()
         => this.Text.Substring(this.Start, this.Length);
+
+    public bool TryCombine(StringRange next, out StringRange combined) {
+        if ((ReferenceEquals(this.Text, next.Text))
+            && (this.End == next.Start)) {
+            combined = new StringRange(this.Text, this.Start, next.End);
+            return true;
+        } else {
+            combined = next;
+            return false;
+        }
+    }
 }

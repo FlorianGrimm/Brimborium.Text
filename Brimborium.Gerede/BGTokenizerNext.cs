@@ -1,65 +1,30 @@
-﻿using System.Text.RegularExpressions;
+﻿namespace Brimborium.Gerede;
 
-namespace Brimborium.Gerede;
-
-public sealed class BGTokenizerNext : IBGTokenizer {
-    public BGTokenizerNext(
-        IBGTokenizer tokenizer,
-        IBGTokenizer nextTokenizer
-    ) {
-        this.Tokenizer = tokenizer;
-        this.NextTokenizer = nextTokenizer;
-    }
-
-    public IBGTokenizer Tokenizer { get; }
-    public IBGTokenizer NextTokenizer { get; }
-
-    public bool TryGetToken(StringRange value, out StringRange next) {
-        if (this.Tokenizer.TryGetToken(value, out var afterFirst)) {
-            if (this.NextTokenizer.TryGetToken(afterFirst, out var afterNext)) {
-                next = afterNext;
-                return true;
-            } else {
-                next = value;
-                return false;
-            }
-        } else {
-            next = value;
-            return false;
-        }
-    }
-}
-
-public sealed class BGTokenizerNext<T, N, R> : IBGTokenizer<R> {
-    public BGTokenizerNext(
-        IBGTokenizer<T> tokenizer,
-        IBGTokenizer<N> nextTokenizer,
-        IBGTokenizerResultNext<T, N, R> selectResult) {
-        this.Tokenizer = tokenizer;
-        this.NextTokenizer = nextTokenizer;
-        this.SelectResult = selectResult;
-    }
-
-    public IBGTokenizer<T> Tokenizer { get; }
-    public IBGTokenizer<N> NextTokenizer { get; }
-    public IBGTokenizerResultNext<T, N, R> SelectResult { get; }
+public sealed class BGTokenizerNext<T1, T2, R>(
+        IBGTokenizer<T1> tokenizer1,
+        IBGTokenizer<T2> tokenizer2,
+        IBGTokenizerResultTransform<T1, T2, R> selectResult
+    ) : IBGTokenizer<R> {
+    public IBGTokenizer<T1> Tokenizer1 { get; } = tokenizer1;
+    public IBGTokenizer<T2> Tokenizer2 { get; } = tokenizer2;
+    public IBGTokenizerResultTransform<T1, T2, R> SelectResult { get; } = selectResult;
 
     public bool TryGetToken(StringRange value, [MaybeNullWhen(false)] out BGToken<R> token, out StringRange next) {
-        if (this.Tokenizer.TryGetToken(value, out var firstToken, out var afterFirst)) {
-            if (this.NextTokenizer.TryGetToken(afterFirst, out var nextToken, out var afterNext)) {
-                var match = value.Substring(0, afterNext.Start - value.Start);
-                token = new BGToken<R>(match, this.SelectResult.Select(firstToken, nextToken, match));
-                next = afterNext;
-                return true;
-            } else {
-                token = default;
-                next = value;
-                return false;
-            }
-        } else {
+        if (!this.Tokenizer1.TryGetToken(value, out var firstToken, out var afterFirst)) {
             token = default;
             next = value;
             return false;
+        }
+        if (!this.Tokenizer2.TryGetToken(afterFirst, out var nextToken, out var afterNext)) {
+            token = default;
+            next = value;
+            return false;
+        }
+        {
+            var match = value.Substring(0, afterNext.Start - value.Start);
+            token = new BGToken<R>(match, this.SelectResult.Select(firstToken, nextToken, match));
+            next = afterNext;
+            return true;
         }
     }
 }

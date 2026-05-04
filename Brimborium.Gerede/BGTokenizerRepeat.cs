@@ -1,53 +1,15 @@
 ﻿namespace Brimborium.Gerede;
 
-public sealed class BGTokenizerRepeat : IBGTokenizer {
-    public BGTokenizerRepeat(
-        IBGTokenizer tokenizer,
-        int minRepeat,
-        int maxRepeat) {
-        this.Tokenizer = tokenizer;
-        this.MinRepeat = minRepeat;
-        this.MaxRepeat = maxRepeat;
-    }
-
-    public IBGTokenizer Tokenizer { get; }
-    public int MinRepeat { get; }
-    public int MaxRepeat { get; }
-
-    public bool TryGetToken(StringRange value, out StringRange next) {
-        var current = value;
-        var loop = 0;
-        while (loop < this.MaxRepeat
-            && this.Tokenizer.TryGetToken(current,  out var afterItem)) {
-            current = afterItem;
-            loop++;
-        }
-        if (this.MinRepeat <= loop) {
-            next = current;
-            return true;
-        } else {
-            next = value;
-            return false;
-        }
-    }
-}
-
-public sealed class BGTokenizerRepeat<T, R> : IBGTokenizer<R> {
-    public BGTokenizerRepeat(
+public sealed class BGTokenizerRepeat<T, R>(
         IBGTokenizer<T> tokenizer,
         int minRepeat,
         int maxRepeat,
-        IBGTokenizerResultRepeat<T, R> selectResult) {
-        this.Tokenizer = tokenizer;
-        this.MinRepeat = minRepeat;
-        this.MaxRepeat = maxRepeat;
-        this.SelectResult = selectResult;
-    }
-
-    public IBGTokenizer<T> Tokenizer { get; }
-    public int MinRepeat { get; }
-    public int MaxRepeat { get; }
-    public IBGTokenizerResultRepeat<T, R> SelectResult { get; }
+        IBGTokenizerResultRepeat<T, R> selectResult
+    ) : IBGTokenizer<R> {
+    public IBGTokenizer<T> Tokenizer { get; } = tokenizer;
+    public int MinRepeat { get; } = minRepeat;
+    public int MaxRepeat { get; } = maxRepeat;
+    public IBGTokenizerResultRepeat<T, R> SelectResult { get; } = selectResult;
 
     public bool TryGetToken(StringRange value, [MaybeNullWhen(false)] out BGToken<R> token, out StringRange next) {
         var items = new List<BGToken<T>>();

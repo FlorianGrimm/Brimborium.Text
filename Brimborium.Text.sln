@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.6.11716.218 insiders
+VisualStudioVersion = 18.6.11716.218
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Brimborium.Text", "Brimborium.Text\Brimborium.Text.csproj", "{6E57BF40-8763-46ED-BD4C-BDBEE806B873}"
 EndProject
@@ -26,10 +26,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brimborium.Gerede", "Brimborium.Gerede\Brimborium.Gerede.csproj", "{A0CF39E2-0C46-4F57-A185-3818DF6BEC4E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brimborium.Gerede.Tests", "Brimborium.Gerede.Tests\Brimborium.Gerede.Tests.csproj", "{4785D9B3-4A29-4BFC-BFAE-C008639A3389}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brimborium.Gerede.Minimal", "Brimborium.Gerede.Minimal\Brimborium.Gerede.Minimal.csproj", "{7A9C7CFB-BD01-4A73-AA0F-AFE4A3A48121}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brimborium.Gerede.Minimal.Tests", "Brimborium.Gerede.Minimal.Tests\Brimborium.Gerede.Minimal.Tests.csproj", "{F1513670-FBA7-45D7-99D7-A7B27292CDA6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,14 +61,6 @@ Global
 		{4785D9B3-4A29-4BFC-BFAE-C008639A3389}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4785D9B3-4A29-4BFC-BFAE-C008639A3389}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4785D9B3-4A29-4BFC-BFAE-C008639A3389}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7A9C7CFB-BD01-4A73-AA0F-AFE4A3A48121}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7A9C7CFB-BD01-4A73-AA0F-AFE4A3A48121}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7A9C7CFB-BD01-4A73-AA0F-AFE4A3A48121}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7A9C7CFB-BD01-4A73-AA0F-AFE4A3A48121}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F1513670-FBA7-45D7-99D7-A7B27292CDA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F1513670-FBA7-45D7-99D7-A7B27292CDA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F1513670-FBA7-45D7-99D7-A7B27292CDA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F1513670-FBA7-45D7-99D7-A7B27292CDA6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

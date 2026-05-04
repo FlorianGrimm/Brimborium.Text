@@ -1,38 +1,32 @@
 ﻿namespace Brimborium.Gerede;
 
-public sealed class BGTokenizerExcept : IBGTokenizer {
-    public BGTokenizerExcept(
-        IBGTokenizer tokenizerNext,
-        IBGTokenizer? tokenizerSkip
-    ) {
-        this.Tokenizer = tokenizerNext;
-        this.TokenizerSkip = tokenizerSkip;
-    }
+public sealed class BGTokenizerExcept<T1, T2>(
+    IBGTokenizer<T1> tokenizerNext,
+    IBGTokenizer<T2> tokenizerSkip
+    ) : IBGTokenizer<BGVoid> {
+    public IBGTokenizer<T1> Tokenizer { get; } = tokenizerNext;
+    public IBGTokenizer<T2> TokenizerSkip { get; } = tokenizerSkip;
 
-    public IBGTokenizer Tokenizer { get; }
-    public IBGTokenizer? TokenizerSkip { get; }
-
-    public bool TryGetToken(StringRange value, out StringRange next) {
-        var result = false; ;
+    public bool TryGetToken(StringRange value, [MaybeNullWhen(false)] out BGToken<BGVoid> token, out StringRange next) {
         var current = value;
         while (value.IsEmpty) {
-            if (this.Tokenizer.TryGetToken(current, out var nextMatch)) {
-                next = current;
-                return result;
+            if (this.Tokenizer.TryGetToken(current, out _, out _)) {
+                break;
             } else {
-                if (this.TokenizerSkip is { } tokenizerSkip) {
-                    if (tokenizerSkip.TryGetToken(current, out var nextSkip)) {
-                        if (current.Start < nextSkip) { 
-                            current = nextSkip;
-                            continue;
-                        }
+                if (this.TokenizerSkip.TryGetToken(current, out _, out var nextSkip)) {
+                    if (current.Start < nextSkip.Start) {
+                        current = nextSkip;
+                        continue;
                     }
                 }
                 current = current.Substring(1);
-                result = true;
             }
         }
-        next = current;
-        return result;
+
+        {
+            token = new BGToken<BGVoid>(value.Substring(0, current.Start - value.Start), new BGVoid());
+            next = current;
+            return (value.Start < next.Start);
+        }
     }
 }

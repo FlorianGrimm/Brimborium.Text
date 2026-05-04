@@ -1,20 +1,34 @@
-﻿
+﻿namespace Brimborium.Gerede;
 
-namespace Brimborium.Gerede;
+public static partial class BGParser {
+    public static IBGParser<T> Initial<T>(
+        T value
+    ) => new BGParserInitialValue<T>(value);
 
-public static class BGParser {
     // Token
-    public static IBGParser<BGVoid> Token(
-        IBGTokenizer tokenizer
-    ) => new BGParserTokenizer(tokenizer);
-
     public static IBGParser<T> Token<T>(
         IBGTokenizer<T> tokenizer
     ) => new BGParserTokenizer<T>(tokenizer);
 
+    public static IBGParser<R> TokenT<T,R>(
+        IBGTokenizer<T> tokenizer,
+        IBGTokenizerResultTransform<T, R> selectResult
+    ) => new BGParserTokenizerSelect<T, R>(tokenizer, selectResult);
+
+    public static IBGParser<R> TokenT<T, R>(
+        IBGTokenizer<T> tokenizer,
+        Func<BGToken<T>, StringRange, R> selector
+    ) => new BGParserTokenizerSelect<T, R>(
+        tokenizer, 
+        new BGTokenizerResultTransformDelegate<T, R>(selector));
+
     // Or (list overload; the binary fluent overload is provided by the extension block below)
     public static IBGParser<T> Or<T>(
         IEnumerable<IBGParser<T>> listParser
+    ) => new BGParserOr<T>(listParser);
+
+    public static IBGParser<T> Or<T>(
+      params IBGParser<T>[] listParser
     ) => new BGParserOr<T>(listParser);
 
 
@@ -23,7 +37,7 @@ public static class BGParser {
     ) => new BGParserLazy<T>(lazyParser);
 
     public static IBGParser<T> Refer<T>(
-        Func<IBGParser<T>> getParser
+        Func<IBGParser<T>?> getParser
     ) => new BGParserRefer<T>(getParser);
 
 
@@ -33,64 +47,54 @@ public static class BGParser {
         }
     }
 
-    extension(IBGParser<BGVoid> parser) {
-        public IBGParser<BGVoid> Next(
-            IBGParser<BGVoid> nextParser
-        ) => throw new NotImplementedException(); //new BGParserNext<BGVoid, N, N>(parser, nextParser, selectResult);
+    extension<T1>(IBGParser<T1> parser) {
+        public IBGParser<R> PNext<T2, R>(
+            IBGParser<T2> nextParser,
+            IBGParserSequenceResult<T1, T2, R> selectResult
+        ) => new BGParserSequence<T1, T2, R>(parser, nextParser, selectResult);
 
-        public IBGParser<N> Next<N>(
-            IBGParser<N> nextParser
-        //) => new BGParserNext<BGVoid, N, N>(parser, nextParser, selectResult);
-        ) => throw new NotImplementedException();
+        public IBGParser<T1> POr(
+            IBGParser<T1> alternative
+        ) => new BGParserOr<T1>([parser, alternative]);
 
-        public IBGParser<N> Next<N>(
-            IBGParser<N> nextParser,
-            Func<StringRange, N, N> x
-        //) => new BGParserNext<BGVoid, N, N>(parser, nextParser, selectResult);
-        ) => throw new NotImplementedException();
-    }
+        public IBGParser<R> PAggregate<R>(
+            IBGParserResultAggregate<T1, R> selectResult
+        ) => new BGParserAggregate<T1, R>(parser, selectResult);
 
-    extension<T>(IBGParser<T> parser) {
-        public IBGParser<T> Next(
-            IBGParser<BGVoid> nextParser
-        ) => throw new NotImplementedException();
+        public IBGParser<R> PAggregate<R>(
+            Func<R> create,
+            Func<R, T1, StringRange, R> aggregate
+        ) => new BGParserAggregate<T1, R>(parser, new BGParserResultAggregateDelegate<T1, R>(create, aggregate));
 
-        public IBGParser<R> Next<N, R>(
-            IBGParser<N> nextParser,
-            IBGParserResultNext<T, N, R> selectResult
-        ) => new BGParserNext<T, N, R>(parser, nextParser, selectResult);
-
-        public IBGParser<T> Or(
-            IBGParser<T> alternative
-        ) => new BGParserOr<T>(new[] { parser, alternative });
-
-        public IBGParser<R> Repeat<R>(
+        public IBGParser<R> PRepeat<R>(
             int minRepeat,
             int maxRepeat,
-            IBGParserResultRepeat<T, R> selectResult
-        ) => new BGParserRepeat<T, R>(parser, minRepeat, maxRepeat, selectResult);
+            IBGParserResultRepeat<T1, R> selectResult
+        ) => new BGParserRepeat<T1, R>(parser, minRepeat, maxRepeat, selectResult);
+
+        public IBGParser<R> PCapture<R>(
+            IBGTokenizerResultCaptureTransform<T1, R> tokenizerResultCapture
+        ) => new BGParserCapture<T1, R>(parser, tokenizerResultCapture);
+
+        public IBGParser<R> PCapture<R>(
+            Func<T1, StringRange, R> transform
+        ) => new BGParserCapture<T1, R>(parser, new BGTokenizerResultCaptureDelegate<T1, R>(transform));
     }
 }
 
-
-public readonly struct BGResult<T> {
-    public readonly StringRange Match;
-    public readonly T Value;
-
-    public BGResult(
-        StringRange match,
-        T Value
-        ) {
-        this.Match = match;
-        this.Value = Value;
-    }
+public readonly struct BGResult<T>(
+    StringRange match,
+    T Value
+    ) {
+    public readonly StringRange Match = match;
+    public readonly T Value = Value;
 }
 
 public record struct BGParserInput(
     StringRange Input,
     BGTokenList TokenList
     ) {
-    public BGParserInput With(StringRange next) {
+    public readonly BGParserInput With(StringRange next) {
         return new(next, TokenList);
     }
 }
@@ -114,10 +118,16 @@ public interface IBGParser<T> {
         );
 }
 
-public interface IBGParserResultNext<T, N, R> {
-    R Select(BGResult<T> first, BGResult<N> next, StringRange match);
+public interface IBGParserTokenizerResult<T> {
+    T Select(StringRange match);
 }
 
 public interface IBGParserResultRepeat<T, R> {
-    R Select(IReadOnlyList<BGResult<T>> items, StringRange match);
+    R Select(IEnumerable<BGResult<T>> items, StringRange match);
 }
+
+public interface IBGParserResultAggregate<T, R> {
+    R Create();
+    R Aggregate(R accumulator, T currentValue, StringRange match);
+}
+

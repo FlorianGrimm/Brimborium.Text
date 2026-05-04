@@ -1,23 +1,9 @@
 namespace Brimborium.Gerede;
 
-public sealed class BGTokenizerAcceptEOF : IBGTokenizer {
-    public bool TryGetToken(
-        StringRange value,
-        out StringRange next) {
-        var result = (value.IsEmpty);
-        next = value;
-        return result;
-    }
-}
-
-public sealed class BGTokenizerAcceptEOF<T> : IBGTokenizer<T> {
-    public BGTokenizerAcceptEOF(
+public sealed class BGTokenizerAcceptEOF<T>(
         T acceptValue
-    ) {
-        this.AcceptValue = acceptValue;
-    }
-
-    public T AcceptValue { get; set; }
+    ) : IBGTokenizer<T> {
+    public T AcceptValue { get; set; } = acceptValue;
 
     public bool TryGetToken(
         StringRange value,

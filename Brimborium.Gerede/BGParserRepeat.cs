@@ -1,21 +1,15 @@
 namespace Brimborium.Gerede;
 
-public sealed class BGParserRepeat<T, R> : IBGParser<R> {
-    public BGParserRepeat(
+public sealed class BGParserRepeat<T, R>(
         IBGParser<T> parser,
         int minRepeat,
         int maxRepeat,
-        IBGParserResultRepeat<T, R> selectResult) {
-        this.Parser = parser;
-        this.MinRepeat = minRepeat;
-        this.MaxRepeat = maxRepeat;
-        this.SelectResult = selectResult;
-    }
-
-    public IBGParser<T> Parser { get; }
-    public int MinRepeat { get; }
-    public int MaxRepeat { get; }
-    public IBGParserResultRepeat<T, R> SelectResult { get; }
+        IBGParserResultRepeat<T, R> selectResult
+    ) : IBGParser<R> {
+    public IBGParser<T> Parser { get; } = parser;
+    public int MinRepeat { get; } = minRepeat;
+    public int MaxRepeat { get; } = maxRepeat;
+    public IBGParserResultRepeat<T, R> SelectResult { get; } = selectResult;
 
     public bool Parse(
         BGParserInput input,

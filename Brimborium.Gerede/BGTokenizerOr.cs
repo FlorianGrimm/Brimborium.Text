@@ -1,31 +1,11 @@
-﻿namespace Brimborium.Gerede;
+﻿#pragma warning disable IDE0305 // Simplify collection initialization
 
-public sealed class BGTokenizerOr : IBGTokenizer {
-    public BGTokenizerOr(IEnumerable<IBGTokenizer> listTokenizer) {
-        this.ListTokenizer = listTokenizer.ToArray();
-    }
+namespace Brimborium.Gerede;
 
-    public IBGTokenizer[] ListTokenizer { get; }
-
-    public bool TryGetToken(
-        StringRange value,
-        out StringRange next) {
-        foreach (var tokenizer in this.ListTokenizer) {
-            if (tokenizer.TryGetToken(value,  out next)) {
-                return true;
-            }
-        }
-        next = value;
-        return false;
-    }
-}
-
-public sealed class BGTokenizerOr<T> : IBGTokenizer<T> {
-    public BGTokenizerOr(IEnumerable<IBGTokenizer<T>> listTokenizer) {
-        this.ListTokenizer = listTokenizer.ToArray();
-    }
-
-    public IBGTokenizer<T>[] ListTokenizer { get; }
+public sealed class BGTokenizerOr<T>(
+        IEnumerable<IBGTokenizer<T>> listTokenizer
+    ) : IBGTokenizer<T> {
+    public IBGTokenizer<T>[] ListTokenizer { get; } = listTokenizer.ToArray();
 
     public bool TryGetToken(
         StringRange value,
