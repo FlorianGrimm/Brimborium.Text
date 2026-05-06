@@ -14,7 +14,8 @@ public sealed class BGTokenizerRepeat<T, R>(
     public bool TryGetToken(StringRange value, [MaybeNullWhen(false)] out BGToken<R> token, out StringRange next) {
         var items = new List<BGToken<T>>();
         var current = value;
-        while (items.Count < this.MaxRepeat
+        while (!value.IsEmpty
+            && items.Count < this.MaxRepeat
             && this.Tokenizer.TryGetToken(current, out var item, out var afterItem)) {
             items.Add(item);
             current = afterItem;

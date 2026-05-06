@@ -1,5 +1,11 @@
 ﻿namespace Brimborium.Gerede;
 
+public static class BGChar {
+    public static BGCharList CList(string value) => new BGCharList(value);
+    public static BGCharRange CRange(char from, char to) => new BGCharRange(from, to);
+    public static BGCharSet COr(params IBGCharSet[] charSets) => new BGCharSet(charSets);
+}
+
 public interface IBGCharSet {
     void AddToTarget(List<char> target);
 }

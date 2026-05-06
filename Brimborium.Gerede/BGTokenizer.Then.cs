@@ -107,6 +107,18 @@ public static partial class BGTokenizerExtension {
                 new BGTokenizerResultTransformDelegate<T1, T2, T3, T4, BGVoid>(
                     static (_, _, _, _, _) => new BGVoid()));
         }
+
+        public IBGTokenizer<BGTupple<BGToken<T1>, BGToken<T2>, BGToken<T3>, BGToken<T4>>> ReturnsTupple(
+            ) {
+            return new BGTokenizerSequence<T1, T2, T3, T4, BGTupple<BGToken<T1>, BGToken<T2>, BGToken<T3>, BGToken<T4>>>(
+                builder.Tokenizer1,
+                builder.Tokenizer2,
+                builder.Tokenizer3,
+                builder.Tokenizer4,
+                new BGTokenizerResultTransformDelegate<T1, T2, T3, T4, BGTupple<BGToken<T1>, BGToken<T2>, BGToken<T3>, BGToken<T4>>>(
+                    static (token1, token2, token3, token4, _)
+                    => new BGTupple<BGToken<T1>, BGToken<T2>, BGToken<T3>, BGToken<T4>>(token1, token2, token3, token4)));
+        }
     }
 }
 

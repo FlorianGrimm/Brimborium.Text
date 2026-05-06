@@ -20,7 +20,7 @@ public sealed class BGParserAggregate<T, R> : IBGParser<R> {
         var current = input;
         var result = false;
         var resultValue = this.SelectResult.Create();
-        while (true) {
+        while (!input.Input.IsEmpty) {
             if (this.Parser.Parse(current, out var currentMatch, out var currentError, out var currentNext)) {
                 result = true;
                 current = current.With(currentNext.Input);

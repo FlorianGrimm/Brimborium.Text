@@ -74,3 +74,13 @@ public sealed class BGParserSequenceDelegate<T1, T2, T3, R>(
     }
 }
 
+
+public sealed class BGParserSequenceDelegate<T1, T2, T3, T4, R>(
+    Func<BGResult<T1>, BGResult<T2>, BGResult<T3>, BGResult<T4>, StringRange, R> selector
+        ) : IBGParserSequenceResult<T1, T2, T3, T4, R> {
+    private readonly Func<BGResult<T1>, BGResult<T2>, BGResult<T3>, BGResult<T4>, StringRange, R> _Selector = selector;
+
+    public R Select(BGResult<T1> value1, BGResult<T2> value2, BGResult<T3> value3, BGResult<T4> value4, StringRange match) {
+        return this._Selector(value1, value2, value3, value4, match);
+    }
+}

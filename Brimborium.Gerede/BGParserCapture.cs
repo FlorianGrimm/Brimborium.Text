@@ -25,6 +25,5 @@ public class BGParserCapture<T, R> : IBGParser<R> {
             next = innerNext;
             return false;
         }
-        throw new NotImplementedException();
     }
 }

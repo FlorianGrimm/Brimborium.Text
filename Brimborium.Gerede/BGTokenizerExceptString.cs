@@ -11,12 +11,12 @@ public class BGTokenizerExceptString<T>(
 
     public bool TryGetToken(StringRange value, [MaybeNullWhen(false)] out BGToken<T> token, out StringRange next) {
         var position = value.Text.IndexOf(this.ExceptText, value.Start, this.ComparisonType);
-        if (position <= 0) {
+        var length = position - value.Start;
+        if (position <= 0 || length <= 0) {
             token = default;
             next = value;
             return false;
         } else {
-            var length = position - value.Start;
             var tokenMatch = value.Substring(length);
             var tokenValue = this.SelectResult.Select(tokenMatch);
             token = new BGToken<T>(tokenMatch, tokenValue);

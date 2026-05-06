@@ -198,4 +198,13 @@ public readonly struct StringRange {
             return false;
         }
     }
+    public StringRange Combine(StringRange next) {
+        if ((ReferenceEquals(this.Text, next.Text))
+            && (this.End == next.Start)) {
+            return new StringRange(this.Text, this.Start, next.End);
+        } else {
+            return new StringRange(this.AsSpan().ToString() + next.AsSpan().ToString());
+        }
+    }
+
 }

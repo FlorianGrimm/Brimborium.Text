@@ -10,7 +10,7 @@ public static partial class BGParser {
         IBGTokenizer<T> tokenizer
     ) => new BGParserTokenizer<T>(tokenizer);
 
-    public static IBGParser<R> TokenT<T,R>(
+    public static IBGParser<R> TokenT<T, R>(
         IBGTokenizer<T> tokenizer,
         IBGTokenizerResultTransform<T, R> selectResult
     ) => new BGParserTokenizerSelect<T, R>(tokenizer, selectResult);
@@ -19,7 +19,7 @@ public static partial class BGParser {
         IBGTokenizer<T> tokenizer,
         Func<BGToken<T>, StringRange, R> selector
     ) => new BGParserTokenizerSelect<T, R>(
-        tokenizer, 
+        tokenizer,
         new BGTokenizerResultTransformDelegate<T, R>(selector));
 
     // Or (list overload; the binary fluent overload is provided by the extension block below)
@@ -42,9 +42,17 @@ public static partial class BGParser {
 
 
     extension<T>(IBGTokenizer<T> tokenizer) {
-        public IBGParser<T> Parser() {
-            return new BGParserTokenizer<T>(tokenizer);
-        }
+        public IBGParser<T> Parser(
+        ) => new BGParserTokenizer<T>(tokenizer);
+
+        public IBGParser<R> Parser<R>(
+            IBGTokenizerResultTransform<T, R> selectResult
+        ) => new BGParserTokenizerSelect<T, R>(tokenizer, selectResult);
+
+        public IBGParser<R> Parser<R>(
+            Func<BGToken<T>, StringRange, R> selector 
+        ) => new BGParserTokenizerSelect<T, R>(tokenizer, 
+            new BGTokenizerResultTransformDelegate<T,R>(selector));
     }
 
     extension<T1>(IBGParser<T1> parser) {
@@ -71,6 +79,34 @@ public static partial class BGParser {
             int maxRepeat,
             IBGParserResultRepeat<T1, R> selectResult
         ) => new BGParserRepeat<T1, R>(parser, minRepeat, maxRepeat, selectResult);
+
+        public IBGParser<R> PList<S, R>(
+            IBGParser<S> parserSplit,
+            int minRepeat,
+            int maxRepeat,
+            IBGParserResultAggregate<T1, R> aggregate
+            ) => new BGParserList<T1, S, R>(
+                parser,
+                parserSplit,
+                minRepeat,
+                maxRepeat,
+                aggregate
+                );
+
+        public IBGParser<R> PList<S, R>(
+                IBGParser<S> parserSplit,
+                int minRepeat,
+                int maxRepeat,
+                Func<R> create,
+                Func<R, T1, StringRange, R> aggregate
+            ) => new BGParserList<T1, S, R>(
+                parser,
+                parserSplit,
+                minRepeat,
+                maxRepeat,
+                new BGParserResultAggregateDelegate<T1,R>(create, aggregate)
+                );
+        
 
         public IBGParser<R> PCapture<R>(
             IBGTokenizerResultCaptureTransform<T1, R> tokenizerResultCapture
